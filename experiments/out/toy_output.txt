@@ -1,0 +1,43 @@
+
+MORNING PLAN (before the stall)
+  RO-101 Water pump replacement       08:00-11:00  Meera  Bay 2  promise 13:00  
+  RO-102 Front brake pads             08:00-09:30  Kavya  Bay 1  promise 12:00  
+  RO-103 Wheel alignment              08:00-09:00  Riya   Bay 3  promise 11:00  
+  RO-104 Oil service                  09:00-09:45  Riya   Bay 3  promise 12:20  
+  RO-105 Timing belt                  11:00-13:30  Meera  Bay 1  promise 16:30  
+  RO-106 Battery and charging check   09:30-10:45  Kavya  Bay 1  promise 13:00  
+  RO-107 Rotors and brake fluid       11:00-13:00  Kavya  Bay 2  promise 15:00  
+  RO-108 AC service                   12:00-13:20  Riya   Bay 3  promise 15:30  
+  metrics: {'late': 0, 'tard': 0, 'moved': 0, 'hold': 0, 'cost': 0.0, 'source': None}
+
+STALL at 10:30: RO-101 is missing its water pump gasket kit
+  sources:
+    Sister store North (shuttle)     arrives 11:10  $15   donor stockout risk 62%  UNSAFE TO RAID
+    Local vendor (courier)           arrives 11:30  $85   donor stockout risk 0%
+    Sister store East (shuttle)      arrives 12:20  $15   donor stockout risk 4%
+    OEM depot (next truck)           arrives 14:30  $0    donor stockout risk 0%
+
+option                                         source   late late min moved bay blocked   cost  solve s
+A. No re-plan, cheapest source                 oem         3      300     2       240 m $    0    0.000
+B. No re-plan, fastest safe source             vendor      0        0     2        60 m $   85    0.000
+C. Rule-based dispatch, fastest safe source    vendor      2       60     2       165 m $   85    0.000
+D. StallBreaker: keep promises                 east        0        0     2       110 m $   15    0.012
+E. StallBreaker: minimal change                east        2       90     1       180 m $   15    0.013
+F. Manager forces the unsafe store (North)     north       0        0     2        40 m $   15    0.009
+G. Manager forces the free OEM truck           oem         1      180     2       300 m $    0    0.036
+
+PLAN D (StallBreaker: keep promises)
+  RO-101 Water pump replacement       12:20-12:50  Meera  Bay 2  promise 13:00  
+  RO-102 Front brake pads             08:00-09:30  Kavya  Bay 1  promise 12:00  
+  RO-103 Wheel alignment              08:00-09:00  Riya   Bay 3  promise 11:00  
+  RO-104 Oil service                  09:00-09:45  Riya   Bay 3  promise 12:20  
+  RO-105 Timing belt                  12:50-15:20  Meera  Bay 2  promise 16:30  moved
+  RO-106 Battery and charging check   09:30-10:45  Kavya  Bay 1  promise 13:00  
+  RO-107 Rotors and brake fluid       11:00-13:00  Kavya  Bay 1  promise 15:00  moved
+  RO-108 AC service                   12:00-13:20  Riya   Bay 3  promise 15:30  
+  solver stages: [('late', 0, 'OPTIMAL'), ('tard', 0, 'OPTIMAL'), ('cost', 15, 'OPTIMAL'), ('moves', 2, 'OPTIMAL'), ('shift', 110, 'OPTIMAL')] | proven optimal: True
+  technician minutes still to work, before -> after: {'Meera': '180 -> 180', 'Kavya': '135 -> 135', 'Riya': '80 -> 80'}
+
+  repeatability: 5 solves of the same stall gave 1 distinct plan(s)
+
+  chart: out/toy_before_after.png

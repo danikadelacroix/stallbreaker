@@ -1,0 +1,1201 @@
+seed,method,base_late,late,tard,moved,hold,cost,source,seconds,proven,picked_fastest,picked_cheapest
+1,"wait, cheapest source",0,3,150,4,215,0,oem,0.0,True,False,True
+1,"wait, fastest source",0,0,0,3,60,100,vendor,0.0,True,True,False
+1,"rule dispatch, fastest source",0,0,0,4,60,100,vendor,0.0001,True,True,False
+1,"solver, cheapest source fixed",0,0,0,3,215,0,oem,0.0789,True,False,True
+1,"solver, fastest source fixed",0,0,0,1,60,100,vendor,0.0248,True,True,False
+1,StallBreaker (joint),0,0,0,3,215,0,oem,0.0292,True,False,True
+2,"wait, cheapest source",0,2,315,1,285,0,oem,0.0,True,False,True
+2,"wait, fastest source",0,0,0,0,35,15,sisterA,0.0,True,True,False
+2,"rule dispatch, fastest source",0,0,0,0,35,15,sisterA,0.0001,True,True,False
+2,"solver, cheapest source fixed",0,1,225,1,285,0,oem,0.0296,True,False,True
+2,"solver, fastest source fixed",0,0,0,0,35,15,sisterA,0.0246,True,True,False
+2,StallBreaker (joint),0,0,0,0,35,15,sisterA,0.0277,True,True,False
+3,"wait, cheapest source",0,1,120,0,270,0,oem,0.0,True,False,True
+3,"wait, fastest source",0,0,0,0,75,115,vendor,0.0,True,True,False
+3,"rule dispatch, fastest source",0,0,0,0,75,115,vendor,0.0,True,True,False
+3,"solver, cheapest source fixed",0,1,120,0,270,0,oem,0.0047,True,False,True
+3,"solver, fastest source fixed",0,0,0,0,75,115,vendor,0.0066,True,True,False
+3,StallBreaker (joint),0,0,0,0,140,15,sisterB,0.0057,True,False,False
+4,"wait, cheapest source",0,1,30,0,225,0,oem,0.0,True,False,True
+4,"wait, fastest source",0,0,0,0,35,15,sisterA,0.0,True,True,False
+4,"rule dispatch, fastest source",0,0,0,0,35,15,sisterA,0.0,True,True,False
+4,"solver, cheapest source fixed",0,1,30,0,225,0,oem,0.0359,True,False,True
+4,"solver, fastest source fixed",0,0,0,0,35,15,sisterA,0.0467,True,True,False
+4,StallBreaker (joint),0,0,0,0,35,15,sisterA,0.0073,True,True,False
+5,"wait, cheapest source",0,1,145,0,205,0,oem,0.0,True,False,True
+5,"wait, fastest source",0,0,0,0,30,15,sisterA,0.0,True,True,False
+5,"rule dispatch, fastest source",0,0,0,0,30,15,sisterA,0.0,True,True,False
+5,"solver, cheapest source fixed",0,1,145,0,205,0,oem,0.0051,True,False,True
+5,"solver, fastest source fixed",0,0,0,0,30,15,sisterA,0.0072,True,True,False
+5,StallBreaker (joint),0,0,0,0,30,15,sisterA,0.0042,True,True,False
+6,"wait, cheapest source",0,3,300,2,210,0,oem,0.0001,True,False,True
+6,"wait, fastest source",0,0,0,2,50,80,vendor,0.0,True,True,False
+6,"rule dispatch, fastest source",0,0,0,5,50,80,vendor,0.0001,True,True,False
+6,"solver, cheapest source fixed",0,1,105,5,210,0,oem,0.067,True,False,True
+6,"solver, fastest source fixed",0,0,0,2,50,80,vendor,0.0737,True,True,False
+6,StallBreaker (joint),0,0,0,2,50,80,vendor,0.0329,True,True,False
+7,"wait, cheapest source",0,1,205,0,280,0,oem,0.0,True,False,True
+7,"wait, fastest source",0,0,0,0,55,110,vendor,0.0,True,True,False
+7,"rule dispatch, fastest source",0,0,0,0,55,110,vendor,0.0,True,True,False
+7,"solver, cheapest source fixed",0,1,205,0,280,0,oem,0.0051,True,False,True
+7,"solver, fastest source fixed",0,0,0,0,55,110,vendor,0.0092,True,True,False
+7,StallBreaker (joint),0,0,0,0,55,110,vendor,0.0057,True,True,False
+8,"wait, cheapest source",0,2,295,1,260,0,oem,0.0,True,False,True
+8,"wait, fastest source",0,0,0,1,50,75,vendor,0.0,True,True,False
+8,"rule dispatch, fastest source",0,0,0,1,50,75,vendor,0.0,True,True,False
+8,"solver, cheapest source fixed",0,1,110,0,260,0,oem,0.0107,True,False,True
+8,"solver, fastest source fixed",0,0,0,0,50,75,vendor,0.0107,True,True,False
+8,StallBreaker (joint),0,0,0,0,130,15,sisterB,0.011,True,False,False
+9,"wait, cheapest source",0,2,200,2,220,0,oem,0.0,True,False,True
+9,"wait, fastest source",0,0,0,1,35,15,sisterA,0.0,True,True,False
+9,"rule dispatch, fastest source",0,0,0,2,35,15,sisterA,0.0,True,True,False
+9,"solver, cheapest source fixed",0,1,115,1,220,0,oem,0.0244,True,False,True
+9,"solver, fastest source fixed",0,0,0,1,35,15,sisterA,0.0229,True,True,False
+9,StallBreaker (joint),0,0,0,1,35,15,sisterA,0.0725,True,True,False
+10,"wait, cheapest source",0,1,60,0,225,0,oem,0.0,True,False,True
+10,"wait, fastest source",0,0,0,0,45,105,vendor,0.0,True,True,False
+10,"rule dispatch, fastest source",0,0,0,0,45,105,vendor,0.0,True,True,False
+10,"solver, cheapest source fixed",0,1,60,0,225,0,oem,0.0249,True,False,True
+10,"solver, fastest source fixed",0,0,0,0,45,105,vendor,0.0087,True,True,False
+10,StallBreaker (joint),0,0,0,0,95,15,sisterB,0.0153,True,False,False
+11,"wait, cheapest source",0,3,165,2,215,0,oem,0.0,True,False,True
+11,"wait, fastest source",0,0,0,2,90,95,vendor,0.0,True,True,False
+11,"rule dispatch, fastest source",0,0,0,1,90,95,vendor,0.0001,True,True,False
+11,"solver, cheapest source fixed",0,1,35,1,215,0,oem,0.0283,True,False,True
+11,"solver, fastest source fixed",0,0,0,1,90,95,vendor,0.0183,True,True,False
+11,StallBreaker (joint),0,0,0,1,90,95,vendor,0.0142,True,True,False
+12,"wait, cheapest source",0,2,290,1,265,0,oem,0.0,True,False,True
+12,"wait, fastest source",0,0,0,1,45,15,sisterA,0.0,True,True,False
+12,"rule dispatch, fastest source",0,0,0,1,45,15,sisterA,0.0001,True,True,False
+12,"solver, cheapest source fixed",0,1,100,1,265,0,oem,0.0243,True,False,True
+12,"solver, fastest source fixed",0,0,0,1,45,15,sisterA,0.0225,True,True,False
+12,StallBreaker (joint),0,0,0,1,45,15,sisterA,0.022,True,True,False
+13,"wait, cheapest source",0,2,510,1,285,0,oem,0.0,True,False,True
+13,"wait, fastest source",0,2,110,1,85,120,vendor,0.0,True,True,False
+13,"rule dispatch, fastest source",0,2,75,3,85,120,vendor,0.0,True,True,False
+13,"solver, cheapest source fixed",0,1,270,0,285,0,oem,0.0132,True,False,True
+13,"solver, fastest source fixed",0,1,70,1,85,120,vendor,0.087,True,True,False
+13,StallBreaker (joint),0,1,70,1,85,120,vendor,0.0495,True,True,False
+14,"wait, cheapest source",0,1,135,0,275,0,oem,0.0,True,False,True
+14,"wait, fastest source",0,0,0,0,35,15,sisterA,0.0,True,True,False
+14,"rule dispatch, fastest source",0,0,0,0,35,15,sisterA,0.0,True,True,False
+14,"solver, cheapest source fixed",0,1,135,0,275,0,oem,0.0146,True,False,True
+14,"solver, fastest source fixed",0,0,0,0,35,15,sisterA,0.0231,True,True,False
+14,StallBreaker (joint),0,0,0,0,35,15,sisterA,0.0141,True,True,False
+15,"wait, cheapest source",0,2,140,1,190,0,oem,0.0,True,False,True
+15,"wait, fastest source",0,0,0,1,80,110,vendor,0.0,True,True,False
+15,"rule dispatch, fastest source",0,0,0,3,80,110,vendor,0.0,True,True,False
+15,"solver, cheapest source fixed",0,1,85,1,190,0,oem,0.023,True,False,True
+15,"solver, fastest source fixed",0,0,0,1,80,110,vendor,0.0227,True,True,False
+15,StallBreaker (joint),0,0,0,1,80,110,vendor,0.0215,True,True,False
+16,"wait, cheapest source",0,4,175,3,270,0,oem,0.0,True,False,True
+16,"wait, fastest source",0,0,0,0,55,110,vendor,0.0,True,True,False
+16,"rule dispatch, fastest source",0,0,0,0,55,110,vendor,0.0001,True,True,False
+16,"solver, cheapest source fixed",0,1,45,2,270,0,oem,0.0214,True,False,True
+16,"solver, fastest source fixed",0,0,0,0,55,110,vendor,0.0329,True,True,False
+16,StallBreaker (joint),0,0,0,0,55,110,vendor,0.0926,True,True,False
+17,"wait, cheapest source",0,1,90,0,255,0,oem,0.0,True,False,True
+17,"wait, fastest source",0,0,0,0,65,65,vendor,0.0,True,True,False
+17,"rule dispatch, fastest source",0,0,0,0,65,65,vendor,0.0,True,True,False
+17,"solver, cheapest source fixed",0,1,90,0,255,0,oem,0.0115,True,False,True
+17,"solver, fastest source fixed",0,0,0,0,65,65,vendor,0.0068,True,True,False
+17,StallBreaker (joint),0,0,0,0,120,15,sisterB,0.0032,True,False,False
+18,"wait, cheapest source",0,1,145,0,265,0,oem,0.0,True,False,True
+18,"wait, fastest source",0,0,0,0,65,80,vendor,0.0,True,True,False
+18,"rule dispatch, fastest source",0,0,0,0,65,80,vendor,0.0,True,True,False
+18,"solver, cheapest source fixed",0,1,145,0,265,0,oem,0.0184,True,False,True
+18,"solver, fastest source fixed",0,0,0,0,65,80,vendor,0.0107,True,True,False
+18,StallBreaker (joint),0,0,0,0,100,15,sisterB,0.0121,True,False,False
+19,"wait, cheapest source",0,1,235,0,280,0,oem,0.0,True,False,True
+19,"wait, fastest source",0,1,40,0,85,105,vendor,0.0,True,True,False
+19,"rule dispatch, fastest source",0,1,40,0,85,105,vendor,0.0,True,True,False
+19,"solver, cheapest source fixed",0,1,235,0,280,0,oem,0.0051,True,False,True
+19,"solver, fastest source fixed",0,1,40,0,85,105,vendor,0.0063,True,True,False
+19,StallBreaker (joint),0,1,40,0,85,105,vendor,0.0127,True,True,False
+20,"wait, cheapest source",0,3,465,2,290,0,oem,0.0,True,False,True
+20,"wait, fastest source",0,0,0,2,50,75,vendor,0.0,True,True,False
+20,"rule dispatch, fastest source",0,0,0,4,50,75,vendor,0.0001,True,True,False
+20,"solver, cheapest source fixed",0,1,150,4,360,0,oem,0.0378,True,False,True
+20,"solver, fastest source fixed",0,0,0,2,50,75,vendor,0.0606,True,True,False
+20,StallBreaker (joint),0,0,0,2,100,15,sisterB,0.0344,True,False,False
+21,"wait, cheapest source",0,2,245,1,295,0,oem,0.0,True,False,True
+21,"wait, fastest source",0,0,0,1,45,65,vendor,0.0,True,True,False
+21,"rule dispatch, fastest source",0,0,0,2,45,65,vendor,0.0001,True,True,False
+21,"solver, cheapest source fixed",0,1,130,1,295,0,oem,0.0395,True,False,True
+21,"solver, fastest source fixed",0,0,0,1,45,65,vendor,0.0274,True,True,False
+21,StallBreaker (joint),0,0,0,1,120,15,sisterB,0.0275,True,False,False
+22,"wait, cheapest source",0,1,145,0,205,0,oem,0.0,True,False,True
+22,"wait, fastest source",0,1,10,0,70,60,vendor,0.0,True,True,False
+22,"rule dispatch, fastest source",0,1,10,0,70,60,vendor,0.0,True,True,False
+22,"solver, cheapest source fixed",0,1,145,0,205,0,oem,0.0118,True,False,True
+22,"solver, fastest source fixed",0,1,10,0,70,60,vendor,0.012,True,True,False
+22,StallBreaker (joint),0,1,10,0,70,60,vendor,0.0115,True,True,False
+23,"wait, cheapest source",0,1,100,0,205,0,oem,0.0,True,False,True
+23,"wait, fastest source",0,0,0,0,70,110,vendor,0.0,True,True,False
+23,"rule dispatch, fastest source",0,0,0,0,70,110,vendor,0.0,True,True,False
+23,"solver, cheapest source fixed",0,1,100,0,205,0,oem,0.0062,True,False,True
+23,"solver, fastest source fixed",0,0,0,0,70,110,vendor,0.006,True,True,False
+23,StallBreaker (joint),0,0,0,0,70,110,vendor,0.0059,True,True,False
+24,"wait, cheapest source",0,1,100,0,190,0,oem,0.0,True,False,True
+24,"wait, fastest source",0,0,0,0,70,75,vendor,0.0,True,True,False
+24,"rule dispatch, fastest source",0,0,0,0,70,75,vendor,0.0,True,True,False
+24,"solver, cheapest source fixed",0,1,100,0,190,0,oem,0.0646,True,False,True
+24,"solver, fastest source fixed",0,0,0,0,70,75,vendor,0.0597,True,True,False
+24,StallBreaker (joint),0,0,0,0,70,75,vendor,0.0086,True,True,False
+25,"wait, cheapest source",0,2,135,1,270,0,oem,0.0,True,False,True
+25,"wait, fastest source",0,0,0,1,35,15,sisterA,0.0,True,True,False
+25,"rule dispatch, fastest source",0,0,0,1,35,15,sisterA,0.0,True,True,False
+25,"solver, cheapest source fixed",0,1,90,1,270,0,oem,0.0216,True,False,True
+25,"solver, fastest source fixed",0,0,0,1,35,15,sisterA,0.0172,True,True,False
+25,StallBreaker (joint),0,0,0,1,35,15,sisterA,0.0211,True,True,False
+26,"wait, cheapest source",0,0,0,1,180,0,oem,0.0,True,False,True
+26,"wait, fastest source",0,0,0,0,50,15,sisterA,0.0,True,True,False
+26,"rule dispatch, fastest source",0,0,0,0,50,15,sisterA,0.0001,True,True,False
+26,"solver, cheapest source fixed",0,0,0,1,180,0,oem,0.0305,True,False,True
+26,"solver, fastest source fixed",0,0,0,0,50,15,sisterA,0.0234,True,True,False
+26,StallBreaker (joint),0,0,0,1,180,0,oem,0.0321,True,False,True
+27,"wait, cheapest source",0,2,180,1,225,0,oem,0.0,True,False,True
+27,"wait, fastest source",0,0,0,1,50,70,vendor,0.0,True,True,False
+27,"rule dispatch, fastest source",0,0,0,1,75,70,vendor,0.0,True,True,False
+27,"solver, cheapest source fixed",0,1,75,0,225,0,oem,0.025,True,False,True
+27,"solver, fastest source fixed",0,0,0,0,75,70,vendor,0.0135,True,True,False
+27,StallBreaker (joint),0,0,0,0,75,70,vendor,0.0106,True,True,False
+28,"wait, cheapest source",0,1,5,0,190,0,oem,0.0,True,False,True
+28,"wait, fastest source",0,0,0,0,30,15,sisterA,0.0,True,True,False
+28,"rule dispatch, fastest source",0,0,0,0,30,15,sisterA,0.0,True,True,False
+28,"solver, cheapest source fixed",0,1,5,0,190,0,oem,0.0343,True,False,True
+28,"solver, fastest source fixed",0,0,0,0,30,15,sisterA,0.0153,True,True,False
+28,StallBreaker (joint),0,0,0,0,30,15,sisterA,0.0161,True,True,False
+29,"wait, cheapest source",0,3,480,2,300,0,oem,0.0,True,False,True
+29,"wait, fastest source",0,1,15,2,85,95,vendor,0.0,True,True,False
+29,"rule dispatch, fastest source",0,1,15,2,85,95,vendor,0.0,True,True,False
+29,"solver, cheapest source fixed",0,1,230,1,300,0,oem,0.0217,True,False,True
+29,"solver, fastest source fixed",0,1,15,2,85,95,vendor,0.0177,True,True,False
+29,StallBreaker (joint),0,1,15,2,85,95,vendor,0.0177,True,True,False
+30,"wait, cheapest source",0,2,140,2,225,0,oem,0.0,True,False,True
+30,"wait, fastest source",0,0,0,1,80,105,vendor,0.0,True,True,False
+30,"rule dispatch, fastest source",0,0,0,1,80,105,vendor,0.0001,True,True,False
+30,"solver, cheapest source fixed",0,1,125,2,225,0,oem,0.0271,True,False,True
+30,"solver, fastest source fixed",0,0,0,1,80,105,vendor,0.0562,True,True,False
+30,StallBreaker (joint),0,0,0,1,80,105,vendor,0.0275,True,True,False
+31,"wait, cheapest source",0,1,65,0,200,0,oem,0.0,True,False,True
+31,"wait, fastest source",0,0,0,0,45,60,vendor,0.0,True,True,False
+31,"rule dispatch, fastest source",0,0,0,0,45,60,vendor,0.0001,True,True,False
+31,"solver, cheapest source fixed",0,1,65,0,200,0,oem,0.0503,True,False,True
+31,"solver, fastest source fixed",0,0,0,0,45,60,vendor,0.0188,True,True,False
+31,StallBreaker (joint),0,0,0,0,45,60,vendor,0.0187,True,True,False
+32,"wait, cheapest source",0,1,130,0,265,0,oem,0.0,True,False,True
+32,"wait, fastest source",0,0,0,0,75,60,vendor,0.0,True,True,False
+32,"rule dispatch, fastest source",0,0,0,0,75,60,vendor,0.0,True,True,False
+32,"solver, cheapest source fixed",0,1,130,0,265,0,oem,0.0096,True,False,True
+32,"solver, fastest source fixed",0,0,0,0,75,60,vendor,0.0142,True,True,False
+32,StallBreaker (joint),0,0,0,0,80,15,sisterB,0.0141,True,False,False
+33,"wait, cheapest source",0,1,45,3,180,0,oem,0.0,True,False,True
+33,"wait, fastest source",0,0,0,1,40,15,sisterA,0.0,True,True,False
+33,"rule dispatch, fastest source",0,0,0,1,40,15,sisterA,0.0001,True,True,False
+33,"solver, cheapest source fixed",0,0,0,3,180,0,oem,0.021,True,False,True
+33,"solver, fastest source fixed",0,0,0,1,40,15,sisterA,0.0227,True,True,False
+33,StallBreaker (joint),0,0,0,3,180,0,oem,0.0196,True,False,True
+34,"wait, cheapest source",0,2,370,1,290,0,oem,0.0,True,False,True
+34,"wait, fastest source",0,0,0,1,45,15,sisterA,0.0,True,True,False
+34,"rule dispatch, fastest source",0,0,0,1,45,15,sisterA,0.0,True,True,False
+34,"solver, cheapest source fixed",0,1,200,1,290,0,oem,0.0146,True,False,True
+34,"solver, fastest source fixed",0,0,0,1,45,15,sisterA,0.0176,True,True,False
+34,StallBreaker (joint),0,0,0,1,45,15,sisterA,0.0715,True,True,False
+35,"wait, cheapest source",0,1,10,0,190,0,oem,0.0,True,False,True
+35,"wait, fastest source",0,0,0,0,50,85,vendor,0.0,True,True,False
+35,"rule dispatch, fastest source",0,0,0,0,50,85,vendor,0.0,True,True,False
+35,"solver, cheapest source fixed",0,1,10,0,190,0,oem,0.0154,True,False,True
+35,"solver, fastest source fixed",0,0,0,0,50,85,vendor,0.0165,True,True,False
+35,StallBreaker (joint),0,0,0,0,125,15,sisterB,0.0164,True,False,False
+36,"wait, cheapest source",0,1,65,0,245,0,oem,0.0,True,False,True
+36,"wait, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+36,"rule dispatch, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+36,"solver, cheapest source fixed",0,1,65,0,245,0,oem,0.0122,True,False,True
+36,"solver, fastest source fixed",0,0,0,0,45,15,sisterA,0.0154,True,True,False
+36,StallBreaker (joint),0,0,0,0,45,15,sisterA,0.0159,True,True,False
+37,"wait, cheapest source",0,0,0,1,180,0,oem,0.0,True,False,True
+37,"wait, fastest source",0,0,0,1,80,15,sisterB,0.0,True,True,False
+37,"rule dispatch, fastest source",0,0,0,1,80,15,sisterB,0.0,True,True,False
+37,"solver, cheapest source fixed",0,0,0,1,180,0,oem,0.0516,True,False,True
+37,"solver, fastest source fixed",0,0,0,1,105,15,sisterB,0.017,True,True,False
+37,StallBreaker (joint),0,0,0,1,180,0,oem,0.0203,True,False,True
+38,"wait, cheapest source",0,1,40,0,190,0,oem,0.0,True,False,True
+38,"wait, fastest source",0,0,0,0,30,15,sisterA,0.0,True,True,False
+38,"rule dispatch, fastest source",0,0,0,0,30,15,sisterA,0.0,True,True,False
+38,"solver, cheapest source fixed",0,1,40,0,190,0,oem,0.0253,True,False,True
+38,"solver, fastest source fixed",0,0,0,0,30,15,sisterA,0.0062,True,True,False
+38,StallBreaker (joint),0,0,0,0,30,15,sisterA,0.0081,True,True,False
+39,"wait, cheapest source",0,2,105,3,240,0,oem,0.0,True,False,True
+39,"wait, fastest source",0,0,0,3,80,105,vendor,0.0,True,True,False
+39,"rule dispatch, fastest source",0,0,0,4,80,105,vendor,0.0,True,True,False
+39,"solver, cheapest source fixed",0,1,85,1,240,0,oem,0.0229,True,False,True
+39,"solver, fastest source fixed",0,0,0,1,80,105,vendor,0.0188,True,True,False
+39,StallBreaker (joint),0,0,0,1,80,105,vendor,0.0276,True,True,False
+40,"wait, cheapest source",0,1,165,1,225,0,oem,0.0,True,False,True
+40,"wait, fastest source",0,1,10,1,70,115,vendor,0.0,True,True,False
+40,"rule dispatch, fastest source",0,1,45,0,105,115,vendor,0.0,True,True,False
+40,"solver, cheapest source fixed",0,1,165,0,225,0,oem,0.0457,True,False,True
+40,"solver, fastest source fixed",0,1,10,1,70,115,vendor,0.0405,True,True,False
+40,StallBreaker (joint),0,1,10,1,70,115,vendor,0.0136,True,True,False
+41,"wait, cheapest source",0,4,240,3,215,0,oem,0.0,True,False,True
+41,"wait, fastest source",0,0,0,1,35,15,sisterA,0.0,True,True,False
+41,"rule dispatch, fastest source",0,0,0,1,35,15,sisterA,0.0001,True,True,False
+41,"solver, cheapest source fixed",0,1,65,1,215,0,oem,0.0521,True,False,True
+41,"solver, fastest source fixed",0,0,0,1,35,15,sisterA,0.0195,True,True,False
+41,StallBreaker (joint),0,0,0,1,35,15,sisterA,0.0198,True,True,False
+42,"wait, cheapest source",0,2,250,1,235,0,oem,0.0,True,False,True
+42,"wait, fastest source",0,1,35,0,50,85,vendor,0.0,True,True,False
+42,"rule dispatch, fastest source",0,1,35,0,50,85,vendor,0.0,True,True,False
+42,"solver, cheapest source fixed",0,1,220,1,235,0,oem,0.0258,True,False,True
+42,"solver, fastest source fixed",0,1,35,0,50,85,vendor,0.0235,True,True,False
+42,StallBreaker (joint),0,1,35,0,50,85,vendor,0.0152,True,True,False
+43,"wait, cheapest source",0,1,70,0,205,0,oem,0.0,True,False,True
+43,"wait, fastest source",0,0,0,0,45,105,vendor,0.0,True,True,False
+43,"rule dispatch, fastest source",0,0,0,0,45,105,vendor,0.0,True,True,False
+43,"solver, cheapest source fixed",0,1,70,0,205,0,oem,0.0123,True,False,True
+43,"solver, fastest source fixed",0,0,0,0,45,105,vendor,0.0104,True,True,False
+43,StallBreaker (joint),0,0,0,0,80,15,sisterB,0.0116,True,False,False
+44,"wait, cheapest source",0,4,410,4,295,0,oem,0.0,True,False,True
+44,"wait, fastest source",0,0,0,1,60,95,vendor,0.0,True,True,False
+44,"rule dispatch, fastest source",0,0,0,4,60,95,vendor,0.0001,True,True,False
+44,"solver, cheapest source fixed",0,1,155,2,295,0,oem,0.0601,True,False,True
+44,"solver, fastest source fixed",0,0,0,0,105,95,vendor,0.0835,True,True,False
+44,StallBreaker (joint),0,0,0,0,105,15,sisterB,0.0339,True,False,False
+45,"wait, cheapest source",0,2,365,1,295,0,oem,0.0,True,False,True
+45,"wait, fastest source",0,0,0,0,60,15,sisterA,0.0,True,True,False
+45,"rule dispatch, fastest source",0,0,0,0,60,15,sisterA,0.0,True,True,False
+45,"solver, cheapest source fixed",0,1,215,1,295,0,oem,0.0155,True,False,True
+45,"solver, fastest source fixed",0,0,0,0,60,15,sisterA,0.0175,True,True,False
+45,StallBreaker (joint),0,0,0,0,60,15,sisterA,0.0199,True,True,False
+46,"wait, cheapest source",0,3,180,2,235,0,oem,0.0,True,False,True
+46,"wait, fastest source",0,0,0,2,50,15,sisterA,0.0,True,True,False
+46,"rule dispatch, fastest source",0,0,0,2,50,15,sisterA,0.0,True,True,False
+46,"solver, cheapest source fixed",0,1,85,2,235,0,oem,0.0282,True,False,True
+46,"solver, fastest source fixed",0,0,0,1,50,15,sisterA,0.0305,True,True,False
+46,StallBreaker (joint),0,0,0,1,50,15,sisterA,0.0309,True,True,False
+47,"wait, cheapest source",0,1,100,0,235,0,oem,0.0,True,False,True
+47,"wait, fastest source",0,0,0,0,45,115,vendor,0.0,True,True,False
+47,"rule dispatch, fastest source",0,0,0,0,45,115,vendor,0.0,True,True,False
+47,"solver, cheapest source fixed",0,1,100,0,235,0,oem,0.0609,True,False,True
+47,"solver, fastest source fixed",0,0,0,0,45,115,vendor,0.0096,True,True,False
+47,StallBreaker (joint),0,0,0,0,60,15,sisterA,0.0054,True,False,False
+48,"wait, cheapest source",0,1,95,0,225,0,oem,0.0,True,False,True
+48,"wait, fastest source",0,0,0,0,45,80,vendor,0.0,True,True,False
+48,"rule dispatch, fastest source",0,0,0,0,45,80,vendor,0.0,True,True,False
+48,"solver, cheapest source fixed",0,1,95,0,225,0,oem,0.012,True,False,True
+48,"solver, fastest source fixed",0,0,0,0,45,80,vendor,0.0076,True,True,False
+48,StallBreaker (joint),0,0,0,0,45,80,vendor,0.008,True,True,False
+49,"wait, cheapest source",0,4,440,3,275,0,oem,0.0,True,False,True
+49,"wait, fastest source",0,0,0,3,50,75,vendor,0.0,True,True,False
+49,"rule dispatch, fastest source",0,0,0,1,50,75,vendor,0.0001,True,True,False
+49,"solver, cheapest source fixed",0,1,65,1,275,0,oem,0.1043,True,False,True
+49,"solver, fastest source fixed",0,0,0,1,50,75,vendor,0.0324,True,True,False
+49,StallBreaker (joint),0,0,0,1,120,15,sisterB,0.0276,True,False,False
+50,"wait, cheapest source",0,1,10,0,220,0,oem,0.0,True,False,True
+50,"wait, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+50,"rule dispatch, fastest source",0,1,15,4,45,15,sisterA,0.0,True,True,False
+50,"solver, cheapest source fixed",0,1,10,0,220,0,oem,0.0199,True,False,True
+50,"solver, fastest source fixed",0,0,0,0,45,15,sisterA,0.0229,True,True,False
+50,StallBreaker (joint),0,0,0,0,45,15,sisterA,0.0179,True,True,False
+51,"wait, cheapest source",0,1,15,0,195,0,oem,0.0,True,False,True
+51,"wait, fastest source",0,0,0,0,55,95,vendor,0.0,True,True,False
+51,"rule dispatch, fastest source",0,0,0,0,55,95,vendor,0.0,True,True,False
+51,"solver, cheapest source fixed",0,1,15,0,195,0,oem,0.0068,True,False,True
+51,"solver, fastest source fixed",0,0,0,0,55,95,vendor,0.0031,True,True,False
+51,StallBreaker (joint),0,0,0,0,80,15,sisterB,0.0139,True,False,False
+52,"wait, cheapest source",0,1,75,0,285,0,oem,0.0,True,False,True
+52,"wait, fastest source",0,0,0,0,55,100,vendor,0.0,True,True,False
+52,"rule dispatch, fastest source",0,0,0,0,55,100,vendor,0.0,True,True,False
+52,"solver, cheapest source fixed",0,1,75,0,285,0,oem,0.0043,True,False,True
+52,"solver, fastest source fixed",0,0,0,0,55,100,vendor,0.0053,True,True,False
+52,StallBreaker (joint),0,0,0,0,120,15,sisterB,0.0033,True,False,False
+53,"wait, cheapest source",0,1,55,0,280,0,oem,0.0,True,False,True
+53,"wait, fastest source",0,0,0,0,55,110,vendor,0.0,True,True,False
+53,"rule dispatch, fastest source",0,0,0,0,55,110,vendor,0.0,True,True,False
+53,"solver, cheapest source fixed",0,1,55,0,280,0,oem,0.0105,True,False,True
+53,"solver, fastest source fixed",0,0,0,0,55,110,vendor,0.0085,True,True,False
+53,StallBreaker (joint),0,0,0,0,55,110,vendor,0.0085,True,True,False
+54,"wait, cheapest source",0,3,100,3,200,0,oem,0.0,True,False,True
+54,"wait, fastest source",0,0,0,1,35,15,sisterA,0.0,True,True,False
+54,"rule dispatch, fastest source",0,0,0,1,35,15,sisterA,0.0001,True,True,False
+54,"solver, cheapest source fixed",0,1,50,3,200,0,oem,0.038,True,False,True
+54,"solver, fastest source fixed",0,0,0,1,35,15,sisterA,0.051,True,True,False
+54,StallBreaker (joint),0,0,0,1,35,15,sisterA,0.0308,True,True,False
+55,"wait, cheapest source",0,3,240,3,275,0,oem,0.0,True,False,True
+55,"wait, fastest source",0,0,0,0,30,15,sisterA,0.0,True,True,False
+55,"rule dispatch, fastest source",0,0,0,0,30,15,sisterA,0.0,True,True,False
+55,"solver, cheapest source fixed",0,1,155,1,275,0,oem,0.0269,True,False,True
+55,"solver, fastest source fixed",0,0,0,0,30,15,sisterA,0.021,True,True,False
+55,StallBreaker (joint),0,0,0,0,30,15,sisterA,0.024,True,True,False
+56,"wait, cheapest source",0,2,210,1,285,0,oem,0.0,True,False,True
+56,"wait, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+56,"rule dispatch, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+56,"solver, cheapest source fixed",0,1,150,0,285,0,oem,0.025,True,False,True
+56,"solver, fastest source fixed",0,0,0,0,45,15,sisterA,0.0175,True,True,False
+56,StallBreaker (joint),0,0,0,0,45,15,sisterA,0.0197,True,True,False
+57,"wait, cheapest source",0,1,170,0,260,0,oem,0.0,True,False,True
+57,"wait, fastest source",0,0,0,0,75,105,vendor,0.0,True,True,False
+57,"rule dispatch, fastest source",0,0,0,0,75,105,vendor,0.0,True,True,False
+57,"solver, cheapest source fixed",0,1,170,0,260,0,oem,0.0033,True,False,True
+57,"solver, fastest source fixed",0,0,0,0,75,105,vendor,0.0051,True,True,False
+57,StallBreaker (joint),0,0,0,0,75,105,vendor,0.0061,True,True,False
+58,"wait, cheapest source",0,2,220,1,200,0,oem,0.0,True,False,True
+58,"wait, fastest source",0,0,0,1,60,70,vendor,0.0,True,True,False
+58,"rule dispatch, fastest source",0,0,0,2,60,70,vendor,0.0,True,True,False
+58,"solver, cheapest source fixed",0,1,140,1,200,0,oem,0.0184,True,False,True
+58,"solver, fastest source fixed",0,0,0,1,60,70,vendor,0.0257,True,True,False
+58,StallBreaker (joint),0,0,0,1,60,70,vendor,0.0275,True,True,False
+59,"wait, cheapest source",0,3,390,2,270,0,oem,0.0,True,False,True
+59,"wait, fastest source",0,0,0,2,50,15,sisterA,0.0,True,True,False
+59,"rule dispatch, fastest source",0,0,0,3,50,15,sisterA,0.0001,True,True,False
+59,"solver, cheapest source fixed",0,1,150,1,270,0,oem,0.0247,True,False,True
+59,"solver, fastest source fixed",0,0,0,2,50,15,sisterA,0.0231,True,True,False
+59,StallBreaker (joint),0,0,0,2,50,15,sisterA,0.0205,True,True,False
+60,"wait, cheapest source",0,3,435,3,215,0,oem,0.0001,True,False,True
+60,"wait, fastest source",0,0,0,2,60,80,vendor,0.0,True,True,False
+60,"rule dispatch, fastest source",0,1,15,6,60,80,vendor,0.0001,True,True,False
+60,"solver, cheapest source fixed",0,2,190,4,215,0,oem,0.0498,True,False,True
+60,"solver, fastest source fixed",0,0,0,2,60,80,vendor,0.0307,True,True,False
+60,StallBreaker (joint),0,0,0,2,60,80,vendor,0.031,True,True,False
+61,"wait, cheapest source",0,1,70,0,205,0,oem,0.0,True,False,True
+61,"wait, fastest source",0,0,0,0,75,80,vendor,0.0,True,True,False
+61,"rule dispatch, fastest source",0,0,0,0,75,80,vendor,0.0,True,True,False
+61,"solver, cheapest source fixed",0,1,70,0,205,0,oem,0.0061,True,False,True
+61,"solver, fastest source fixed",0,0,0,0,75,80,vendor,0.0047,True,True,False
+61,StallBreaker (joint),0,0,0,0,90,15,sisterB,0.0032,True,False,False
+62,"wait, cheapest source",1,1,305,0,290,0,oem,0.0,True,False,True
+62,"wait, fastest source",1,1,45,0,30,15,sisterA,0.0,True,True,False
+62,"rule dispatch, fastest source",1,1,45,0,30,15,sisterA,0.0,True,True,False
+62,"solver, cheapest source fixed",1,1,305,0,290,0,oem,0.0181,True,False,True
+62,"solver, fastest source fixed",1,1,45,0,30,15,sisterA,0.0177,True,True,False
+62,StallBreaker (joint),1,1,45,0,30,15,sisterA,0.0224,True,True,False
+63,"wait, cheapest source",0,1,215,0,275,0,oem,0.0,True,False,True
+63,"wait, fastest source",0,0,0,0,45,65,vendor,0.0,True,True,False
+63,"rule dispatch, fastest source",0,0,0,0,45,65,vendor,0.0,True,True,False
+63,"solver, cheapest source fixed",0,1,215,0,275,0,oem,0.0044,True,False,True
+63,"solver, fastest source fixed",0,0,0,0,45,65,vendor,0.0064,True,True,False
+63,StallBreaker (joint),0,0,0,0,45,65,vendor,0.0045,True,True,False
+64,"wait, cheapest source",0,3,345,2,260,0,oem,0.0,True,False,True
+64,"wait, fastest source",0,0,0,2,55,115,vendor,0.0,True,True,False
+64,"rule dispatch, fastest source",0,0,0,1,55,115,vendor,0.0,True,True,False
+64,"solver, cheapest source fixed",0,1,155,1,260,0,oem,0.0183,True,False,True
+64,"solver, fastest source fixed",0,0,0,1,55,115,vendor,0.019,True,True,False
+64,StallBreaker (joint),0,0,0,1,105,15,sisterB,0.0219,True,False,False
+65,"wait, cheapest source",0,4,370,4,230,0,oem,0.0,True,False,True
+65,"wait, fastest source",0,0,0,4,55,115,vendor,0.0,True,True,False
+65,"rule dispatch, fastest source",0,0,0,3,55,115,vendor,0.0,True,True,False
+65,"solver, cheapest source fixed",0,1,175,2,230,0,oem,0.0289,True,False,True
+65,"solver, fastest source fixed",0,0,0,2,55,115,vendor,0.0329,True,True,False
+65,StallBreaker (joint),0,0,0,2,55,115,vendor,0.0338,True,True,False
+66,"wait, cheapest source",0,3,235,2,230,0,oem,0.0,True,False,True
+66,"wait, fastest source",0,0,0,2,65,75,vendor,0.0,True,True,False
+66,"rule dispatch, fastest source",0,0,0,4,75,75,vendor,0.0001,True,True,False
+66,"solver, cheapest source fixed",0,1,95,2,230,0,oem,0.0259,True,False,True
+66,"solver, fastest source fixed",0,0,0,1,65,75,vendor,0.0261,True,True,False
+66,StallBreaker (joint),0,0,0,1,65,75,vendor,0.0236,True,True,False
+67,"wait, cheapest source",0,1,185,0,245,0,oem,0.0,True,False,True
+67,"wait, fastest source",0,0,0,0,45,90,vendor,0.0,True,True,False
+67,"rule dispatch, fastest source",0,0,0,0,45,90,vendor,0.0,True,True,False
+67,"solver, cheapest source fixed",0,1,185,0,245,0,oem,0.0057,True,False,True
+67,"solver, fastest source fixed",0,0,0,0,45,90,vendor,0.0041,True,True,False
+67,StallBreaker (joint),0,0,0,0,45,90,vendor,0.003,True,True,False
+68,"wait, cheapest source",0,1,210,0,270,0,oem,0.0,True,False,True
+68,"wait, fastest source",0,1,30,0,90,60,vendor,0.0,True,True,False
+68,"rule dispatch, fastest source",0,1,30,0,90,60,vendor,0.0,True,True,False
+68,"solver, cheapest source fixed",0,1,210,0,270,0,oem,0.0337,True,False,True
+68,"solver, fastest source fixed",0,1,30,0,90,60,vendor,0.0066,True,True,False
+68,StallBreaker (joint),0,1,30,0,90,60,vendor,0.0059,True,True,False
+69,"wait, cheapest source",0,3,390,2,295,0,oem,0.0,True,False,True
+69,"wait, fastest source",0,0,0,0,50,115,vendor,0.0,True,True,False
+69,"rule dispatch, fastest source",0,0,0,2,50,115,vendor,0.0001,True,True,False
+69,"solver, cheapest source fixed",0,1,55,1,295,0,oem,0.0362,True,False,True
+69,"solver, fastest source fixed",0,0,0,0,50,115,vendor,0.0228,True,True,False
+69,StallBreaker (joint),0,0,0,1,140,15,sisterB,0.0256,True,False,False
+70,"wait, cheapest source",0,2,115,1,185,0,oem,0.0,True,False,True
+70,"wait, fastest source",0,0,0,0,50,15,sisterA,0.0,True,True,False
+70,"rule dispatch, fastest source",0,0,0,0,50,15,sisterA,0.0,True,True,False
+70,"solver, cheapest source fixed",0,1,65,0,185,0,oem,0.0182,True,False,True
+70,"solver, fastest source fixed",0,0,0,0,50,15,sisterA,0.0285,True,True,False
+70,StallBreaker (joint),0,0,0,0,50,15,sisterA,0.021,True,True,False
+71,"wait, cheapest source",0,2,325,1,215,0,oem,0.0,True,False,True
+71,"wait, fastest source",0,1,15,1,60,60,vendor,0.0,True,True,False
+71,"rule dispatch, fastest source",0,1,15,3,60,60,vendor,0.0,True,True,False
+71,"solver, cheapest source fixed",0,1,155,2,215,0,oem,0.0218,True,False,True
+71,"solver, fastest source fixed",0,1,15,1,60,60,vendor,0.0235,True,True,False
+71,StallBreaker (joint),0,1,15,1,60,60,vendor,0.0306,True,True,False
+72,"wait, cheapest source",0,1,190,0,290,0,oem,0.0,True,False,True
+72,"wait, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+72,"rule dispatch, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+72,"solver, cheapest source fixed",0,1,190,0,290,0,oem,0.0115,True,False,True
+72,"solver, fastest source fixed",0,0,0,0,45,15,sisterA,0.0124,True,True,False
+72,StallBreaker (joint),0,0,0,0,45,15,sisterA,0.0115,True,True,False
+73,"wait, cheapest source",0,2,90,1,185,0,oem,0.0,True,False,True
+73,"wait, fastest source",0,0,0,1,60,15,sisterA,0.0,True,True,False
+73,"rule dispatch, fastest source",0,0,0,2,60,15,sisterA,0.0,True,True,False
+73,"solver, cheapest source fixed",0,1,20,1,185,0,oem,0.0542,True,False,True
+73,"solver, fastest source fixed",0,0,0,1,60,15,sisterA,0.0264,True,True,False
+73,StallBreaker (joint),0,0,0,1,60,15,sisterA,0.026,True,True,False
+74,"wait, cheapest source",0,2,270,1,240,0,oem,0.0,True,False,True
+74,"wait, fastest source",0,1,15,1,45,60,vendor,0.0,True,True,False
+74,"rule dispatch, fastest source",0,0,0,5,75,60,vendor,0.0001,True,True,False
+74,"solver, cheapest source fixed",0,1,60,2,240,0,oem,0.0474,True,False,True
+74,"solver, fastest source fixed",0,0,0,2,120,60,vendor,0.035,True,True,False
+74,StallBreaker (joint),0,0,0,2,120,15,sisterB,0.0319,True,False,False
+75,"wait, cheapest source",0,1,85,0,185,0,oem,0.0,True,False,True
+75,"wait, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+75,"rule dispatch, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+75,"solver, cheapest source fixed",0,1,85,0,185,0,oem,0.0058,True,False,True
+75,"solver, fastest source fixed",0,0,0,0,45,15,sisterA,0.0072,True,True,False
+75,StallBreaker (joint),0,0,0,0,45,15,sisterA,0.0056,True,True,False
+76,"wait, cheapest source",0,1,170,0,275,0,oem,0.0,True,False,True
+76,"wait, fastest source",0,0,0,0,35,15,sisterA,0.0,True,True,False
+76,"rule dispatch, fastest source",0,0,0,0,35,15,sisterA,0.0,True,True,False
+76,"solver, cheapest source fixed",0,1,170,0,275,0,oem,0.0111,True,False,True
+76,"solver, fastest source fixed",0,0,0,0,35,15,sisterA,0.0096,True,True,False
+76,StallBreaker (joint),0,0,0,0,35,15,sisterA,0.011,True,True,False
+77,"wait, cheapest source",0,4,445,3,190,0,oem,0.0,True,False,True
+77,"wait, fastest source",0,3,60,3,80,100,vendor,0.0,True,True,False
+77,"rule dispatch, fastest source",0,0,0,7,80,100,vendor,0.0001,True,True,False
+77,"solver, cheapest source fixed",0,1,55,6,190,0,oem,0.0427,True,False,True
+77,"solver, fastest source fixed",0,0,0,3,110,100,vendor,0.0308,True,True,False
+77,StallBreaker (joint),0,0,0,3,120,15,sisterB,0.0335,True,False,False
+78,"wait, cheapest source",0,3,360,2,280,0,oem,0.0,True,False,True
+78,"wait, fastest source",0,1,5,2,80,70,vendor,0.0,True,True,False
+78,"rule dispatch, fastest source",0,1,5,4,80,70,vendor,0.0001,True,True,False
+78,"solver, cheapest source fixed",0,1,205,3,280,0,oem,0.0332,True,False,True
+78,"solver, fastest source fixed",0,1,5,2,80,70,vendor,0.0301,True,True,False
+78,StallBreaker (joint),0,1,5,2,80,70,vendor,0.0337,True,True,False
+79,"wait, cheapest source",0,1,215,0,290,0,oem,0.0,True,False,True
+79,"wait, fastest source",0,0,0,0,75,70,vendor,0.0,True,True,False
+79,"rule dispatch, fastest source",0,0,0,0,75,70,vendor,0.0,True,True,False
+79,"solver, cheapest source fixed",0,1,215,0,290,0,oem,0.011,True,False,True
+79,"solver, fastest source fixed",0,0,0,0,75,70,vendor,0.0321,True,True,False
+79,StallBreaker (joint),0,0,0,0,75,70,vendor,0.0142,True,True,False
+80,"wait, cheapest source",0,2,365,1,275,0,oem,0.0,True,False,True
+80,"wait, fastest source",0,0,0,1,30,15,sisterA,0.0,True,True,False
+80,"rule dispatch, fastest source",0,0,0,2,30,15,sisterA,0.0001,True,True,False
+80,"solver, cheapest source fixed",0,1,175,1,275,0,oem,0.0243,True,False,True
+80,"solver, fastest source fixed",0,0,0,1,30,15,sisterA,0.0252,True,True,False
+80,StallBreaker (joint),0,0,0,1,30,15,sisterA,0.0263,True,True,False
+81,"wait, cheapest source",0,1,100,0,295,0,oem,0.0,True,False,True
+81,"wait, fastest source",0,0,0,0,75,100,vendor,0.0,True,True,False
+81,"rule dispatch, fastest source",0,0,0,0,75,100,vendor,0.0,True,True,False
+81,"solver, cheapest source fixed",0,1,100,0,295,0,oem,0.0561,True,False,True
+81,"solver, fastest source fixed",0,0,0,0,75,100,vendor,0.0086,True,True,False
+81,StallBreaker (joint),0,0,0,0,105,15,sisterB,0.0106,True,False,False
+82,"wait, cheapest source",0,1,165,0,240,0,oem,0.0,True,False,True
+82,"wait, fastest source",0,0,0,0,75,95,vendor,0.0,True,True,False
+82,"rule dispatch, fastest source",0,0,0,0,75,95,vendor,0.0,True,True,False
+82,"solver, cheapest source fixed",0,1,165,0,240,0,oem,0.0186,True,False,True
+82,"solver, fastest source fixed",0,0,0,0,75,95,vendor,0.0107,True,True,False
+82,StallBreaker (joint),0,0,0,0,75,95,vendor,0.0063,True,True,False
+83,"wait, cheapest source",0,1,40,0,205,0,oem,0.0,True,False,True
+83,"wait, fastest source",0,0,0,0,75,120,vendor,0.0,True,True,False
+83,"rule dispatch, fastest source",0,0,0,0,75,120,vendor,0.0,True,True,False
+83,"solver, cheapest source fixed",0,1,40,0,205,0,oem,0.0053,True,False,True
+83,"solver, fastest source fixed",0,0,0,0,75,120,vendor,0.0042,True,True,False
+83,StallBreaker (joint),0,0,0,0,75,120,vendor,0.0061,True,True,False
+84,"wait, cheapest source",0,1,15,2,195,0,oem,0.0,True,False,True
+84,"wait, fastest source",0,0,0,1,50,80,vendor,0.0,True,True,False
+84,"rule dispatch, fastest source",0,0,0,3,50,80,vendor,0.0,True,True,False
+84,"solver, cheapest source fixed",0,1,15,1,195,0,oem,0.0242,True,False,True
+84,"solver, fastest source fixed",0,0,0,1,50,80,vendor,0.0252,True,True,False
+84,StallBreaker (joint),0,0,0,1,135,15,sisterB,0.0314,True,False,False
+85,"wait, cheapest source",0,1,50,0,240,0,oem,0.0,True,False,True
+85,"wait, fastest source",0,0,0,0,55,15,sisterA,0.0,True,True,False
+85,"rule dispatch, fastest source",0,0,0,0,55,15,sisterA,0.0,True,True,False
+85,"solver, cheapest source fixed",0,1,50,0,240,0,oem,0.0037,True,False,True
+85,"solver, fastest source fixed",0,0,0,0,55,15,sisterA,0.0063,True,True,False
+85,StallBreaker (joint),0,0,0,0,55,15,sisterA,0.0076,True,True,False
+86,"wait, cheapest source",0,1,160,0,295,0,oem,0.0,True,False,True
+86,"wait, fastest source",0,0,0,0,75,120,vendor,0.0,True,True,False
+86,"rule dispatch, fastest source",0,0,0,0,75,120,vendor,0.0,True,True,False
+86,"solver, cheapest source fixed",0,1,160,0,295,0,oem,0.0113,True,False,True
+86,"solver, fastest source fixed",0,0,0,0,75,120,vendor,0.0176,True,True,False
+86,StallBreaker (joint),0,0,0,0,120,15,sisterB,0.0229,True,False,False
+87,"wait, cheapest source",0,1,225,0,270,0,oem,0.0,True,False,True
+87,"wait, fastest source",0,0,0,0,40,15,sisterA,0.0,True,True,False
+87,"rule dispatch, fastest source",0,0,0,0,40,15,sisterA,0.0,True,True,False
+87,"solver, cheapest source fixed",0,1,225,0,270,0,oem,0.0489,True,False,True
+87,"solver, fastest source fixed",0,0,0,0,40,15,sisterA,0.0186,True,True,False
+87,StallBreaker (joint),0,0,0,0,40,15,sisterA,0.0175,True,True,False
+88,"wait, cheapest source",0,2,225,1,255,0,oem,0.0,True,False,True
+88,"wait, fastest source",0,0,0,1,80,100,vendor,0.0,True,True,False
+88,"rule dispatch, fastest source",0,0,0,3,80,100,vendor,0.0001,True,True,False
+88,"solver, cheapest source fixed",0,1,75,2,255,0,oem,0.0259,True,False,True
+88,"solver, fastest source fixed",0,0,0,1,80,100,vendor,0.0315,True,True,False
+88,StallBreaker (joint),0,0,0,1,80,100,vendor,0.0325,True,True,False
+89,"wait, cheapest source",0,3,360,2,230,0,oem,0.0,True,False,True
+89,"wait, fastest source",0,0,0,2,60,100,vendor,0.0,True,True,False
+89,"rule dispatch, fastest source",0,0,0,3,60,100,vendor,0.0,True,True,False
+89,"solver, cheapest source fixed",0,1,120,3,240,0,oem,0.0213,True,False,True
+89,"solver, fastest source fixed",0,0,0,2,60,100,vendor,0.016,True,True,False
+89,StallBreaker (joint),0,0,0,2,60,100,vendor,0.0169,True,True,False
+90,"wait, cheapest source",0,1,115,2,205,0,oem,0.0,True,False,True
+90,"wait, fastest source",0,0,0,1,45,60,vendor,0.0,True,True,False
+90,"rule dispatch, fastest source",0,0,0,2,45,60,vendor,0.0,True,True,False
+90,"solver, cheapest source fixed",0,0,0,2,205,0,oem,0.0244,True,False,True
+90,"solver, fastest source fixed",0,0,0,1,75,60,vendor,0.0426,True,True,False
+90,StallBreaker (joint),0,0,0,2,205,0,oem,0.0262,True,False,True
+91,"wait, cheapest source",0,1,95,1,210,0,oem,0.0,True,False,True
+91,"wait, fastest source",0,0,0,1,45,15,sisterA,0.0,True,True,False
+91,"rule dispatch, fastest source",0,0,0,1,45,15,sisterA,0.0,True,True,False
+91,"solver, cheapest source fixed",0,1,95,0,210,0,oem,0.019,True,False,True
+91,"solver, fastest source fixed",0,0,0,0,70,15,sisterA,0.018,True,True,False
+91,StallBreaker (joint),0,0,0,0,70,15,sisterA,0.0185,True,True,False
+92,"wait, cheapest source",0,1,20,2,245,0,oem,0.0,True,False,True
+92,"wait, fastest source",0,0,0,1,80,120,vendor,0.0,True,True,False
+92,"rule dispatch, fastest source",0,0,0,2,80,120,vendor,0.0,True,True,False
+92,"solver, cheapest source fixed",0,1,20,1,245,0,oem,0.0212,True,False,True
+92,"solver, fastest source fixed",0,0,0,1,80,120,vendor,0.0229,True,True,False
+92,StallBreaker (joint),0,0,0,1,105,15,sisterB,0.0271,True,False,False
+93,"wait, cheapest source",0,3,315,2,275,0,oem,0.0,True,False,True
+93,"wait, fastest source",0,0,0,2,50,95,vendor,0.0,True,True,False
+93,"rule dispatch, fastest source",0,0,0,2,50,95,vendor,0.0,True,True,False
+93,"solver, cheapest source fixed",0,1,125,2,275,0,oem,0.0149,True,False,True
+93,"solver, fastest source fixed",0,0,0,1,50,95,vendor,0.0212,True,True,False
+93,StallBreaker (joint),0,0,0,1,60,15,sisterA,0.0241,True,False,False
+94,"wait, cheapest source",0,2,180,1,180,0,oem,0.0,True,False,True
+94,"wait, fastest source",0,0,0,1,70,120,vendor,0.0,True,True,False
+94,"rule dispatch, fastest source",0,0,0,1,70,120,vendor,0.0001,True,True,False
+94,"solver, cheapest source fixed",0,1,105,4,180,0,oem,0.0252,True,False,True
+94,"solver, fastest source fixed",0,0,0,1,70,120,vendor,0.0239,True,True,False
+94,StallBreaker (joint),0,0,0,1,70,120,vendor,0.0239,True,True,False
+95,"wait, cheapest source",0,1,195,0,285,0,oem,0.0,True,False,True
+95,"wait, fastest source",0,0,0,0,55,110,vendor,0.0,True,True,False
+95,"rule dispatch, fastest source",0,0,0,0,55,110,vendor,0.0,True,True,False
+95,"solver, cheapest source fixed",0,1,195,0,285,0,oem,0.0083,True,False,True
+95,"solver, fastest source fixed",0,0,0,0,55,110,vendor,0.0071,True,True,False
+95,StallBreaker (joint),0,0,0,0,85,15,sisterB,0.0076,True,False,False
+96,"wait, cheapest source",0,2,330,1,270,0,oem,0.0,True,False,True
+96,"wait, fastest source",0,0,0,1,50,15,sisterA,0.0,True,True,False
+96,"rule dispatch, fastest source",0,0,0,1,50,15,sisterA,0.0,True,True,False
+96,"solver, cheapest source fixed",0,1,120,2,270,0,oem,0.0212,True,False,True
+96,"solver, fastest source fixed",0,0,0,1,50,15,sisterA,0.0204,True,True,False
+96,StallBreaker (joint),0,0,0,1,50,15,sisterA,0.0158,True,True,False
+97,"wait, cheapest source",0,3,315,2,215,0,oem,0.0,True,False,True
+97,"wait, fastest source",0,0,0,2,45,65,vendor,0.0,True,True,False
+97,"rule dispatch, fastest source",0,0,0,2,45,65,vendor,0.0,True,True,False
+97,"solver, cheapest source fixed",0,1,80,2,215,0,oem,0.025,True,False,True
+97,"solver, fastest source fixed",0,0,0,1,45,65,vendor,0.0235,True,True,False
+97,StallBreaker (joint),0,0,0,1,45,65,vendor,0.0288,True,True,False
+98,"wait, cheapest source",0,2,220,1,245,0,oem,0.0,True,False,True
+98,"wait, fastest source",0,0,0,1,85,75,vendor,0.0,True,True,False
+98,"rule dispatch, fastest source",0,0,0,4,120,75,vendor,0.0001,True,True,False
+98,"solver, cheapest source fixed",0,1,125,1,245,0,oem,0.0306,True,False,True
+98,"solver, fastest source fixed",0,0,0,1,85,75,vendor,0.0218,True,True,False
+98,StallBreaker (joint),0,0,0,1,85,75,vendor,0.0219,True,True,False
+99,"wait, cheapest source",0,4,530,3,275,0,oem,0.0,True,False,True
+99,"wait, fastest source",0,1,20,3,50,100,vendor,0.0,True,True,False
+99,"rule dispatch, fastest source",0,1,30,3,50,100,vendor,0.0001,True,True,False
+99,"solver, cheapest source fixed",0,1,185,1,275,0,oem,0.024,True,False,True
+99,"solver, fastest source fixed",0,0,0,2,50,100,vendor,0.0262,True,True,False
+99,StallBreaker (joint),0,0,0,2,50,100,vendor,0.0267,True,True,False
+100,"wait, cheapest source",0,4,605,3,270,0,oem,0.0,True,False,True
+100,"wait, fastest source",0,1,5,3,90,60,vendor,0.0,True,True,False
+100,"rule dispatch, fastest source",0,0,0,4,90,60,vendor,0.0001,True,True,False
+100,"solver, cheapest source fixed",0,1,140,0,270,0,oem,0.0203,True,False,True
+100,"solver, fastest source fixed",0,0,0,1,90,60,vendor,0.0316,True,True,False
+100,StallBreaker (joint),0,0,0,1,90,60,vendor,0.0228,True,True,False
+101,"wait, cheapest source",0,1,240,0,240,0,oem,0.0,True,False,True
+101,"wait, fastest source",0,1,60,0,60,15,sisterA,0.0,True,True,False
+101,"rule dispatch, fastest source",0,1,60,0,60,15,sisterA,0.0,True,True,False
+101,"solver, cheapest source fixed",0,1,240,0,240,0,oem,0.0098,True,False,True
+101,"solver, fastest source fixed",0,1,60,0,60,15,sisterA,0.0116,True,True,False
+101,StallBreaker (joint),0,1,60,0,60,15,sisterA,0.0116,True,True,False
+102,"wait, cheapest source",0,1,150,0,240,0,oem,0.0001,True,False,True
+102,"wait, fastest source",0,0,0,0,60,65,vendor,0.0,True,True,False
+102,"rule dispatch, fastest source",0,0,0,2,60,65,vendor,0.0,True,True,False
+102,"solver, cheapest source fixed",0,1,150,0,240,0,oem,0.0229,True,False,True
+102,"solver, fastest source fixed",0,0,0,0,60,65,vendor,0.0165,True,True,False
+102,StallBreaker (joint),0,0,0,0,60,65,vendor,0.0176,True,True,False
+103,"wait, cheapest source",0,1,110,0,260,0,oem,0.0,True,False,True
+103,"wait, fastest source",0,0,0,0,35,15,sisterA,0.0,True,True,False
+103,"rule dispatch, fastest source",0,0,0,0,35,15,sisterA,0.0,True,True,False
+103,"solver, cheapest source fixed",0,1,110,0,260,0,oem,0.0086,True,False,True
+103,"solver, fastest source fixed",0,0,0,0,35,15,sisterA,0.0107,True,True,False
+103,StallBreaker (joint),0,0,0,0,35,15,sisterA,0.01,True,True,False
+104,"wait, cheapest source",0,2,320,1,265,0,oem,0.0,True,False,True
+104,"wait, fastest source",0,0,0,1,50,120,vendor,0.0,True,True,False
+104,"rule dispatch, fastest source",0,0,0,1,50,120,vendor,0.0001,True,True,False
+104,"solver, cheapest source fixed",0,1,160,1,265,0,oem,0.0346,True,False,True
+104,"solver, fastest source fixed",0,0,0,1,50,120,vendor,0.0293,True,True,False
+104,StallBreaker (joint),0,0,0,1,60,15,sisterA,0.0407,True,False,False
+105,"wait, cheapest source",0,1,120,1,240,0,oem,0.0,True,False,True
+105,"wait, fastest source",0,0,0,1,55,110,vendor,0.0,True,True,False
+105,"rule dispatch, fastest source",0,0,0,1,55,110,vendor,0.0001,True,True,False
+105,"solver, cheapest source fixed",0,1,120,1,240,0,oem,0.0257,True,False,True
+105,"solver, fastest source fixed",0,0,0,1,90,110,vendor,0.0237,True,True,False
+105,StallBreaker (joint),0,0,0,1,90,110,vendor,0.0552,True,True,False
+106,"wait, cheapest source",0,1,160,0,295,0,oem,0.0,True,False,True
+106,"wait, fastest source",0,0,0,0,50,85,vendor,0.0,True,True,False
+106,"rule dispatch, fastest source",0,0,0,0,50,85,vendor,0.0,True,True,False
+106,"solver, cheapest source fixed",0,1,160,0,295,0,oem,0.0393,True,False,True
+106,"solver, fastest source fixed",0,0,0,0,50,85,vendor,0.0149,True,True,False
+106,StallBreaker (joint),0,0,0,0,55,15,sisterA,0.0112,True,False,False
+107,"wait, cheapest source",0,5,215,6,225,0,oem,0.0,True,False,True
+107,"wait, fastest source",0,0,0,2,45,15,sisterA,0.0,True,True,False
+107,"rule dispatch, fastest source",0,0,0,1,45,15,sisterA,0.0001,True,True,False
+107,"solver, cheapest source fixed",0,0,0,1,225,0,oem,0.0178,True,False,True
+107,"solver, fastest source fixed",0,0,0,1,45,15,sisterA,0.0198,True,True,False
+107,StallBreaker (joint),0,0,0,1,225,0,oem,0.0217,True,False,True
+108,"wait, cheapest source",0,2,180,1,300,0,oem,0.0,True,False,True
+108,"wait, fastest source",0,0,0,0,45,75,vendor,0.0,True,True,False
+108,"rule dispatch, fastest source",0,0,0,0,45,75,vendor,0.0,True,True,False
+108,"solver, cheapest source fixed",0,1,120,0,300,0,oem,0.0088,True,False,True
+108,"solver, fastest source fixed",0,0,0,0,45,75,vendor,0.0094,True,True,False
+108,StallBreaker (joint),0,0,0,0,45,75,vendor,0.0089,True,True,False
+109,"wait, cheapest source",0,1,165,0,240,0,oem,0.0,True,False,True
+109,"wait, fastest source",0,0,0,0,45,70,vendor,0.0,True,True,False
+109,"rule dispatch, fastest source",0,0,0,0,45,70,vendor,0.0,True,True,False
+109,"solver, cheapest source fixed",0,1,165,0,240,0,oem,0.0037,True,False,True
+109,"solver, fastest source fixed",0,0,0,0,45,70,vendor,0.0063,True,True,False
+109,StallBreaker (joint),0,0,0,0,45,70,vendor,0.0052,True,True,False
+110,"wait, cheapest source",0,0,0,0,190,0,oem,0.0,True,False,True
+110,"wait, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+110,"rule dispatch, fastest source",0,0,0,2,45,15,sisterA,0.0,True,True,False
+110,"solver, cheapest source fixed",0,0,0,0,190,0,oem,0.0149,True,False,True
+110,"solver, fastest source fixed",0,0,0,0,45,15,sisterA,0.0147,True,True,False
+110,StallBreaker (joint),0,0,0,0,190,0,oem,0.0171,True,False,True
+111,"wait, cheapest source",0,1,105,0,180,0,oem,0.0,True,False,True
+111,"wait, fastest source",0,0,0,0,40,15,sisterA,0.0,True,True,False
+111,"rule dispatch, fastest source",0,0,0,0,40,15,sisterA,0.0,True,True,False
+111,"solver, cheapest source fixed",0,1,105,0,180,0,oem,0.0455,True,False,True
+111,"solver, fastest source fixed",0,0,0,0,40,15,sisterA,0.0198,True,True,False
+111,StallBreaker (joint),0,0,0,0,40,15,sisterA,0.0114,True,True,False
+112,"wait, cheapest source",0,1,100,0,220,0,oem,0.0,True,False,True
+112,"wait, fastest source",0,0,0,0,45,120,vendor,0.0,True,True,False
+112,"rule dispatch, fastest source",0,0,0,0,45,120,vendor,0.0,True,True,False
+112,"solver, cheapest source fixed",0,1,100,0,220,0,oem,0.0301,True,False,True
+112,"solver, fastest source fixed",0,0,0,0,45,120,vendor,0.0099,True,True,False
+112,StallBreaker (joint),0,0,0,0,95,15,sisterB,0.0097,True,False,False
+113,"wait, cheapest source",0,1,100,1,250,0,oem,0.0,True,False,True
+113,"wait, fastest source",0,0,0,0,60,75,vendor,0.0,True,True,False
+113,"rule dispatch, fastest source",0,0,0,0,60,75,vendor,0.0,True,True,False
+113,"solver, cheapest source fixed",0,1,100,1,250,0,oem,0.0132,True,False,True
+113,"solver, fastest source fixed",0,0,0,0,60,75,vendor,0.0133,True,True,False
+113,StallBreaker (joint),0,0,0,0,60,75,vendor,0.0123,True,True,False
+114,"wait, cheapest source",0,3,285,2,285,0,oem,0.0,True,False,True
+114,"wait, fastest source",0,0,0,2,50,65,vendor,0.0,True,True,False
+114,"rule dispatch, fastest source",0,0,0,2,50,65,vendor,0.0,True,True,False
+114,"solver, cheapest source fixed",0,1,90,1,285,0,oem,0.0151,True,False,True
+114,"solver, fastest source fixed",0,0,0,1,120,65,vendor,0.0168,True,True,False
+114,StallBreaker (joint),0,0,0,1,120,65,vendor,0.0164,True,True,False
+115,"wait, cheapest source",0,3,385,2,220,0,oem,0.0,True,False,True
+115,"wait, fastest source",0,1,25,2,65,110,vendor,0.0,True,True,False
+115,"rule dispatch, fastest source",0,1,25,3,65,110,vendor,0.0,True,True,False
+115,"solver, cheapest source fixed",0,1,180,3,220,0,oem,0.0157,True,False,True
+115,"solver, fastest source fixed",0,1,25,2,65,110,vendor,0.0159,True,True,False
+115,StallBreaker (joint),0,1,25,2,65,110,vendor,0.015,True,True,False
+116,"wait, cheapest source",0,1,130,0,220,0,oem,0.0,True,False,True
+116,"wait, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+116,"rule dispatch, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+116,"solver, cheapest source fixed",0,1,130,0,220,0,oem,0.0113,True,False,True
+116,"solver, fastest source fixed",0,0,0,0,45,15,sisterA,0.009,True,True,False
+116,StallBreaker (joint),0,0,0,0,45,15,sisterA,0.0096,True,True,False
+117,"wait, cheapest source",0,1,50,0,185,0,oem,0.0,True,False,True
+117,"wait, fastest source",0,0,0,0,30,15,sisterA,0.0,True,True,False
+117,"rule dispatch, fastest source",0,0,0,0,30,15,sisterA,0.0,True,True,False
+117,"solver, cheapest source fixed",0,1,50,0,185,0,oem,0.0123,True,False,True
+117,"solver, fastest source fixed",0,0,0,0,30,15,sisterA,0.0134,True,True,False
+117,StallBreaker (joint),0,0,0,0,30,15,sisterA,0.0117,True,True,False
+118,"wait, cheapest source",0,1,210,0,210,0,oem,0.0,True,False,True
+118,"wait, fastest source",0,1,80,0,80,105,vendor,0.0,True,True,False
+118,"rule dispatch, fastest source",0,1,80,0,80,105,vendor,0.0,True,True,False
+118,"solver, cheapest source fixed",0,1,210,0,210,0,oem,0.0033,True,False,True
+118,"solver, fastest source fixed",0,1,80,0,80,105,vendor,0.0019,True,True,False
+118,StallBreaker (joint),0,1,80,0,80,105,vendor,0.0072,True,True,False
+119,"wait, cheapest source",0,1,100,0,255,0,oem,0.0,True,False,True
+119,"wait, fastest source",0,0,0,0,60,75,vendor,0.0,True,True,False
+119,"rule dispatch, fastest source",0,0,0,0,60,75,vendor,0.0,True,True,False
+119,"solver, cheapest source fixed",0,1,100,0,255,0,oem,0.002,True,False,True
+119,"solver, fastest source fixed",0,0,0,0,60,75,vendor,0.0034,True,True,False
+119,StallBreaker (joint),0,0,0,0,60,75,vendor,0.0036,True,True,False
+120,"wait, cheapest source",0,1,230,0,290,0,oem,0.0,True,False,True
+120,"wait, fastest source",0,1,15,0,75,105,vendor,0.0,True,True,False
+120,"rule dispatch, fastest source",0,1,15,0,75,105,vendor,0.0,True,True,False
+120,"solver, cheapest source fixed",0,1,230,0,290,0,oem,0.0046,True,False,True
+120,"solver, fastest source fixed",0,1,15,0,75,105,vendor,0.0056,True,True,False
+120,StallBreaker (joint),0,1,15,0,75,105,vendor,0.0034,True,True,False
+121,"wait, cheapest source",0,2,335,1,250,0,oem,0.0,True,False,True
+121,"wait, fastest source",0,0,0,1,40,15,sisterA,0.0,True,True,False
+121,"rule dispatch, fastest source",0,0,0,1,40,15,sisterA,0.0,True,True,False
+121,"solver, cheapest source fixed",0,1,205,1,250,0,oem,0.0164,True,False,True
+121,"solver, fastest source fixed",0,0,0,1,40,15,sisterA,0.0082,True,True,False
+121,StallBreaker (joint),0,0,0,1,40,15,sisterA,0.0087,True,True,False
+122,"wait, cheapest source",0,1,90,0,240,0,oem,0.0,True,False,True
+122,"wait, fastest source",0,0,0,0,45,105,vendor,0.0,True,True,False
+122,"rule dispatch, fastest source",0,0,0,0,45,105,vendor,0.0,True,True,False
+122,"solver, cheapest source fixed",0,1,90,0,240,0,oem,0.009,True,False,True
+122,"solver, fastest source fixed",0,0,0,0,45,105,vendor,0.0109,True,True,False
+122,StallBreaker (joint),0,0,0,0,105,15,sisterB,0.0085,True,False,False
+123,"wait, cheapest source",0,1,185,0,255,0,oem,0.0,True,False,True
+123,"wait, fastest source",0,0,0,0,60,15,sisterA,0.0,True,True,False
+123,"rule dispatch, fastest source",0,0,0,0,60,15,sisterA,0.0,True,True,False
+123,"solver, cheapest source fixed",0,1,185,0,255,0,oem,0.0944,True,False,True
+123,"solver, fastest source fixed",0,0,0,0,60,15,sisterA,0.0276,True,True,False
+123,StallBreaker (joint),0,0,0,0,60,15,sisterA,0.0103,True,True,False
+124,"wait, cheapest source",0,2,110,3,190,0,oem,0.0,True,False,True
+124,"wait, fastest source",0,0,0,3,50,120,vendor,0.0,True,True,False
+124,"rule dispatch, fastest source",0,0,0,3,50,120,vendor,0.0017,True,True,False
+124,"solver, cheapest source fixed",0,1,10,2,190,0,oem,0.0217,True,False,True
+124,"solver, fastest source fixed",0,0,0,1,50,120,vendor,0.0177,True,True,False
+124,StallBreaker (joint),0,0,0,1,50,120,vendor,0.0177,True,True,False
+125,"wait, cheapest source",0,1,10,0,190,0,oem,0.0,True,False,True
+125,"wait, fastest source",0,0,0,0,75,60,vendor,0.0,True,True,False
+125,"rule dispatch, fastest source",0,0,0,0,75,60,vendor,0.0,True,True,False
+125,"solver, cheapest source fixed",0,1,10,0,190,0,oem,0.0021,True,False,True
+125,"solver, fastest source fixed",0,0,0,0,75,60,vendor,0.0016,True,True,False
+125,StallBreaker (joint),0,0,0,0,75,60,vendor,0.0047,True,True,False
+126,"wait, cheapest source",0,1,135,0,265,0,oem,0.0,True,False,True
+126,"wait, fastest source",0,0,0,0,75,75,vendor,0.0,True,True,False
+126,"rule dispatch, fastest source",0,0,0,0,75,75,vendor,0.0,True,True,False
+126,"solver, cheapest source fixed",0,1,135,0,265,0,oem,0.0031,True,False,True
+126,"solver, fastest source fixed",0,0,0,0,75,75,vendor,0.0017,True,True,False
+126,StallBreaker (joint),0,0,0,0,80,15,sisterB,0.0017,True,False,False
+127,"wait, cheapest source",0,2,350,1,295,0,oem,0.0,True,False,True
+127,"wait, fastest source",0,0,0,1,85,85,vendor,0.0,True,True,False
+127,"rule dispatch, fastest source",0,0,0,2,85,85,vendor,0.0,True,True,False
+127,"solver, cheapest source fixed",0,1,145,1,295,0,oem,0.0122,True,False,True
+127,"solver, fastest source fixed",0,0,0,1,85,85,vendor,0.0118,True,True,False
+127,StallBreaker (joint),0,0,0,1,135,15,sisterB,0.013,True,False,False
+128,"wait, cheapest source",0,1,55,0,190,0,oem,0.0,True,False,True
+128,"wait, fastest source",0,0,0,0,45,105,vendor,0.0,True,True,False
+128,"rule dispatch, fastest source",0,0,0,0,45,105,vendor,0.0,True,True,False
+128,"solver, cheapest source fixed",0,1,55,0,190,0,oem,0.0077,True,False,True
+128,"solver, fastest source fixed",0,0,0,0,45,105,vendor,0.0088,True,True,False
+128,StallBreaker (joint),0,0,0,0,90,15,sisterB,0.0093,True,False,False
+129,"wait, cheapest source",0,2,190,1,230,0,oem,0.0,True,False,True
+129,"wait, fastest source",0,1,45,1,90,15,sisterB,0.0,True,True,False
+129,"rule dispatch, fastest source",0,1,35,5,95,15,sisterB,0.0,True,True,False
+129,"solver, cheapest source fixed",0,2,115,4,230,0,oem,0.0202,True,False,True
+129,"solver, fastest source fixed",0,1,35,5,95,15,sisterB,0.019,True,True,False
+129,StallBreaker (joint),0,1,35,5,95,15,sisterB,0.0191,True,True,False
+130,"wait, cheapest source",0,2,70,1,200,0,oem,0.0,True,False,True
+130,"wait, fastest source",0,0,0,1,85,120,vendor,0.0,True,True,False
+130,"rule dispatch, fastest source",0,1,45,1,180,120,vendor,0.0,True,True,False
+130,"solver, cheapest source fixed",0,1,65,1,200,0,oem,0.0101,True,False,True
+130,"solver, fastest source fixed",0,0,0,1,85,120,vendor,0.0098,True,True,False
+130,StallBreaker (joint),0,0,0,1,130,15,sisterB,0.0129,True,False,False
+131,"wait, cheapest source",0,1,110,0,275,0,oem,0.0,True,False,True
+131,"wait, fastest source",0,0,0,0,55,65,vendor,0.0,True,True,False
+131,"rule dispatch, fastest source",0,0,0,0,55,65,vendor,0.0,True,True,False
+131,"solver, cheapest source fixed",0,1,110,0,275,0,oem,0.0107,True,False,True
+131,"solver, fastest source fixed",0,0,0,0,55,65,vendor,0.0071,True,True,False
+131,StallBreaker (joint),0,0,0,0,140,15,sisterB,0.0076,True,False,False
+132,"wait, cheapest source",0,3,165,2,200,0,oem,0.0,True,False,True
+132,"wait, fastest source",0,0,0,2,85,85,vendor,0.0001,True,True,False
+132,"rule dispatch, fastest source",0,0,0,6,85,85,vendor,0.0017,True,True,False
+132,"solver, cheapest source fixed",0,1,80,3,200,0,oem,0.0346,True,False,True
+132,"solver, fastest source fixed",0,0,0,2,85,85,vendor,0.036,True,True,False
+132,StallBreaker (joint),0,0,0,2,85,85,vendor,0.0332,True,True,False
+133,"wait, cheapest source",0,1,55,0,190,0,oem,0.0,True,False,True
+133,"wait, fastest source",0,0,0,0,70,65,vendor,0.0,True,True,False
+133,"rule dispatch, fastest source",0,0,0,0,70,65,vendor,0.0,True,True,False
+133,"solver, cheapest source fixed",0,1,55,0,190,0,oem,0.0502,True,False,True
+133,"solver, fastest source fixed",0,0,0,0,70,65,vendor,0.0506,True,True,False
+133,StallBreaker (joint),0,0,0,0,85,15,sisterB,0.0148,True,False,False
+134,"wait, cheapest source",0,2,310,1,295,0,oem,0.0001,True,False,True
+134,"wait, fastest source",0,1,5,1,65,110,vendor,0.0,True,True,False
+134,"rule dispatch, fastest source",0,1,5,1,65,110,vendor,0.0001,True,True,False
+134,"solver, cheapest source fixed",0,1,235,1,295,0,oem,0.0171,True,False,True
+134,"solver, fastest source fixed",0,1,5,1,65,110,vendor,0.0136,True,True,False
+134,StallBreaker (joint),0,1,5,1,65,110,vendor,0.0158,True,True,False
+135,"wait, cheapest source",0,2,255,1,255,0,oem,0.0,True,False,True
+135,"wait, fastest source",0,1,30,1,90,90,vendor,0.0,True,True,False
+135,"rule dispatch, fastest source",0,0,0,2,90,90,vendor,0.0,True,True,False
+135,"solver, cheapest source fixed",0,1,60,1,255,0,oem,0.0123,True,False,True
+135,"solver, fastest source fixed",0,0,0,1,90,90,vendor,0.0113,True,True,False
+135,StallBreaker (joint),0,0,0,1,135,15,sisterB,0.0132,True,False,False
+136,"wait, cheapest source",0,1,160,0,280,0,oem,0.0,True,False,True
+136,"wait, fastest source",0,0,0,0,40,15,sisterA,0.0,True,True,False
+136,"rule dispatch, fastest source",0,0,0,0,40,15,sisterA,0.0,True,True,False
+136,"solver, cheapest source fixed",0,1,160,0,280,0,oem,0.0105,True,False,True
+136,"solver, fastest source fixed",0,0,0,0,40,15,sisterA,0.0096,True,True,False
+136,StallBreaker (joint),0,0,0,0,40,15,sisterA,0.0096,True,True,False
+137,"wait, cheapest source",0,4,270,3,275,0,oem,0.0,True,False,True
+137,"wait, fastest source",0,0,0,2,55,15,sisterA,0.0,True,True,False
+137,"rule dispatch, fastest source",0,0,0,3,55,15,sisterA,0.0001,True,True,False
+137,"solver, cheapest source fixed",0,1,120,2,275,0,oem,0.0194,True,False,True
+137,"solver, fastest source fixed",0,0,0,1,55,15,sisterA,0.0186,True,True,False
+137,StallBreaker (joint),0,0,0,1,55,15,sisterA,0.018,True,True,False
+138,"wait, cheapest source",0,1,275,0,290,0,oem,0.0,True,False,True
+138,"wait, fastest source",0,1,60,0,75,115,vendor,0.0,True,True,False
+138,"rule dispatch, fastest source",0,1,60,0,75,115,vendor,0.0,True,True,False
+138,"solver, cheapest source fixed",0,1,275,0,290,0,oem,0.0044,True,False,True
+138,"solver, fastest source fixed",0,1,60,0,75,115,vendor,0.0061,True,True,False
+138,StallBreaker (joint),0,1,60,0,75,115,vendor,0.0059,True,True,False
+139,"wait, cheapest source",0,5,540,4,280,0,oem,0.0,True,False,True
+139,"wait, fastest source",0,0,0,3,50,15,sisterA,0.0,True,True,False
+139,"rule dispatch, fastest source",0,0,0,4,50,15,sisterA,0.0001,True,True,False
+139,"solver, cheapest source fixed",0,1,70,2,280,0,oem,0.0189,True,False,True
+139,"solver, fastest source fixed",0,0,0,2,50,15,sisterA,0.0212,True,True,False
+139,StallBreaker (joint),0,0,0,2,50,15,sisterA,0.0217,True,True,False
+140,"wait, cheapest source",0,1,95,0,215,0,oem,0.0,True,False,True
+140,"wait, fastest source",0,0,0,0,80,120,vendor,0.0,True,True,False
+140,"rule dispatch, fastest source",0,0,0,0,80,120,vendor,0.0,True,True,False
+140,"solver, cheapest source fixed",0,1,95,0,215,0,oem,0.011,True,False,True
+140,"solver, fastest source fixed",0,0,0,0,80,120,vendor,0.0104,True,True,False
+140,StallBreaker (joint),0,0,0,0,80,120,vendor,0.0096,True,True,False
+141,"wait, cheapest source",0,1,125,0,275,0,oem,0.0,True,False,True
+141,"wait, fastest source",0,0,0,0,70,120,vendor,0.0,True,True,False
+141,"rule dispatch, fastest source",0,0,0,0,70,120,vendor,0.0,True,True,False
+141,"solver, cheapest source fixed",0,1,125,0,275,0,oem,0.0506,True,False,True
+141,"solver, fastest source fixed",0,0,0,0,70,120,vendor,0.0224,True,True,False
+141,StallBreaker (joint),0,0,0,0,70,120,vendor,0.0221,True,True,False
+142,"wait, cheapest source",0,0,0,0,225,0,oem,0.0,True,False,True
+142,"wait, fastest source",0,0,0,0,70,115,vendor,0.0,True,True,False
+142,"rule dispatch, fastest source",0,0,0,0,70,115,vendor,0.0,True,True,False
+142,"solver, cheapest source fixed",0,0,0,0,225,0,oem,0.0046,True,False,True
+142,"solver, fastest source fixed",0,0,0,0,70,115,vendor,0.0033,True,True,False
+142,StallBreaker (joint),0,0,0,0,225,0,oem,0.0021,True,False,True
+143,"wait, cheapest source",0,2,170,1,220,0,oem,0.0,True,False,True
+143,"wait, fastest source",0,0,0,1,60,120,vendor,0.0,True,True,False
+143,"rule dispatch, fastest source",0,0,0,1,60,120,vendor,0.0,True,True,False
+143,"solver, cheapest source fixed",0,1,85,1,220,0,oem,0.0151,True,False,True
+143,"solver, fastest source fixed",0,0,0,1,60,120,vendor,0.0162,True,True,False
+143,StallBreaker (joint),0,0,0,1,105,15,sisterB,0.0157,True,False,False
+144,"wait, cheapest source",0,1,45,0,195,0,oem,0.0,True,False,True
+144,"wait, fastest source",0,0,0,0,65,90,vendor,0.0,True,True,False
+144,"rule dispatch, fastest source",0,0,0,0,65,90,vendor,0.0,True,True,False
+144,"solver, cheapest source fixed",0,1,45,0,195,0,oem,0.0033,True,False,True
+144,"solver, fastest source fixed",0,0,0,0,65,90,vendor,0.0036,True,True,False
+144,StallBreaker (joint),0,0,0,0,65,90,vendor,0.0036,True,True,False
+145,"wait, cheapest source",0,1,105,0,225,0,oem,0.0,True,False,True
+145,"wait, fastest source",0,0,0,0,80,90,vendor,0.0,True,True,False
+145,"rule dispatch, fastest source",0,0,0,0,80,90,vendor,0.0,True,True,False
+145,"solver, cheapest source fixed",0,1,105,0,225,0,oem,0.0118,True,False,True
+145,"solver, fastest source fixed",0,0,0,0,80,90,vendor,0.0078,True,True,False
+145,StallBreaker (joint),0,0,0,0,80,90,vendor,0.0075,True,True,False
+146,"wait, cheapest source",1,2,155,0,230,0,oem,0.0,True,False,True
+146,"wait, fastest source",1,1,15,0,45,15,sisterA,0.0,True,True,False
+146,"rule dispatch, fastest source",1,1,15,0,45,15,sisterA,0.0,True,True,False
+146,"solver, cheapest source fixed",1,1,140,2,230,0,oem,0.0122,True,False,True
+146,"solver, fastest source fixed",1,0,0,2,90,15,sisterA,0.0091,True,True,False
+146,StallBreaker (joint),1,0,0,2,90,15,sisterA,0.009,True,True,False
+147,"wait, cheapest source",0,1,75,0,270,0,oem,0.0,True,False,True
+147,"wait, fastest source",0,0,0,0,60,95,vendor,0.0,True,True,False
+147,"rule dispatch, fastest source",0,0,0,0,60,95,vendor,0.0,True,True,False
+147,"solver, cheapest source fixed",0,1,75,0,270,0,oem,0.007,True,False,True
+147,"solver, fastest source fixed",0,0,0,0,60,95,vendor,0.0084,True,True,False
+147,StallBreaker (joint),0,0,0,0,95,15,sisterB,0.0101,True,False,False
+148,"wait, cheapest source",0,4,730,3,270,0,oem,0.0,True,False,True
+148,"wait, fastest source",0,1,25,3,70,100,vendor,0.0,True,True,False
+148,"rule dispatch, fastest source",0,0,0,3,70,100,vendor,0.0001,True,True,False
+148,"solver, cheapest source fixed",0,1,150,2,270,0,oem,0.0152,True,False,True
+148,"solver, fastest source fixed",0,0,0,1,70,100,vendor,0.0165,True,True,False
+148,StallBreaker (joint),0,0,0,2,120,15,sisterB,0.017,True,False,False
+149,"wait, cheapest source",0,2,285,1,285,0,oem,0.0,True,False,True
+149,"wait, fastest source",0,0,0,1,50,15,sisterA,0.0,True,True,False
+149,"rule dispatch, fastest source",0,0,0,1,50,15,sisterA,0.0,True,True,False
+149,"solver, cheapest source fixed",0,1,120,1,285,0,oem,0.0118,True,False,True
+149,"solver, fastest source fixed",0,0,0,1,50,15,sisterA,0.0135,True,True,False
+149,StallBreaker (joint),0,0,0,1,50,15,sisterA,0.0143,True,True,False
+150,"wait, cheapest source",0,4,215,3,300,0,oem,0.0,True,False,True
+150,"wait, fastest source",0,0,0,2,80,15,sisterB,0.0,True,True,False
+150,"rule dispatch, fastest source",0,0,0,2,80,15,sisterB,0.0,True,True,False
+150,"solver, cheapest source fixed",0,1,100,2,300,0,oem,0.0169,True,False,True
+150,"solver, fastest source fixed",0,0,0,1,80,15,sisterB,0.0159,True,True,False
+150,StallBreaker (joint),0,0,0,1,80,15,sisterB,0.0165,True,True,False
+151,"wait, cheapest source",0,1,50,0,230,0,oem,0.0,True,False,True
+151,"wait, fastest source",0,0,0,0,80,105,vendor,0.0,True,True,False
+151,"rule dispatch, fastest source",0,0,0,0,80,105,vendor,0.0,True,True,False
+151,"solver, cheapest source fixed",0,1,50,0,230,0,oem,0.008,True,False,True
+151,"solver, fastest source fixed",0,0,0,0,80,105,vendor,0.0041,True,True,False
+151,StallBreaker (joint),0,0,0,0,85,15,sisterB,0.0067,True,False,False
+152,"wait, cheapest source",0,1,90,0,240,0,oem,0.0,True,False,True
+152,"wait, fastest source",0,0,0,0,50,65,vendor,0.0,True,True,False
+152,"rule dispatch, fastest source",0,0,0,0,50,65,vendor,0.0,True,True,False
+152,"solver, cheapest source fixed",0,1,90,0,240,0,oem,0.0088,True,False,True
+152,"solver, fastest source fixed",0,0,0,0,50,65,vendor,0.0091,True,True,False
+152,StallBreaker (joint),0,0,0,0,50,65,vendor,0.008,True,True,False
+153,"wait, cheapest source",0,2,255,1,270,0,oem,0.0,True,False,True
+153,"wait, fastest source",0,0,0,1,55,110,vendor,0.0,True,True,False
+153,"rule dispatch, fastest source",0,0,0,1,55,110,vendor,0.0,True,True,False
+153,"solver, cheapest source fixed",0,1,210,1,270,0,oem,0.0101,True,False,True
+153,"solver, fastest source fixed",0,0,0,1,55,110,vendor,0.0101,True,True,False
+153,StallBreaker (joint),0,0,0,1,55,110,vendor,0.0086,True,True,False
+154,"wait, cheapest source",0,2,100,1,220,0,oem,0.0,True,False,True
+154,"wait, fastest source",0,0,0,1,55,95,vendor,0.0,True,True,False
+154,"rule dispatch, fastest source",0,0,0,1,55,95,vendor,0.0,True,True,False
+154,"solver, cheapest source fixed",0,1,10,1,220,0,oem,0.0122,True,False,True
+154,"solver, fastest source fixed",0,0,0,1,55,95,vendor,0.0141,True,True,False
+154,StallBreaker (joint),0,0,0,1,120,15,sisterB,0.0129,True,False,False
+155,"wait, cheapest source",0,1,165,0,225,0,oem,0.0,True,False,True
+155,"wait, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+155,"rule dispatch, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+155,"solver, cheapest source fixed",0,1,165,0,225,0,oem,0.0055,True,False,True
+155,"solver, fastest source fixed",0,0,0,0,45,15,sisterA,0.0048,True,True,False
+155,StallBreaker (joint),0,0,0,0,45,15,sisterA,0.0047,True,True,False
+156,"wait, cheapest source",0,1,50,0,200,0,oem,0.0,True,False,True
+156,"wait, fastest source",0,0,0,0,45,60,vendor,0.0,True,True,False
+156,"rule dispatch, fastest source",0,0,0,0,45,60,vendor,0.0,True,True,False
+156,"solver, cheapest source fixed",0,1,50,0,200,0,oem,0.0056,True,False,True
+156,"solver, fastest source fixed",0,0,0,0,45,60,vendor,0.0042,True,True,False
+156,StallBreaker (joint),0,0,0,0,85,15,sisterB,0.0029,True,False,False
+157,"wait, cheapest source",0,0,0,0,190,0,oem,0.0,True,False,True
+157,"wait, fastest source",0,0,0,0,90,85,vendor,0.0,True,True,False
+157,"rule dispatch, fastest source",0,0,0,0,90,85,vendor,0.0,True,True,False
+157,"solver, cheapest source fixed",0,0,0,0,190,0,oem,0.0092,True,False,True
+157,"solver, fastest source fixed",0,0,0,0,90,85,vendor,0.0048,True,True,False
+157,StallBreaker (joint),0,0,0,0,190,0,oem,0.0075,True,False,True
+158,"wait, cheapest source",0,2,195,3,195,0,oem,0.0,True,False,True
+158,"wait, fastest source",0,0,0,1,55,15,sisterA,0.0,True,True,False
+158,"rule dispatch, fastest source",0,0,0,2,55,15,sisterA,0.0,True,True,False
+158,"solver, cheapest source fixed",0,1,120,2,195,0,oem,0.0172,True,False,True
+158,"solver, fastest source fixed",0,0,0,1,55,15,sisterA,0.0145,True,True,False
+158,StallBreaker (joint),0,0,0,1,55,15,sisterA,0.0145,True,True,False
+159,"wait, cheapest source",0,1,110,0,275,0,oem,0.0,True,False,True
+159,"wait, fastest source",0,0,0,0,35,15,sisterA,0.0,True,True,False
+159,"rule dispatch, fastest source",0,0,0,0,35,15,sisterA,0.0,True,True,False
+159,"solver, cheapest source fixed",0,1,110,0,275,0,oem,0.0081,True,False,True
+159,"solver, fastest source fixed",0,0,0,0,35,15,sisterA,0.0072,True,True,False
+159,StallBreaker (joint),0,0,0,0,35,15,sisterA,0.0071,True,True,False
+160,"wait, cheapest source",0,0,0,0,225,0,oem,0.0,True,False,True
+160,"wait, fastest source",0,0,0,0,55,75,vendor,0.0,True,True,False
+160,"rule dispatch, fastest source",0,0,0,0,55,75,vendor,0.0,True,True,False
+160,"solver, cheapest source fixed",0,0,0,0,225,0,oem,0.0027,True,False,True
+160,"solver, fastest source fixed",0,0,0,0,55,75,vendor,0.0014,True,True,False
+160,StallBreaker (joint),0,0,0,0,225,0,oem,0.0026,True,False,True
+161,"wait, cheapest source",0,3,330,2,300,0,oem,0.0,True,False,True
+161,"wait, fastest source",0,0,0,0,30,15,sisterA,0.0,True,True,False
+161,"rule dispatch, fastest source",0,0,0,0,30,15,sisterA,0.0,True,True,False
+161,"solver, cheapest source fixed",0,1,120,1,300,0,oem,0.016,True,False,True
+161,"solver, fastest source fixed",0,0,0,0,30,15,sisterA,0.012,True,True,False
+161,StallBreaker (joint),0,0,0,0,30,15,sisterA,0.0132,True,True,False
+162,"wait, cheapest source",0,1,145,2,295,0,oem,0.0,True,False,True
+162,"wait, fastest source",0,0,0,0,65,100,vendor,0.0,True,True,False
+162,"rule dispatch, fastest source",0,0,0,0,65,100,vendor,0.0,True,True,False
+162,"solver, cheapest source fixed",0,1,145,1,295,0,oem,0.0128,True,False,True
+162,"solver, fastest source fixed",0,0,0,0,65,100,vendor,0.0122,True,True,False
+162,StallBreaker (joint),0,0,0,0,65,100,vendor,0.011,True,True,False
+163,"wait, cheapest source",0,1,260,0,270,0,oem,0.0,True,False,True
+163,"wait, fastest source",0,1,40,0,50,15,sisterA,0.0,True,True,False
+163,"rule dispatch, fastest source",0,1,40,0,50,15,sisterA,0.0,True,True,False
+163,"solver, cheapest source fixed",0,1,260,0,270,0,oem,0.0088,True,False,True
+163,"solver, fastest source fixed",0,1,40,0,50,15,sisterA,0.0103,True,True,False
+163,StallBreaker (joint),0,1,40,0,50,15,sisterA,0.0114,True,True,False
+164,"wait, cheapest source",0,2,100,2,185,0,oem,0.0,True,False,True
+164,"wait, fastest source",0,0,0,0,30,15,sisterA,0.0,True,True,False
+164,"rule dispatch, fastest source",0,0,0,2,30,15,sisterA,0.0,True,True,False
+164,"solver, cheapest source fixed",0,1,65,2,185,0,oem,0.0137,True,False,True
+164,"solver, fastest source fixed",0,0,0,0,30,15,sisterA,0.0145,True,True,False
+164,StallBreaker (joint),0,0,0,0,30,15,sisterA,0.0132,True,True,False
+165,"wait, cheapest source",0,1,135,0,300,0,oem,0.0,True,False,True
+165,"wait, fastest source",0,0,0,0,65,70,vendor,0.0,True,True,False
+165,"rule dispatch, fastest source",0,0,0,0,65,70,vendor,0.0,True,True,False
+165,"solver, cheapest source fixed",0,1,135,0,300,0,oem,0.0028,True,False,True
+165,"solver, fastest source fixed",0,0,0,0,65,70,vendor,0.0041,True,True,False
+165,StallBreaker (joint),0,0,0,0,65,70,vendor,0.0029,True,True,False
+166,"wait, cheapest source",0,2,200,1,220,0,oem,0.0,True,False,True
+166,"wait, fastest source",0,0,0,1,45,100,vendor,0.0,True,True,False
+166,"rule dispatch, fastest source",0,0,0,3,45,100,vendor,0.0,True,True,False
+166,"solver, cheapest source fixed",0,1,55,2,220,0,oem,0.011,True,False,True
+166,"solver, fastest source fixed",0,0,0,1,45,100,vendor,0.0108,True,True,False
+166,StallBreaker (joint),0,0,0,2,115,15,sisterB,0.0121,True,False,False
+167,"wait, cheapest source",0,0,0,0,180,0,oem,0.0,True,False,True
+167,"wait, fastest source",0,0,0,0,55,15,sisterA,0.0,True,True,False
+167,"rule dispatch, fastest source",0,0,0,0,55,15,sisterA,0.0,True,True,False
+167,"solver, cheapest source fixed",0,0,0,0,180,0,oem,0.003,True,False,True
+167,"solver, fastest source fixed",0,0,0,0,55,15,sisterA,0.0028,True,True,False
+167,StallBreaker (joint),0,0,0,0,180,0,oem,0.0029,True,False,True
+168,"wait, cheapest source",0,1,5,0,200,0,oem,0.0,True,False,True
+168,"wait, fastest source",0,0,0,0,75,120,vendor,0.0,True,True,False
+168,"rule dispatch, fastest source",0,0,0,0,75,120,vendor,0.0,True,True,False
+168,"solver, cheapest source fixed",0,1,5,0,200,0,oem,0.0074,True,False,True
+168,"solver, fastest source fixed",0,0,0,0,75,120,vendor,0.0077,True,True,False
+168,StallBreaker (joint),0,0,0,0,110,15,sisterB,0.0092,True,False,False
+169,"wait, cheapest source",0,1,175,0,235,0,oem,0.0,True,False,True
+169,"wait, fastest source",0,0,0,0,60,90,vendor,0.0,True,True,False
+169,"rule dispatch, fastest source",0,0,0,0,60,90,vendor,0.0,True,True,False
+169,"solver, cheapest source fixed",0,1,175,0,235,0,oem,0.0041,True,False,True
+169,"solver, fastest source fixed",0,0,0,0,60,90,vendor,0.004,True,True,False
+169,StallBreaker (joint),0,0,0,0,60,90,vendor,0.0029,True,True,False
+170,"wait, cheapest source",0,6,855,5,260,0,oem,0.0,True,False,True
+170,"wait, fastest source",0,1,10,5,70,65,vendor,0.0,True,True,False
+170,"rule dispatch, fastest source",0,1,30,4,120,65,vendor,0.0,True,True,False
+170,"solver, cheapest source fixed",0,1,170,3,260,0,oem,0.0192,True,False,True
+170,"solver, fastest source fixed",0,0,0,2,70,65,vendor,0.0194,True,True,False
+170,StallBreaker (joint),0,0,0,2,70,65,vendor,0.0183,True,True,False
+171,"wait, cheapest source",1,2,170,0,260,0,oem,0.0,True,False,True
+171,"wait, fastest source",1,1,15,0,80,65,vendor,0.0,True,True,False
+171,"rule dispatch, fastest source",1,1,15,0,80,65,vendor,0.0,True,True,False
+171,"solver, cheapest source fixed",1,2,170,0,260,0,oem,0.0044,True,False,True
+171,"solver, fastest source fixed",1,1,15,0,80,65,vendor,0.0042,True,True,False
+171,StallBreaker (joint),1,1,15,0,90,15,sisterB,0.0055,True,False,False
+172,"wait, cheapest source",0,1,105,0,180,0,oem,0.0,True,False,True
+172,"wait, fastest source",0,0,0,0,65,85,vendor,0.0,True,True,False
+172,"rule dispatch, fastest source",0,0,0,0,65,85,vendor,0.0,True,True,False
+172,"solver, cheapest source fixed",0,1,105,0,180,0,oem,0.0017,True,False,True
+172,"solver, fastest source fixed",0,0,0,0,65,85,vendor,0.0029,True,True,False
+172,StallBreaker (joint),0,0,0,0,65,85,vendor,0.0027,True,True,False
+173,"wait, cheapest source",0,1,40,0,250,0,oem,0.0,True,False,True
+173,"wait, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+173,"rule dispatch, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+173,"solver, cheapest source fixed",0,1,40,0,250,0,oem,0.0096,True,False,True
+173,"solver, fastest source fixed",0,0,0,0,45,15,sisterA,0.0084,True,True,False
+173,StallBreaker (joint),0,0,0,0,45,15,sisterA,0.0098,True,True,False
+174,"wait, cheapest source",0,1,40,1,205,0,oem,0.0,True,False,True
+174,"wait, fastest source",0,0,0,0,45,120,vendor,0.0,True,True,False
+174,"rule dispatch, fastest source",0,0,0,0,45,120,vendor,0.0,True,True,False
+174,"solver, cheapest source fixed",0,1,40,1,205,0,oem,0.0108,True,False,True
+174,"solver, fastest source fixed",0,0,0,0,45,120,vendor,0.0101,True,True,False
+174,StallBreaker (joint),0,0,0,0,50,15,sisterA,0.0123,True,False,False
+175,"wait, cheapest source",0,1,180,0,290,0,oem,0.0,True,False,True
+175,"wait, fastest source",0,0,0,0,80,15,sisterB,0.0,True,True,False
+175,"rule dispatch, fastest source",0,0,0,0,80,15,sisterB,0.0,True,True,False
+175,"solver, cheapest source fixed",0,1,180,0,290,0,oem,0.009,True,False,True
+175,"solver, fastest source fixed",0,0,0,0,80,15,sisterB,0.0078,True,True,False
+175,StallBreaker (joint),0,0,0,0,80,15,sisterB,0.0078,True,True,False
+176,"wait, cheapest source",0,2,190,1,185,0,oem,0.0,True,False,True
+176,"wait, fastest source",0,1,40,1,85,80,vendor,0.0,True,True,False
+176,"rule dispatch, fastest source",0,0,0,1,85,80,vendor,0.0,True,True,False
+176,"solver, cheapest source fixed",0,1,50,1,185,0,oem,0.0075,True,False,True
+176,"solver, fastest source fixed",0,0,0,1,85,80,vendor,0.0087,True,True,False
+176,StallBreaker (joint),0,0,0,1,105,15,sisterB,0.0086,True,False,False
+177,"wait, cheapest source",0,2,210,1,235,0,oem,0.0,True,False,True
+177,"wait, fastest source",0,0,0,1,45,15,sisterA,0.0,True,True,False
+177,"rule dispatch, fastest source",0,0,0,2,45,15,sisterA,0.0,True,True,False
+177,"solver, cheapest source fixed",0,1,105,4,235,0,oem,0.0218,True,False,True
+177,"solver, fastest source fixed",0,0,0,1,45,15,sisterA,0.0132,True,True,False
+177,StallBreaker (joint),0,0,0,1,45,15,sisterA,0.0143,True,True,False
+178,"wait, cheapest source",1,2,325,0,280,0,oem,0.0,True,False,True
+178,"wait, fastest source",1,2,90,0,45,65,vendor,0.0,True,True,False
+178,"rule dispatch, fastest source",1,1,75,1,75,65,vendor,0.0,True,True,False
+178,"solver, cheapest source fixed",1,1,280,1,280,0,oem,0.0082,True,False,True
+178,"solver, fastest source fixed",1,1,75,1,75,65,vendor,0.007,True,True,False
+178,StallBreaker (joint),1,1,75,1,75,65,vendor,0.0093,True,True,False
+179,"wait, cheapest source",0,1,60,0,180,0,oem,0.0,True,False,True
+179,"wait, fastest source",0,0,0,0,50,65,vendor,0.0,True,True,False
+179,"rule dispatch, fastest source",0,0,0,0,50,65,vendor,0.0,True,True,False
+179,"solver, cheapest source fixed",0,1,60,0,180,0,oem,0.0026,True,False,True
+179,"solver, fastest source fixed",0,0,0,0,50,65,vendor,0.0039,True,True,False
+179,StallBreaker (joint),0,0,0,0,50,65,vendor,0.0038,True,True,False
+180,"wait, cheapest source",0,1,5,0,215,0,oem,0.0,True,False,True
+180,"wait, fastest source",0,0,0,0,50,105,vendor,0.0,True,True,False
+180,"rule dispatch, fastest source",0,0,0,0,50,105,vendor,0.0,True,True,False
+180,"solver, cheapest source fixed",0,1,5,0,215,0,oem,0.0039,True,False,True
+180,"solver, fastest source fixed",0,0,0,0,50,105,vendor,0.0026,True,True,False
+180,StallBreaker (joint),0,0,0,0,140,15,sisterB,0.0038,True,False,False
+181,"wait, cheapest source",0,1,225,0,285,0,oem,0.0,True,False,True
+181,"wait, fastest source",0,0,0,0,55,110,vendor,0.0,True,True,False
+181,"rule dispatch, fastest source",0,0,0,0,55,110,vendor,0.0,True,True,False
+181,"solver, cheapest source fixed",0,1,225,0,285,0,oem,0.007,True,False,True
+181,"solver, fastest source fixed",0,0,0,0,55,110,vendor,0.0067,True,True,False
+181,StallBreaker (joint),0,0,0,0,55,110,vendor,0.0066,True,True,False
+182,"wait, cheapest source",0,1,15,0,180,0,oem,0.0,True,False,True
+182,"wait, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+182,"rule dispatch, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+182,"solver, cheapest source fixed",0,1,15,0,180,0,oem,0.006,True,False,True
+182,"solver, fastest source fixed",0,0,0,0,45,15,sisterA,0.0074,True,True,False
+182,StallBreaker (joint),0,0,0,0,45,15,sisterA,0.0059,True,True,False
+183,"wait, cheapest source",0,1,225,0,240,0,oem,0.0,True,False,True
+183,"wait, fastest source",0,1,50,0,65,80,vendor,0.0,True,True,False
+183,"rule dispatch, fastest source",0,1,50,0,65,80,vendor,0.0,True,True,False
+183,"solver, cheapest source fixed",0,1,225,0,240,0,oem,0.0101,True,False,True
+183,"solver, fastest source fixed",0,1,50,0,65,80,vendor,0.0107,True,True,False
+183,StallBreaker (joint),0,1,50,0,65,80,vendor,0.0109,True,True,False
+184,"wait, cheapest source",0,3,365,3,265,0,oem,0.0,True,False,True
+184,"wait, fastest source",0,0,0,2,70,120,vendor,0.0,True,True,False
+184,"rule dispatch, fastest source",0,0,0,3,70,120,vendor,0.0,True,True,False
+184,"solver, cheapest source fixed",0,1,85,2,265,0,oem,0.0142,True,False,True
+184,"solver, fastest source fixed",0,0,0,1,70,120,vendor,0.017,True,True,False
+184,StallBreaker (joint),0,0,0,1,70,120,vendor,0.0173,True,True,False
+185,"wait, cheapest source",0,1,35,1,185,0,oem,0.0,True,False,True
+185,"wait, fastest source",0,0,0,1,60,15,sisterA,0.0,True,True,False
+185,"rule dispatch, fastest source",0,0,0,1,60,15,sisterA,0.0,True,True,False
+185,"solver, cheapest source fixed",0,0,0,1,210,0,oem,0.0138,True,False,True
+185,"solver, fastest source fixed",0,0,0,1,60,15,sisterA,0.0143,True,True,False
+185,StallBreaker (joint),0,0,0,1,210,0,oem,0.0138,True,False,True
+186,"wait, cheapest source",0,1,110,0,185,0,oem,0.0,True,False,True
+186,"wait, fastest source",0,0,0,0,30,15,sisterA,0.0,True,True,False
+186,"rule dispatch, fastest source",0,0,0,0,30,15,sisterA,0.0,True,True,False
+186,"solver, cheapest source fixed",0,1,110,0,185,0,oem,0.0029,True,False,True
+186,"solver, fastest source fixed",0,0,0,0,30,15,sisterA,0.004,True,True,False
+186,StallBreaker (joint),0,0,0,0,30,15,sisterA,0.0042,True,True,False
+187,"wait, cheapest source",0,2,240,2,225,0,oem,0.0,True,False,True
+187,"wait, fastest source",0,1,70,2,70,70,vendor,0.0,True,True,False
+187,"rule dispatch, fastest source",0,1,70,3,70,70,vendor,0.0,True,True,False
+187,"solver, cheapest source fixed",0,1,225,1,225,0,oem,0.0173,True,False,True
+187,"solver, fastest source fixed",0,1,70,2,70,70,vendor,0.0163,True,True,False
+187,StallBreaker (joint),0,1,70,2,70,70,vendor,0.0159,True,True,False
+188,"wait, cheapest source",0,2,270,1,300,0,oem,0.0,True,False,True
+188,"wait, fastest source",0,0,0,0,40,15,sisterA,0.0,True,True,False
+188,"rule dispatch, fastest source",0,0,0,0,40,15,sisterA,0.0,True,True,False
+188,"solver, cheapest source fixed",0,2,270,1,300,0,oem,0.0086,True,False,True
+188,"solver, fastest source fixed",0,0,0,0,40,15,sisterA,0.0102,True,True,False
+188,StallBreaker (joint),0,0,0,0,40,15,sisterA,0.0073,True,True,False
+189,"wait, cheapest source",0,4,365,3,295,0,oem,0.0,True,False,True
+189,"wait, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+189,"rule dispatch, fastest source",0,0,0,0,45,15,sisterA,0.0,True,True,False
+189,"solver, cheapest source fixed",0,1,155,0,295,0,oem,0.0134,True,False,True
+189,"solver, fastest source fixed",0,0,0,0,45,15,sisterA,0.0131,True,True,False
+189,StallBreaker (joint),0,0,0,0,45,15,sisterA,0.0134,True,True,False
+190,"wait, cheapest source",0,3,255,2,255,0,oem,0.0,True,False,True
+190,"wait, fastest source",0,0,0,2,30,15,sisterA,0.0,True,True,False
+190,"rule dispatch, fastest source",0,0,0,2,30,15,sisterA,0.0,True,True,False
+190,"solver, cheapest source fixed",0,1,75,2,255,0,oem,0.0143,True,False,True
+190,"solver, fastest source fixed",0,0,0,1,30,15,sisterA,0.0155,True,True,False
+190,StallBreaker (joint),0,0,0,1,30,15,sisterA,0.016,True,True,False
+191,"wait, cheapest source",0,1,105,0,240,0,oem,0.0,True,False,True
+191,"wait, fastest source",0,0,0,0,50,15,sisterA,0.0,True,True,False
+191,"rule dispatch, fastest source",0,0,0,0,50,15,sisterA,0.0,True,True,False
+191,"solver, cheapest source fixed",0,1,105,0,240,0,oem,0.0075,True,False,True
+191,"solver, fastest source fixed",0,0,0,0,50,15,sisterA,0.006,True,True,False
+191,StallBreaker (joint),0,0,0,0,50,15,sisterA,0.0059,True,True,False
+192,"wait, cheapest source",0,2,190,1,290,0,oem,0.0,True,False,True
+192,"wait, fastest source",0,0,0,0,40,15,sisterA,0.0,True,True,False
+192,"rule dispatch, fastest source",0,0,0,0,40,15,sisterA,0.0,True,True,False
+192,"solver, cheapest source fixed",0,1,125,1,290,0,oem,0.0139,True,False,True
+192,"solver, fastest source fixed",0,0,0,0,40,15,sisterA,0.0122,True,True,False
+192,StallBreaker (joint),0,0,0,0,40,15,sisterA,0.0124,True,True,False
+193,"wait, cheapest source",0,5,375,5,225,0,oem,0.0,True,False,True
+193,"wait, fastest source",0,1,25,5,85,100,vendor,0.0,True,True,False
+193,"rule dispatch, fastest source",0,1,25,6,85,100,vendor,0.0001,True,True,False
+193,"solver, cheapest source fixed",0,1,165,3,225,0,oem,0.0199,True,False,True
+193,"solver, fastest source fixed",0,1,25,3,85,100,vendor,0.0172,True,True,False
+193,StallBreaker (joint),0,1,25,3,85,100,vendor,0.019,True,True,False
+194,"wait, cheapest source",0,1,125,0,290,0,oem,0.0,True,False,True
+194,"wait, fastest source",0,0,0,0,80,75,vendor,0.0,True,True,False
+194,"rule dispatch, fastest source",0,0,0,0,80,75,vendor,0.0,True,True,False
+194,"solver, cheapest source fixed",0,1,125,0,290,0,oem,0.0087,True,False,True
+194,"solver, fastest source fixed",0,0,0,0,80,75,vendor,0.0088,True,True,False
+194,StallBreaker (joint),0,0,0,0,80,75,vendor,0.0074,True,True,False
+195,"wait, cheapest source",0,3,165,2,280,0,oem,0.0,True,False,True
+195,"wait, fastest source",0,0,0,2,50,80,vendor,0.0,True,True,False
+195,"rule dispatch, fastest source",0,0,0,3,50,80,vendor,0.0,True,True,False
+195,"solver, cheapest source fixed",0,1,70,1,280,0,oem,0.01,True,False,True
+195,"solver, fastest source fixed",0,0,0,1,120,80,vendor,0.0099,True,True,False
+195,StallBreaker (joint),0,0,0,1,125,15,sisterB,0.0114,True,False,False
+196,"wait, cheapest source",0,1,110,0,290,0,oem,0.0,True,False,True
+196,"wait, fastest source",0,0,0,0,65,80,vendor,0.0,True,True,False
+196,"rule dispatch, fastest source",0,0,0,0,65,80,vendor,0.0,True,True,False
+196,"solver, cheapest source fixed",0,1,110,0,290,0,oem,0.0116,True,False,True
+196,"solver, fastest source fixed",0,0,0,0,65,80,vendor,0.01,True,True,False
+196,StallBreaker (joint),0,0,0,0,65,80,vendor,0.0116,True,True,False
+197,"wait, cheapest source",0,1,65,0,275,0,oem,0.0,True,False,True
+197,"wait, fastest source",0,0,0,0,50,15,sisterA,0.0,True,True,False
+197,"rule dispatch, fastest source",0,0,0,0,50,15,sisterA,0.0,True,True,False
+197,"solver, cheapest source fixed",0,1,65,0,275,0,oem,0.0044,True,False,True
+197,"solver, fastest source fixed",0,0,0,0,50,15,sisterA,0.0073,True,True,False
+197,StallBreaker (joint),0,0,0,0,50,15,sisterA,0.0081,True,True,False
+198,"wait, cheapest source",0,3,145,2,215,0,oem,0.0,True,False,True
+198,"wait, fastest source",0,0,0,1,75,85,vendor,0.0,True,True,False
+198,"rule dispatch, fastest source",0,0,0,1,75,85,vendor,0.0,True,True,False
+198,"solver, cheapest source fixed",0,1,80,2,215,0,oem,0.0149,True,False,True
+198,"solver, fastest source fixed",0,0,0,1,75,85,vendor,0.0142,True,True,False
+198,StallBreaker (joint),0,0,0,1,80,15,sisterB,0.0138,True,False,False
+199,"wait, cheapest source",0,2,240,1,300,0,oem,0.0,True,False,True
+199,"wait, fastest source",0,0,0,0,45,65,vendor,0.0,True,True,False
+199,"rule dispatch, fastest source",0,0,0,0,45,65,vendor,0.0,True,True,False
+199,"solver, cheapest source fixed",0,1,75,2,300,0,oem,0.0168,True,False,True
+199,"solver, fastest source fixed",0,0,0,0,45,65,vendor,0.0136,True,True,False
+199,StallBreaker (joint),0,0,0,0,45,65,vendor,0.0114,True,True,False
+200,"wait, cheapest source",0,2,105,1,270,0,oem,0.0,True,False,True
+200,"wait, fastest source",0,0,0,1,75,75,vendor,0.0,True,True,False
+200,"rule dispatch, fastest source",0,0,0,4,75,75,vendor,0.0,True,True,False
+200,"solver, cheapest source fixed",0,1,45,1,270,0,oem,0.0094,True,False,True
+200,"solver, fastest source fixed",0,0,0,1,75,75,vendor,0.0137,True,True,False
+200,StallBreaker (joint),0,0,0,1,85,15,sisterB,0.013,True,False,False

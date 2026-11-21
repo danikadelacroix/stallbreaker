@@ -1,0 +1,7 @@
+ortools>=9.10
+matplotlib
+numpy
+pandas
+pytest
+statsforecast
+statsmodels
