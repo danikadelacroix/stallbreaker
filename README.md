@@ -192,7 +192,13 @@ dispatch rule. Times were measured on one laptop and will vary from run to run.
 
 An LLM step for plan explanations and customer messages, busier 40 to 60-job days, a
 results page inside the app, deployment, and a stockout-risk model in place of the simple
-frequency rule.
+frequency rule. Each has a spec in [docs/specs](docs/specs/README.md).
+
+## Contributing
+
+Every feature has a spec with numbered rules and the tests that prove them, in
+[docs/specs](docs/specs/README.md). New work is spec first, failing test second, code third:
+see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Sources
 
