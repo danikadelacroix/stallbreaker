@@ -1,51 +1,113 @@
 # StallBreaker
 
-A re-planner for a car service shop when a part goes missing mid-repair. The car is
-half dismantled on the lift, so the bay is blocked. StallBreaker decides **where the
-part comes from** and **how the rest of the day is re-planned** in one optimisation,
-then shows the service manager a before/after plan to approve.
+A re-planner for a car service shop when a part goes missing mid-repair. The car is half
+dismantled on the lift, so the bay is blocked. StallBreaker decides **where the part comes
+from** and **how the rest of the day is re-planned** in one optimisation, then shows the
+service manager a before/after plan to approve.
 
 Built for Tekion's Tek Qubit hackathon (use case: Service Parts Shortage Resolver Agent).
-Status: working engine, benchmark and tests. No web app or dealer-system integration yet.
 
-![Before and after a stall](experiments/out/toy_before_after.png)
+**Status:** a working engine with benchmarks, and a web app on top of it that runs one
+simulated day end to end. All shop data is simulated; part demand history is real.
+Not connected to any dealer system, and no LLM is connected yet.
 
-## How it works
+![A missing part: sources, the recommended plan, and its preview on the board](docs/stall-flow.jpg)
 
-- Every repair order needs one technician with the right skill and one bay of the right
-  kind for its whole duration.
-- A stalled job keeps its bay but frees its technician until the part arrives.
-- Each candidate source (sister store, local vendor, OEM depot) has an arrival time, a
-  cost, and a risk that the giving store runs out. Unsafe sources are excluded unless a
-  manager forces one.
-- The source is a decision variable in the same Google OR-Tools CP-SAT model as the
-  schedule, so a slower, cheaper source wins whenever the schedule cannot use a faster one.
-- Goals are solved in strict order: fewest missed promise times, least lateness, lowest
-  sourcing cost, fewest moved jobs. Work already in progress is never touched.
-- An independent checker (`validate`) re-verifies every plan: no double-booked technician
-  or bay, right skills, work resumes only after the part arrives.
+## What the app does
 
-The model follows the pattern of Google's flexible job-shop example
-(optional intervals, exactly-one alternative, no-overlap).
+It shows one day at a dealership (40 repair orders, 10 technicians, 10 bays, two sister
+stores, a vendor and an OEM depot) on a schedule board.
 
-## Run it
+- **Parts check.** The shelf stock is handed out to the open jobs in the order they start.
+  Every job that will run short is listed, with whether a safe source can deliver before the
+  job starts. One button orders those parts without touching the schedule.
+- **Report a part missing.** Pick any open job and mark one of its parts missing. The app
+  lists every source with its stock, arrival time, cost and shortage risk, and marks a
+  sister store as unsafe when lending would leave it short.
+- **Plans, with a preview.** The engine offers the plan with the fewest missed promises and,
+  when it differs, the plan that moves the fewest jobs. The board previews the selected plan:
+  the blocked bay is hatched and moved jobs are outlined. You can force a different source
+  to see what it costs.
+- **Approve once.** The approved plan becomes the live schedule. The decision goes into a
+  log with a draft message for any customer whose promise time is missed.
+- **A part runs late.** For a part already on its way, a slider shows at once whether the
+  plan can absorb the new arrival time or needs a re-plan.
+- **Nothing is lost on refresh.** Every change is saved, including a stall that is still
+  waiting for a decision.
+
+![The parts check and the schedule board](docs/parts-check.jpg)
+
+## Run the app
 
 ```bash
 uv venv --python 3.12 .venv
 uv pip install --python .venv/bin/python -r requirements.txt
-.venv/bin/python -m pytest -q                      # 7 checks
-.venv/bin/python experiments/toy.py                # 8 jobs, 3 bays, one missing part
-.venv/bin/python experiments/eval.py 200           # 200 seeded stalls, six methods
-.venv/bin/python experiments/monash_baseline.py    # forecasting baseline on real data
-.venv/bin/python experiments/scale.py 20           # re-plan time on 12 to 60-job days
+
+# terminal 1: the API (creates and seeds the database on first run)
+.venv/bin/python -m uvicorn backend.app:app --port 8000
+
+# terminal 2: the web app, then open http://localhost:5173
+cd frontend && npm install && npm run dev
 ```
 
-| File | Purpose |
+Start the API first. "Reset day" in the app rebuilds the same day every time.
+
+## How it works
+
+**The engine** (`shopcore.py`, Google OR-Tools CP-SAT)
+
+- Every repair order needs one technician with the right skill and one bay of the right
+  kind for its whole duration.
+- A job stalled in progress keeps its bay but frees its technician until the part arrives.
+  A job that has not started simply cannot begin before its part arrives.
+- Where the part comes from is a decision variable in the same model as the schedule, so a
+  slower, cheaper source wins whenever the schedule cannot use a faster one.
+- Goals are solved in strict order, and the order is a setting. The default is fewest missed
+  promise times, least lateness, lowest sourcing cost, fewest moved jobs.
+- Work already in progress is never moved. Earlier stalled jobs stay pinned and their bays
+  stay blocked when a later stall is planned.
+- A separate checker (`validate`) re-verifies every plan: no double-booked technician or
+  bay, right skills, work resumes only after the part arrives. If the solver cannot prove a
+  plan is the best one within its time limit, the plan is flagged, not hidden.
+
+The model follows the pattern of Google's flexible job-shop example (optional intervals,
+exactly-one alternative, no-overlap).
+
+**Shortage risk** (`backend/risk.py`)
+
+Each part is tied to one real series from the Monash Car Parts dataset: 51 months of
+monthly sales of one car part. The risk of lending is the share of those months in which
+demand was higher than what the lending store would have left. A store above 30% is marked
+unsafe and is not chosen unless a manager forces it. This is a simple frequency that anyone
+can check, not a forecast model.
+
+**The LLM** is not connected. Its planned job is narrow: explain the chosen plan in plain
+words and draft customer messages. Messages use a fixed template for now and are labelled
+as such. The LLM will never choose the plan.
+
+## Project layout
+
+| Path | Purpose |
 |---|---|
-| `shopcore.py` | CP-SAT re-planner, two baseline schedulers, plan checker, metrics |
-| `shopgen.py` | Seeded generator of synthetic shop days and stalls |
-| `shopviz.py` | Before/after Gantt chart |
-| `experiments/` | Toy case, benchmark, forecasting baseline, and their outputs in `out/` |
+| `shopcore.py` | The engine: CP-SAT re-planner, two baseline schedulers, plan checker, metrics |
+| `shopgen.py`, `shopviz.py` | Seeded generator of simulated days; before/after chart |
+| `backend/` | FastAPI app and SQLite database: seed data, stock lookup, shortage risk, parts check, stall flow |
+| `frontend/` | React app (Vite, TypeScript): schedule board, parts check, stall card, decision log |
+| `experiments/` | Sample day, 200-stall benchmark, scale check, forecasting baseline, with outputs in `out/` |
+| `tests/` | 23 checks: 9 on the engine, 14 on the API |
+| `data/` | Monash Car Parts dataset (CC BY 4.0) |
+
+## Tests and experiments
+
+```bash
+.venv/bin/python -m pytest -q                      # 23 checks
+.venv/bin/python experiments/toy.py                # 8 jobs, 3 bays, one missing part
+.venv/bin/python experiments/eval.py 200           # 200 seeded stalls, six methods
+.venv/bin/python experiments/scale.py 20           # re-plan time on 12 to 60-job days
+.venv/bin/python experiments/monash_baseline.py    # forecasting baseline on real data
+```
+
+![Before and after a stall on the 8-job sample day](experiments/out/toy_before_after.png)
 
 ## Results
 
@@ -75,9 +137,8 @@ about a third less on sourcing.
 
 ### Forecasting baseline on real car-parts demand
 
-To judge whether a sister store can safely lend a part, the plan is to forecast its
-demand from the Monash Car Parts dataset (2,674 real monthly series). First step:
-reproduce the published baseline.
+Before using the Monash Car Parts dataset (2,674 real monthly series) to judge whether a
+store can safely lend a part, we reproduced the published forecasting baseline on it.
 
 | Model | MASE, rounded to whole units (Monash setup) | Published (Monash) | MASE, not rounded |
 |---|---|---|---|
@@ -96,7 +157,7 @@ reproduce the published baseline.
 Simple exponential smoothing reproduces the published number (0.895 against 0.897).
 A forecast of zero for every part beats every model on this metric, because three
 quarters of all months have no demand. So this metric cannot decide whether lending a
-part is safe; a stockout-risk measure is needed instead.
+part is safe, which is why the app uses a shortage-risk frequency instead.
 
 ### Scale check
 
@@ -115,15 +176,23 @@ dispatch rule. Times were measured on one laptop and will vary from run to run.
 ## Limits
 
 - The shop is simulated. No public dataset of dealer repair orders, bays or multi-store
-  stock exists, so these numbers compare methods; they do not predict dealer savings.
-- Donor stockout risks in the toy case are invented numbers, not yet computed from data.
-- Source arrival times are fixed values, not ranges.
-- The benchmark uses 12-job days. The scale check goes to 60 jobs, but only on lightly loaded days.
+  stock exists, so the numbers compare methods; they do not predict dealer savings.
+- The measured gain is modest: on the benchmark a fast source does most of the work, and
+  choosing source and schedule together mainly lowers sourcing cost. It also leaves the bay
+  blocked about 18 minutes longer on average, never at the cost of a promise.
+- Prices, travel times and stock levels are invented. Only part demand history is real.
+- Source arrival times are single values, not ranges. A late part can be re-timed, but it
+  keeps its original source.
+- The demo day is not very busy, so most stalls move only one or two jobs.
+- The parts check runs on the rest of today's jobs. In a dealership it would run every
+  night for the next day.
+- No LLM is connected, and nothing is deployed: the app runs on a laptop.
 
 ## Next
 
-Mock dealer-system API, nightly check of tomorrow's jobs against stock, donor risk from
-the demand data, approval screen with plan diff and audit log, robustness to late parts.
+An LLM step for plan explanations and customer messages, busier 40 to 60-job days, a
+results page inside the app, deployment, and a stockout-risk model in place of the simple
+frequency rule.
 
 ## Sources
 

@@ -75,3 +75,32 @@ def test_same_stall_gives_the_same_plan():
         p = replan(toy.SHOP, toy.JOBS, base, toy.NOW, toy.STALL, order=KEEP, hours_bound=60)
         seen.add(tuple(sorted((k, v.start, v.tech, v.bay) for k, v in p.assign.items())) + (p.source.id,))
     assert len(seen) == 1
+
+
+def test_a_job_not_yet_started_waits_for_its_part():
+    base = initial_plan(toy.SHOP, toy.JOBS)
+    later = [j for j in toy.JOBS if base.assign[j.id].start > toy.NOW][0]
+    from shopcore import Stall
+    stall = Stall(later.id, "part", toy.SOURCES)
+    plan = replan(toy.SHOP, toy.JOBS, base, toy.NOW, stall, order=KEEP)
+    assert validate(toy.SHOP, toy.JOBS, plan, toy.NOW, base, stall)
+    a = plan.assign[later.id]
+    assert a.start >= toy.NOW + plan.source.eta
+    assert a.end - a.start == later.dur, "an unstarted job is not split"
+    assert plan.hold == 0 and plan.extra == [], "no bay is blocked when the car has not been touched"
+
+
+def test_pinned_jobs_and_blocked_bays_are_respected():
+    base = initial_plan(toy.SHOP, toy.JOBS)
+    future = sorted((j for j in toy.JOBS if base.assign[j.id].start > toy.NOW), key=lambda j: base.assign[j.id].start)
+    pin = future[-1].id
+    blocked_bay = base.assign[toy.STALL.job].bay
+    block = (blocked_bay, toy.NOW, toy.NOW + 300)
+    others = [j for j in toy.JOBS if j.id != toy.STALL.job]
+    prev = type(base)(assign={k: v for k, v in base.assign.items() if k != toy.STALL.job})
+    plan = replan(toy.SHOP, others, prev, toy.NOW, order=("late", "tard", "moves", "shift"), pinned=frozenset({pin}), blocks=(block,))
+    assert validate(toy.SHOP, others, plan, toy.NOW, prev, pinned=frozenset({pin}), blocks=(block,))
+    assert plan.assign[pin] == prev.assign[pin]
+    for jid, a in plan.assign.items():
+        if a.bay == blocked_bay and a.start >= toy.NOW:
+            assert a.start >= toy.NOW + 300 or jid == pin
