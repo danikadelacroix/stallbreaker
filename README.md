@@ -37,6 +37,7 @@ uv pip install --python .venv/bin/python -r requirements.txt
 .venv/bin/python experiments/toy.py                # 8 jobs, 3 bays, one missing part
 .venv/bin/python experiments/eval.py 200           # 200 seeded stalls, six methods
 .venv/bin/python experiments/monash_baseline.py    # forecasting baseline on real data
+.venv/bin/python experiments/scale.py 20           # re-plan time on 12 to 60-job days
 ```
 
 | File | Purpose |
@@ -97,13 +98,27 @@ A forecast of zero for every part beats every model on this metric, because thre
 quarters of all months have no demand. So this metric cannot decide whether lending a
 part is safe; a stockout-risk measure is needed instead.
 
+### Scale check
+
+One stall per day on larger simulated shops, 20 days per size, solver capped at 5 seconds.
+
+| Jobs | Technicians | Bays | Days | Median re-plan (s) | Slowest (s) | Proven optimal | Missed promises: solver / rule dispatch |
+|---|---|---|---|---|---|---|---|
+| 12 | 4 | 4 | 20 | 0.01 | 0.04 | 20 of 20 | 4 / 6 |
+| 24 | 7 | 7 | 20 | 0.03 | 0.04 | 20 of 20 | 8 / 10 |
+| 40 | 12 | 12 | 20 | 0.05 | 0.11 | 20 of 20 | 2 / 2 |
+| 60 | 18 | 18 | 20 | 0.14 | 0.49 | 20 of 20 | 0 / 0 |
+
+These shops are lightly loaded (few promises are at risk), and the morning plan comes from the
+dispatch rule. Times were measured on one laptop and will vary from run to run.
+
 ## Limits
 
 - The shop is simulated. No public dataset of dealer repair orders, bays or multi-store
   stock exists, so these numbers compare methods; they do not predict dealer savings.
 - Donor stockout risks in the toy case are invented numbers, not yet computed from data.
 - Source arrival times are fixed values, not ranges.
-- Instances are small (12 jobs). Solve time on a 40-job day is not measured yet.
+- The benchmark uses 12-job days. The scale check goes to 60 jobs, but only on lightly loaded days.
 
 ## Next
 
