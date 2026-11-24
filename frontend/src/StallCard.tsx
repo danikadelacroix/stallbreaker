@@ -13,8 +13,17 @@ interface Props {
 
 const pctText = (r: number | null) => (r === null ? '—' : `${Math.round(r * 100)}%`)
 const money = (n: number) => `$${Math.round(n)}`
+const slack = (min: number, capped: boolean) => (capped ? `${span(min)} or more` : span(min))
 
-function Option({ o, title, chosen, busy, onPreview, onApprove }: { o: PlanOption; title: string; chosen: boolean; busy: boolean; onPreview: () => void; onApprove: () => void }) {
+/** One sentence on how much delay of the part the plan can take. */
+function marginText(o: PlanOption, roId: string): string {
+  const selfLate = o.late_orders.some((l) => l.ro_id === roId)
+  const own = selfLate ? `${roId} gets later with any delay. ` : ''
+  if (o.late_margin_min === 0) return `${own}No slack: a part 15 min late costs another promise.`
+  return `${own}No ${o.missed_promises ? 'further ' : ''}promise is lost if the part is up to ${slack(o.late_margin_min, o.late_margin_capped)} late.`
+}
+
+function Option({ o, roId, title, chosen, busy, onPreview, onApprove }: { o: PlanOption; roId: string; title: string; chosen: boolean; busy: boolean; onPreview: () => void; onApprove: () => void }) {
   return (
     <article className={`option ${chosen ? 'chosen' : ''}`}>
       <header>
@@ -42,6 +51,7 @@ function Option({ o, title, chosen, busy, onPreview, onApprove }: { o: PlanOptio
       {o.late_orders.filter((l) => !l.late_before).map((l) => (
         <p key={l.ro_id} className="late-note">{l.ro_id} would be ready at {clock(l.end_min)}, {span(l.end_min - l.promise_min)} after its promise.</p>
       ))}
+      <p className={`margin-note ${o.late_margin_min === 0 ? 'tight' : ''}`}><strong>If the part is late:</strong> {marginText(o, roId)}</p>
       <div className="actions">
         <button type="button" className="ghost" onClick={onPreview} aria-pressed={chosen} disabled={chosen}>{chosen ? 'Shown on the board' : 'Show on the board'}</button>
         <button type="button" className="primary" onClick={onApprove} disabled={busy}>Approve this plan</button>
@@ -74,7 +84,7 @@ export function StallCard({ proposal: p, previewKey, busy, onPreview, onForce, o
           <div className="table-scroll">
             <table>
               <thead>
-                <tr><th scope="col">Source</th><th scope="col">Stock</th><th scope="col">Arrives</th><th scope="col">Cost</th><th scope="col">Shortage risk</th><th scope="col"><span className="visually-hidden">Choose</span></th></tr>
+                <tr><th scope="col">Source</th><th scope="col">Stock</th><th scope="col">Arrives</th><th scope="col">Cost</th><th scope="col">Shortage risk</th>{!late && <><th scope="col">The day with this source</th><th scope="col">Part can be late by</th></>}<th scope="col"><span className="visually-hidden">Choose</span></th></tr>
               </thead>
               <tbody>
                 {p.sources.map((s) => {
@@ -84,6 +94,7 @@ export function StallCard({ proposal: p, previewKey, busy, onPreview, onForce, o
                       <th scope="row">
                         {s.name}
                         {picked && <span className="badge ok">Chosen</span>}
+                        {!picked && !late && s.id === p.engine_source_id && <span className="badge ok">Engine's pick</span>}
                         {s.available && !s.safe && <span className="badge warn">Unsafe to lend</span>}
                       </th>
                       <td>{late ? 'ordered' : s.on_hand === null ? 'supplier' : s.available ? `${s.on_hand} on hand` : 'none to spare'}</td>
@@ -93,6 +104,15 @@ export function StallCard({ proposal: p, previewKey, busy, onPreview, onForce, o
                         {s.available ? pctText(s.risk) : '—'}
                         {s.available && s.risk_basis && s.kind === 'sister_store' && <small>{s.risk_basis}</small>}
                       </td>
+                      {!late && (
+                        <>
+                          <td>
+                            {s.outcome ? `${s.outcome.missed_promises === 1 ? '1 promise missed' : `${s.outcome.missed_promises} promises missed`}, ${s.outcome.late_minutes} late min` : '—'}
+                            {s.outcome && <small>{s.why_not ?? "The engine's choice."}</small>}
+                          </td>
+                          <td className={s.outcome && s.outcome.late_margin_min === 0 ? 'tight' : ''}>{s.outcome ? slack(s.outcome.late_margin_min, s.outcome.late_margin_capped) : '—'}</td>
+                        </>
+                      )}
                       <td>
                         {!late && s.available && p.forced_source !== s.id && (
                           <button type="button" className="link" disabled={busy} onClick={() => onForce(s.id)}>Use this one</button>
@@ -115,7 +135,7 @@ export function StallCard({ proposal: p, previewKey, busy, onPreview, onForce, o
         </div>
         <div className="options">
           {p.options.map((o) => (
-            <Option key={o.key} o={o} title={p.forced_source && p.options.length === 1 ? 'Plan with the source you chose' : o.title} chosen={o.key === shown.key} busy={busy} onPreview={() => onPreview(o.key)} onApprove={() => onApprove(o.key)} />
+            <Option key={o.key} o={o} roId={p.ro_id} title={p.forced_source && p.options.length === 1 ? 'Plan with the source you chose' : o.title} chosen={o.key === shown.key} busy={busy} onPreview={() => onPreview(o.key)} onApprove={() => onApprove(o.key)} />
           ))}
         </div>
       </div>

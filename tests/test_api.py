@@ -194,3 +194,72 @@ def test_a_late_part_for_a_dismantled_car_extends_the_blocked_bay():
     shop, jobs, plan, pinned, blocks = repo.load_engine(app_module.conn())
     assert validate(shop, jobs, plan, day["now_min"], plan, pinned=pinned, blocks=blocks)
     assert client.post("/api/late/check", json={"ro_id": "RO-1001", "part_id": "OIL-FLT", "arrives_min": 300}).status_code == 409
+
+
+# --- spec 107: why not this source? ---
+
+def _rank(o):
+    """The engine's own goal order for the recommended plan."""
+    return (o["missed_promises"], o["late_minutes"], o["cost"], o["jobs_moved"])
+
+
+def test_every_source_says_what_the_day_would_look_like():
+    client.post("/api/reset")
+    p = client.post("/api/stalls", json={"ro_id": "RO-1013", "part_id": "WTR-GSK"}).json()
+    best = p["options"][0]
+    assert p["engine_source_id"] == best["source_id"]
+    for s in p["sources"]:
+        if not s["available"]:
+            assert s["outcome"] is None and s["why_not"] is None
+            continue
+        o = s["outcome"]
+        assert o["arrives_min"] == p["now_min"] + s["eta_min"] and o["cost"] == s["cost"]
+        if s["id"] == best["source_id"]:
+            assert s["why_not"] is None
+            assert _rank(o) == _rank(best) and o["bay_blocked_min"] == best["bay_blocked_min"]
+        else:
+            assert s["why_not"], f"{s['name']} was not chosen and must say why"
+            if s["safe"]:
+                assert _rank(o) >= _rank(best), "no safe source may beat the one the engine chose"
+    by = {s["id"]: s for s in p["sources"]}
+    assert "unsafe" in by["north"]["why_not"].lower()
+    # the reason names the first goal the source loses on
+    depot = by["oem"]
+    if depot["outcome"]["missed_promises"] > best["missed_promises"]:
+        assert "promise" in depot["why_not"]
+
+
+def test_forcing_a_source_still_names_the_engines_pick():
+    client.post("/api/reset")
+    free = client.post("/api/stalls", json={"ro_id": "RO-1013", "part_id": "WTR-GSK"}).json()
+    forced = client.post("/api/stalls", json={"ro_id": "RO-1013", "part_id": "WTR-GSK", "force_source": "north"}).json()
+    assert forced["options"][0]["source_id"] == "north"
+    assert forced["engine_source_id"] == free["engine_source_id"] != "north"
+
+
+def test_a_proposal_comes_back_within_five_seconds():
+    import time
+    client.post("/api/reset")
+    t0 = time.perf_counter()
+    r = client.post("/api/stalls", json={"ro_id": "RO-1013", "part_id": "WTR-GSK"})
+    assert r.status_code == 200 and time.perf_counter() - t0 < 5.0
+
+
+# --- spec 108: how late can the part be? ---
+
+def test_a_plan_says_how_late_the_part_can_be():
+    client.post("/api/reset")
+    p = client.post("/api/stalls", json={"ro_id": "RO-1013", "part_id": "WTR-GSK"}).json()
+    opt = p["options"][0]
+    margin = opt["late_margin_min"]
+    assert margin % 15 == 0 and 0 <= margin <= 240
+    assert opt["late_margin_capped"] is (margin == 240)
+    client.post(f"/api/proposals/{p['id']}/approve", json={"option": opt["key"]})
+
+    def missed_if_late_by(extra):
+        r = client.post("/api/late/check", json={"ro_id": "RO-1013", "part_id": "WTR-GSK", "arrives_min": opt["arrives_min"] + extra}).json()
+        return opt["missed_promises"] if r["holds"] else r["proposal"]["options"][0]["missed_promises"]
+
+    assert missed_if_late_by(margin) <= opt["missed_promises"], "inside the margin no extra promise is lost"
+    if not opt["late_margin_capped"]:
+        assert missed_if_late_by(margin + 15) > opt["missed_promises"], "one step past the margin costs a promise"

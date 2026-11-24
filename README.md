@@ -24,6 +24,12 @@ stores, a vendor and an OEM depot) on a schedule board.
 - **Report a part missing.** Pick any open job and mark one of its parts missing. The app
   lists every source with its stock, arrival time, cost and shortage risk, and marks a
   sister store as unsafe when lending would leave it short.
+- **Why not the other sources.** For every source the app shows what the day would look
+  like with it (a real re-plan, not an estimate) and one sentence on why the engine did not
+  choose it: unsafe to lend, more promises missed, more waiting, or higher cost.
+- **How late the part can be.** Every plan and every source says how late the part can
+  arrive before another customer's promise is lost, so a cheap source with no slack is
+  visible next to a dearer one with hours of it.
 - **Plans, with a preview.** The engine offers the plan with the fewest missed promises and,
   when it differs, the plan that moves the fewest jobs. The board previews the selected plan:
   the blocked bay is hatched and moved jobs are outlined. You can force a different source
@@ -94,13 +100,13 @@ as such. The LLM will never choose the plan.
 | `backend/` | FastAPI app and SQLite database: seed data, stock lookup, shortage risk, parts check, stall flow |
 | `frontend/` | React app (Vite, TypeScript): schedule board, parts check, stall card, decision log |
 | `experiments/` | Sample day, 200-stall benchmark, scale check, forecasting baseline, with outputs in `out/` |
-| `tests/` | 23 checks: 9 on the engine, 14 on the API |
+| `tests/` | 27 checks: 9 on the engine, 18 on the API |
 | `data/` | Monash Car Parts dataset (CC BY 4.0) |
 
 ## Tests and experiments
 
 ```bash
-.venv/bin/python -m pytest -q                      # 23 checks
+.venv/bin/python -m pytest -q                      # 27 checks
 .venv/bin/python experiments/toy.py                # 8 jobs, 3 bays, one missing part
 .venv/bin/python experiments/eval.py 200           # 200 seeded stalls, six methods
 .venv/bin/python experiments/scale.py 20           # re-plan time on 12 to 60-job days

@@ -22,6 +22,11 @@ then the code. See [CONTRIBUTING.md](../../CONTRIBUTING.md) for the full loop.
 | [104 Every demo case solves](104-every-case-solves.md) | Proposed | |
 | [105 Run anywhere: deployed and offline](105-deploy-and-offline.md) | Proposed | |
 | [106 UI tests](106-ui-tests.md) | Proposed | |
+| [107 Why not this source?](107-why-not-this-source.md) | Built | `tests/test_api.py` |
+| [108 How late can the part be?](108-how-late-can-the-part-be.md) | Built | `tests/test_api.py` |
+| [109 Hold the bay, or roll the car out?](109-hold-or-release-the-bay.md) | Proposed | |
+| [110 Substitute part numbers](110-substitute-parts.md) | Proposed | |
+| [111 Act alone, or ask](111-act-alone-or-ask.md) | Proposed | |
 
 Status moves Proposed → Agreed (both of us have read it) → In progress (owner named) → Built
 (every acceptance check has a passing test, or a manual check written down in the spec).

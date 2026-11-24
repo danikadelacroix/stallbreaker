@@ -33,12 +33,23 @@ export interface Slot { start_min: number; end_min: number; technician: string; 
 export interface SourceOption {
   id: string; name: string; kind: string; eta_min: number; cost: number
   on_hand: number | null; available: boolean; risk: number | null; risk_basis: string | null; safe: boolean
+  /** What the day would look like if this source were used: a real re-plan, not an estimate. */
+  outcome: SourceOutcome | null
+  /** Why the engine did not choose this source. Null for the engine's own pick. */
+  why_not: string | null
+}
+
+export interface SourceOutcome {
+  missed_promises: number; late_minutes: number; jobs_moved: number; bay_blocked_min: number
+  cost: number; arrives_min: number; proven_best: boolean; late_margin_min: number; late_margin_capped: boolean
 }
 
 export interface PlanOption {
   key: string; title: string; source_id: string; source_name: string; arrives_min: number; cost: number
   missed_promises: number; late_minutes: number; jobs_moved: number; bay_blocked_min: number
   proven_best: boolean; solve_seconds: number; stalled_job: Slot
+  /** How late the part can be before another promise is lost, in 15-minute steps up to 4 hours. */
+  late_margin_min: number; late_margin_capped: boolean
   changes: { ro_id: string; description: string; before: Slot; after: Slot }[]
   late_orders: { ro_id: string; vehicle: string; description: string; promise_min: number; end_min: number; late_before: boolean }[]
   assignments: Record<string, Slot>
@@ -50,7 +61,7 @@ export interface Proposal {
   kind: 'missing_part' | 'late_part'; old_arrives_min?: number; new_arrives_min?: number
   ro_id: string; vehicle: string; description: string; promise_min: number
   part_id: string; part_name: string; qty: number; now_min: number; in_progress: boolean
-  forced_source: string | null; current: Slot; sources: SourceOption[]; options: PlanOption[]
+  forced_source: string | null; engine_source_id: string; current: Slot; sources: SourceOption[]; options: PlanOption[]
   no_replan: { source_id: string; source_name: string; arrives_min: number; missed_promises: number; late_minutes: number; bay_blocked_min: number }
 }
 

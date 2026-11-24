@@ -15,6 +15,7 @@ OPTIONS = [
     ("fewest_moves", "Fewest jobs moved", ("moves", "late", "tard", "cost", "shift", "hold")),
 ]
 SOLVE_SECONDS = 4.0
+MARGIN_STEP, MARGIN_STEPS = 15, 16  # the lateness margin is searched in 15-minute steps, up to 4 hours
 
 
 class StallError(Exception):
@@ -27,13 +28,82 @@ def _as_dict(a):
     return {"start_min": a.start, "end_min": a.end, "technician": a.tech, "bay": a.bay}
 
 
-def _solve(conn, shop, jobs, live, prev, now, stall, pinned, blocks, force_source=None):
+def _late_margin(shop, jobs, live, prev, now, stall, pinned, blocks, source_id, missed):
+    """How late can the part be before the day costs another promise? Found by re-planning with a
+    later arrival, in 15-minute steps. A later arrival can only make the best plan worse, so a
+    binary search is enough."""
+    src = next(s for s in stall.sources if s.id == source_id)
+
+    def still_fine(steps):
+        later = replace(src, eta=src.eta + steps * MARGIN_STEP)
+        one = Stall(stall.job, stall.part, (later,))
+        p = replan(shop, jobs, prev, now, one, force_source=later.id, order=("late",), time_limit=1.5, pinned=pinned, blocks=blocks)
+        return p is not None and metrics(jobs, p, live, now, one)["late"] <= missed
+
+    if still_fine(MARGIN_STEPS):
+        return MARGIN_STEPS * MARGIN_STEP
+    ok, bad = 0, MARGIN_STEPS
+    while bad - ok > 1:
+        mid = (ok + bad) // 2
+        if still_fine(mid):
+            ok = mid
+        else:
+            bad = mid
+    return ok * MARGIN_STEP
+
+
+def _outcome_of(option):
+    return {k: option[k] for k in ("missed_promises", "late_minutes", "jobs_moved", "bay_blocked_min", "cost", "arrives_min", "proven_best", "late_margin_min", "late_margin_capped")}
+
+
+def _why_not(source, outcome, best):
+    """One sentence on why the engine did not choose this source: the first goal it loses on,
+    in the engine's own goal order."""
+    if not source["safe"]:
+        return f"Unsafe to lend: {source['risk_basis']}."
+    more = outcome["missed_promises"] - best["missed_promises"]
+    if more > 0:
+        return f"{more} more promise{'s' if more > 1 else ''} missed."
+    more = outcome["late_minutes"] - best["late_minutes"]
+    if more > 0:
+        return f"No more promises missed, but customers wait {more} minutes longer in total."
+    more = outcome["cost"] - best["cost"]
+    if more > 0:
+        return f"Keeps the same promises, but costs ${more:.0f} more."
+    more = outcome["jobs_moved"] - best["jobs_moved"]
+    if more > 0:
+        return f"Same promises and cost, but moves {more} more job{'s' if more > 1 else ''}."
+    return "As good as the chosen source."
+
+
+def _explain_sources(conn, shop, jobs, plan, now, stall, pinned, blocks, cands, options, forced):
+    """For every source that has the part: what the day would look like with it, and, if the engine
+    did not choose it, why not. Each outcome is a real re-plan with that source forced."""
+    outcomes = {options[0]["source_id"]: _outcome_of(options[0])}
+    for src in stall.sources:
+        if src.id not in outcomes:
+            what_if = _solve(conn, shop, jobs, plan, plan, now, stall, pinned, blocks, src.id, only=OPTIONS[:1])
+            outcomes[src.id] = _outcome_of(what_if[0])
+    if forced:
+        free = replan(shop, jobs, plan, now, stall, order=OPTIONS[0][2], time_limit=SOLVE_SECONDS, pinned=pinned, blocks=blocks)
+        engine_pick = free.source.id if free else forced
+    else:
+        engine_pick = options[0]["source_id"]
+    best = outcomes[engine_pick]
+    for c in cands:
+        o = outcomes.get(c["id"])
+        c["outcome"] = o
+        c["why_not"] = None if o is None or c["id"] == engine_pick else _why_not(c, o, best)
+    return engine_pick
+
+
+def _solve(conn, shop, jobs, live, prev, now, stall, pinned, blocks, force_source=None, only=None, margins=True):
     """Ask the engine for each kind of plan. 'live' is the plan on the board, used to list what would move;
     'prev' is what the engine re-plans from (the same, except when a waiting job is being re-timed)."""
     ro_id = stall.job
     info = {r["id"]: r for r in conn.execute("SELECT id, vehicle, promise_min FROM repair_orders")}
     options = []
-    for key, title, goal_order in OPTIONS:
+    for key, title, goal_order in (only or OPTIONS):
         p = replan(shop, jobs, prev, now, stall, force_source=force_source, order=goal_order, time_limit=SOLVE_SECONDS, pinned=pinned, blocks=blocks)
         if p is None:
             continue
@@ -55,6 +125,10 @@ def _solve(conn, shop, jobs, live, prev, now, stall, pinned, blocks, force_sourc
         raise StallError(409, "The engine could not find a workable plan.")
     if len(options) == 2 and options[0]["assignments"] == options[1]["assignments"] and options[0]["source_id"] == options[1]["source_id"]:
         options = [dict(options[0], title="Recommended plan")]
+    if margins:
+        for o in options:
+            o["late_margin_min"] = _late_margin(shop, jobs, live, prev, now, stall, pinned, blocks, o["source_id"], o["missed_promises"])
+            o["late_margin_capped"] = o["late_margin_min"] == MARGIN_STEPS * MARGIN_STEP
     return options
 
 
@@ -106,7 +180,9 @@ def propose(conn, ro_id, part_id, force_source=None):
     stall = Stall(ro_id, part["name"], sources)
     options = _solve(conn, shop, jobs, plan, plan, now, stall, pinned, blocks, force_source)
     cheapest = min((s for s in sources if s.safe), key=lambda s: (s.cost, s.eta))
+    engine_pick = _explain_sources(conn, shop, jobs, plan, now, stall, pinned, blocks, cands, options, force_source)
     return _store(conn, now, {
+        "engine_source_id": engine_pick,
         "kind": "missing_part", "ro_id": ro_id, "vehicle": order["vehicle"], "description": order["description"], "promise_min": order["promise_min"],
         "part_id": part_id, "part_name": part["name"], "qty": need["qty"], "now_min": now, "in_progress": in_progress,
         "forced_source": force_source, "current": _as_dict(current), "sources": cands, "options": options,
@@ -157,7 +233,8 @@ def check_late(conn, ro_id, part_id, arrives_min):
         "part_id": part_id, "part_name": part["name"], "qty": 0, "now_min": now, "in_progress": waiting,
         "forced_source": None, "current": _as_dict(current), "old_arrives_min": src["arrives_min"], "new_arrives_min": arrives_min,
         "sources": [{"id": src["source_id"], "name": src["source_name"], "kind": "on_its_way", "eta_min": arrives_min - now, "cost": src["cost"],
-                     "on_hand": None, "available": True, "risk": None, "risk_basis": None, "safe": True}],
+                     "on_hand": None, "available": True, "risk": None, "risk_basis": None, "safe": True, "outcome": None, "why_not": None}],
+        "engine_source_id": src["source_id"],
         "options": options, "no_replan": _no_replan(shop, jobs, prev, now, stall, source, pins, waiting),
     })
     return {"holds": False, "proposal": proposal}
