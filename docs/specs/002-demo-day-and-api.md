@@ -4,7 +4,7 @@
 
 ## Why
 
-A judge has to be able to drive one realistic day, refresh the page, and reset it to the same
+Someone trying the demo has to be able to drive one realistic day, refresh the page, and reset it to the same
 start.
 
 ## Rules

@@ -4,7 +4,7 @@
 
 ## Why
 
-Judges will ask "how do you know it is better?" The answer is the 200-stall benchmark, and it
+The first question about any planner is "how do you know it is better?" The answer is the 200-stall benchmark, and it
 should be one click away inside the app, not only in the README.
 
 ## Rules

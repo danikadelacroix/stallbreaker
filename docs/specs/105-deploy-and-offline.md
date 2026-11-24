@@ -4,8 +4,8 @@
 
 ## Why
 
-Judges should be able to open a link. And if venue Wi-Fi fails, the demo must still run on a
-laptop with no internet.
+Anyone should be able to open a link. And the demo must still run on a laptop with no
+internet.
 
 ## Rules
 

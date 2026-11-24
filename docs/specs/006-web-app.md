@@ -4,7 +4,7 @@
 
 ## Why
 
-A judge must be able to drive the whole flow without us touching the keyboard.
+A first-time user must be able to drive the whole flow without help.
 
 ## Screen
 

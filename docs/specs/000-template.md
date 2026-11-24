@@ -4,7 +4,7 @@
 
 ## Why
 
-One or two sentences: the problem for the service manager, or for the judges.
+One or two sentences: the problem for the service manager, or for someone evaluating the app.
 
 ## Rules
 

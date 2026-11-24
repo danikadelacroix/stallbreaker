@@ -4,7 +4,7 @@
 
 ## Why
 
-A judge can click any job and report any part missing. None of those clicks may fail on stage.
+A user can click any job and report any part missing. None of those clicks may fail.
 
 ## Rules
 
