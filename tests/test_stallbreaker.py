@@ -104,3 +104,84 @@ def test_pinned_jobs_and_blocked_bays_are_respected():
     for jid, a in plan.assign.items():
         if a.bay == blocked_bay and a.start >= toy.NOW:
             assert a.start >= toy.NOW + 300 or jid == pin
+
+
+# --- spec 109: hold the bay, or roll the car out? ---
+
+from dataclasses import replace  # noqa: E402
+
+from shopcore import Assign, Bay, Job, Plan, Shop, Source, Stall, Tech, hold_or_roll_out  # noqa: E402
+
+ONE_LIFT = Shop((Tech("Asha", frozenset({"brakes"})), Tech("Bela", frozenset({"brakes"}))), (Bay("Bay 1", "lift"),))
+TWO_LIFTS = Shop(ONE_LIFT.techs, (Bay("Bay 1", "lift"), Bay("Bay 2", "lift")))
+PART = (Source("depot", "OEM depot", eta=180, cost=0),)
+
+
+def _brake_day(shop, movable, next_due=260):
+    """At 09:00 the first car is an hour into a two-hour brake job when a part turns out to be missing.
+    The second car is booked for the same bay straight after it."""
+    first = Job("RO-1", "Front brake pads", 120, "brakes", ("lift",), due=600, roll_out=20 if movable else None, set_up=15)
+    second = Job("RO-2", "Front brake pads", 90, "brakes", ("lift",), due=next_due)
+    prev = Plan(assign={"RO-1": Assign(0, 120, "Asha", "Bay 1"), "RO-2": Assign(120, 210, "Bela", shop.bays[-1].id)})
+    return [first, second], prev, 60, Stall("RO-1", "pads", PART)
+
+
+def test_a_car_that_cannot_be_moved_is_always_held():
+    jobs, prev, now, stall = _brake_day(ONE_LIFT, movable=False)
+    plan = hold_or_roll_out(ONE_LIFT, jobs, prev, now, stall, order=KEEP)
+    assert validate(ONE_LIFT, jobs, plan, now, prev, stall)
+    assert plan.info["bay"] == "hold" and plan.info["bay_why"] == "cannot_move"
+    assert plan.hold == 180 and plan.assign["RO-1"].bay == "Bay 1"
+    assert metrics(jobs, plan, prev, now, stall)["late"] == 1, "the next car waits behind the blocked bay and misses its promise"
+
+
+def test_rolling_the_car_out_frees_the_bay_when_that_saves_a_promise():
+    jobs, prev, now, stall = _brake_day(ONE_LIFT, movable=True)
+    plan = hold_or_roll_out(ONE_LIFT, jobs, prev, now, stall, order=KEEP)
+    assert validate(ONE_LIFT, jobs, plan, now, prev, stall)
+    assert plan.info["bay"] == "roll_out" and plan.info["rolled_out_until"] == now + 20
+    assert plan.hold == 0, "nothing sits in the bay waiting"
+    assert metrics(jobs, plan, prev, now, stall)["late"] == 0
+    assert plan.info["other"]["late"] == 1, "it also says what holding the bay would have cost"
+    rest = plan.assign["RO-1"]
+    assert rest.start >= now + 180, "the remaining work still waits for the part"
+    assert rest.end - rest.start == 60 + 15, "the remaining hour, plus the time to set the car up again"
+    second = plan.assign["RO-2"]
+    assert second.start >= now + 20, "the bay is free only once the car has been rolled out"
+    assert second.tech != "Asha" or second.start >= now + 20, "the technician rolling the car out is busy until then"
+
+
+def test_the_car_stays_put_when_rolling_it_out_would_help_nobody():
+    jobs, prev, now, stall = _brake_day(TWO_LIFTS, movable=True)
+    plan = hold_or_roll_out(TWO_LIFTS, jobs, prev, now, stall, order=KEEP)
+    assert validate(TWO_LIFTS, jobs, plan, now, prev, stall)
+    assert plan.info["bay"] == "hold" and plan.info["bay_why"] == "no_gain"
+    assert plan.assign["RO-1"].bay == "Bay 1" and plan.hold == 180
+
+
+def test_without_movable_cars_the_decision_changes_nothing():
+    base = initial_plan(toy.SHOP, toy.JOBS)
+    plain = replan(toy.SHOP, toy.JOBS, base, toy.NOW, toy.STALL, order=KEEP, deterministic=True)
+    decided = hold_or_roll_out(toy.SHOP, toy.JOBS, base, toy.NOW, toy.STALL, order=KEEP, deterministic=True)
+    assert decided.assign == plain.assign and decided.source == plain.source and decided.hold == plain.hold
+
+
+def test_the_checker_catches_a_rolled_out_car_that_was_never_really_moved():
+    jobs, prev, now, stall = _brake_day(ONE_LIFT, movable=True)
+    plan = hold_or_roll_out(ONE_LIFT, jobs, prev, now, stall, order=KEEP)
+    cheat = replace(plan.assign["RO-2"], start=now, end=now + 90, tech="Bela")  # uses the bay while the car is still in it
+    bad = Plan(assign={**plan.assign, "RO-2": cheat}, extra=plan.extra, source=plan.source, info=plan.info)
+    try:
+        validate(ONE_LIFT, jobs, bad, now, prev, stall)
+    except AssertionError:
+        return
+    raise AssertionError("the checker accepted a job in a bay that was still occupied")
+
+
+def test_a_car_is_not_rolled_out_just_to_move_fewer_jobs():
+    """Rolling a car out costs technician time, so it must earn it: a kept promise, less waiting, or money.
+    Here holding the bay only pushes the next car back by an hour, still well inside its promise."""
+    jobs, prev, now, stall = _brake_day(ONE_LIFT, movable=True, next_due=900)
+    plan = hold_or_roll_out(ONE_LIFT, jobs, prev, now, stall, order=("moves", "late", "tard", "cost", "shift"))
+    assert validate(ONE_LIFT, jobs, plan, now, prev, stall)
+    assert plan.info["bay"] == "hold" and plan.info["bay_why"] == "no_gain"

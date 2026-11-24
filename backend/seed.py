@@ -40,6 +40,12 @@ JOB_TYPES = [  # code, description, minutes, skill, bay kinds, parts kit, relati
     ("TBELT", "Timing belt", 150, "engine", L, {"TMG-KIT": 1, "TMG-TNS": 1}, 2),
     ("WPUMP", "Water pump replacement", 180, "engine", L, {"WTR-PMP": 1, "WTR-GSK": 1, "CLT-5050": 1}, 2),
 ]
+# Can a car be made movable part-way through the job, and what does that cost? (roll-out minutes, set-up minutes)
+# These are our assumptions, not shop data. Job types not listed cannot be moved while apart:
+# engine and cooling work leaves the car undrivable, and a car with a suspension arm off cannot roll.
+MOVABLE = {"OIL": (10, 10), "DIAG": (5, 5), "ALIGN": (10, 15), "BATT": (10, 5), "AC": (10, 10), "PADS": (20, 15), "ROTOR": (20, 15)}
+
+
 VEHICLES = ["Toyota Camry", "Honda Civic", "Ford F-150", "Chevrolet Silverado", "Toyota RAV4", "Honda CR-V", "Nissan Altima",
             "Hyundai Tucson", "Ford Explorer", "Toyota Corolla", "Honda Accord", "Jeep Wrangler", "Subaru Outback", "Kia Sorento"]
 
@@ -108,7 +114,8 @@ def build(conn, seed=DEFAULT_SEED, n_orders=40):
         for store, qty in (("home", home), ("north", north), ("east", east)):
             ex("INSERT INTO stock VALUES (?, ?, ?)", (store, pid, qty))
     for code, desc, minutes, skill, kinds, kit, _w in JOB_TYPES:
-        ex("INSERT INTO job_types VALUES (?, ?, ?, ?, ?)", (code, desc, minutes, skill, json.dumps(kinds)))
+        roll_out, set_up = MOVABLE.get(code, (None, 0))
+        ex("INSERT INTO job_types VALUES (?, ?, ?, ?, ?, ?, ?)", (code, desc, minutes, skill, json.dumps(kinds), roll_out, set_up))
         for pid, qty in kit.items():
             ex("INSERT INTO job_type_parts VALUES (?, ?, ?)", (code, pid, qty))
 
@@ -120,7 +127,9 @@ def build(conn, seed=DEFAULT_SEED, n_orders=40):
         promise = release + minutes + rng.randrange(60, 241, 15)
         rid = f"RO-{1001 + i}"
         vehicle = f"{rng.randint(2016, 2024)} {rng.choice(VEHICLES)}"
-        ex("INSERT INTO repair_orders VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (rid, vehicle, code, desc, minutes, skill, json.dumps(kinds), release, promise))
+        roll_out, set_up = MOVABLE.get(code, (None, 0))
+        ex("INSERT INTO repair_orders VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+           (rid, vehicle, code, desc, minutes, skill, json.dumps(kinds), release, promise, roll_out, set_up))
         for pid, qty in kit.items():
             ex("INSERT INTO ro_parts VALUES (?, ?, ?)", (rid, pid, qty))
         jobs.append(Job(rid, desc, minutes, skill, tuple(kinds), due=promise, release=release))

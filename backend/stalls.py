@@ -6,7 +6,7 @@ from dataclasses import replace
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
-from shopcore import Assign, Plan, Source, Stall, _stall_in_progress, metrics, replan, right_shift, validate  # noqa: E402
+from shopcore import Assign, Plan, Source, Stall, _stall_in_progress, hold_or_roll_out, metrics, right_shift, validate  # noqa: E402
 
 from . import db, policy, repo, sourcing  # noqa: E402
 
@@ -28,7 +28,7 @@ def _as_dict(a):
     return {"start_min": a.start, "end_min": a.end, "technician": a.tech, "bay": a.bay}
 
 
-def _late_margin(shop, jobs, live, prev, now, stall, pinned, blocks, source_id, missed):
+def _late_margin(shop, jobs, live, prev, now, stall, pinned, blocks, source_id, missed, bay):
     """How late can the part be before the day costs another promise? Found by re-planning with a
     later arrival, in 15-minute steps. A later arrival can only make the best plan worse, so a
     binary search is enough."""
@@ -37,7 +37,7 @@ def _late_margin(shop, jobs, live, prev, now, stall, pinned, blocks, source_id, 
     def still_fine(steps):
         later = replace(src, eta=src.eta + steps * MARGIN_STEP)
         one = Stall(stall.job, stall.part, (later,))
-        p = replan(shop, jobs, prev, now, one, force_source=later.id, order=("late",), time_limit=1.5, pinned=pinned, blocks=blocks, deterministic=True)
+        p = hold_or_roll_out(shop, jobs, prev, now, one, force_source=later.id, order=("late",), bay=bay, time_limit=1.5, pinned=pinned, blocks=blocks, deterministic=True)
         return p is not None and metrics(jobs, p, live, now, one)["late"] <= missed
 
     if still_fine(MARGIN_STEPS):
@@ -76,16 +76,16 @@ def _why_not(source, outcome, best):
     return "As good as the chosen source."
 
 
-def _explain_sources(conn, shop, jobs, plan, now, stall, pinned, blocks, cands, options, forced):
+def _explain_sources(conn, shop, jobs, plan, now, stall, pinned, blocks, cands, options, forced, bay="auto"):
     """For every source that has the part: what the day would look like with it, and, if the engine
     did not choose it, why not. Each outcome is a real re-plan with that source forced."""
     outcomes = {options[0]["source_id"]: _outcome_of(options[0])}
     for src in stall.sources:
         if src.id not in outcomes:
-            what_if = _solve(conn, shop, jobs, plan, plan, now, stall, pinned, blocks, src.id, only=OPTIONS[:1])
+            what_if = _solve(conn, shop, jobs, plan, plan, now, stall, pinned, blocks, src.id, only=OPTIONS[:1], bay=bay)
             outcomes[src.id] = _outcome_of(what_if[0])
     if forced:
-        free = replan(shop, jobs, plan, now, stall, order=OPTIONS[0][2], time_limit=SOLVE_SECONDS, pinned=pinned, blocks=blocks, deterministic=True)
+        free = hold_or_roll_out(shop, jobs, plan, now, stall, order=OPTIONS[0][2], time_limit=SOLVE_SECONDS, pinned=pinned, blocks=blocks, deterministic=True)
         engine_pick = free.source.id if free else forced
     else:
         engine_pick = options[0]["source_id"]
@@ -97,7 +97,37 @@ def _explain_sources(conn, shop, jobs, plan, now, stall, pinned, blocks, cands, 
     return engine_pick
 
 
-def _solve(conn, shop, jobs, live, prev, now, stall, pinned, blocks, force_source=None, only=None, margins=True):
+def _worse_by(other, chosen):
+    """How the other way of handling the bay is worse, in the engine's goal order. 'other' uses the engine's names."""
+    for theirs, ours, text in (("late", "missed_promises", "{n} more promise{s} missed"), ("tard", "late_minutes", "{n} more late minutes"),
+                               ("cost", "cost", "${n:.0f} more in sourcing"), ("moved", "jobs_moved", "{n} more job{s} moved")):
+        more = other[theirs] - chosen[ours]
+        if more > 0:
+            return text.format(n=more, s="s" if more != 1 else "")
+    return None
+
+
+def _bay_note(p, job, cur, option, chosen_by_manager=False):
+    """One sentence on what happens to the bay, and why."""
+    why = p.info.get("bay_why")
+    if why == "not_started":
+        return None
+    if chosen_by_manager and p.info["bay"] == "roll_out":
+        return (f"You chose to roll the car out. It takes {cur.tech} {job.roll_out} min and frees {cur.bay} from "
+                f"{repo.clock(p.info['rolled_out_until'])}; setting the car up again later adds {job.set_up} min.")
+    if chosen_by_manager:
+        return f"You chose to keep the car in {cur.bay} until the work is done."
+    if why == "cannot_move":
+        return f"This car cannot be moved while it is apart, so {cur.bay} stays blocked until the work is done."
+    if p.info["bay"] == "roll_out":
+        note = f"Rolling the car out takes {cur.tech} {job.roll_out} min and frees {cur.bay} from {repo.clock(p.info['rolled_out_until'])}."
+        worse = _worse_by(p.info["other"], option) if p.info.get("other") else None
+        return note + (f" Keeping it in the bay would mean {worse}." if worse else "")
+    return (f"The car could be rolled out ({job.roll_out} min of work, {job.set_up} min to set up again), "
+            f"but that would keep no more promises and save no waiting, so it stays in {cur.bay}.")
+
+
+def _solve(conn, shop, jobs, live, prev, now, stall, pinned, blocks, force_source=None, only=None, margins=True, bay="auto", bay_chosen_by_manager=False):
     """Ask the engine for each kind of plan. 'live' is the plan on the board, used to list what would move;
     'prev' is what the engine re-plans from (the same, except when a waiting job is being re-timed)."""
     ro_id = stall.job
@@ -106,7 +136,8 @@ def _solve(conn, shop, jobs, live, prev, now, stall, pinned, blocks, force_sourc
     info = {r["id"]: r for r in conn.execute("SELECT id, vehicle, promise_min FROM repair_orders")}
     options = []
     for key, title, goal_order in (only or OPTIONS):
-        p = replan(shop, jobs, prev, now, stall, force_source=force_source, order=goal_order, time_limit=SOLVE_SECONDS, pinned=pinned, blocks=blocks, deterministic=True)
+        p = hold_or_roll_out(shop, jobs, prev, now, stall, force_source=force_source, order=goal_order, bay=bay,
+                             time_limit=SOLVE_SECONDS, pinned=pinned, blocks=blocks, deterministic=True)
         if p is None:
             continue
         validate(shop, jobs, p, now, prev, stall, pinned, blocks)
@@ -121,17 +152,24 @@ def _solve(conn, shop, jobs, live, prev, now, stall, pinned, blocks, force_sourc
             "missed_promises": m["late"], "late_minutes": m["tard"], "jobs_moved": len(changes), "bay_blocked_min": p.hold,
             "proven_best": p.info["proven"], "solve_seconds": round(p.info["seconds"], 3),
             "stalled_job": _as_dict(p.assign[ro_id]), "changes": changes, "late_orders": late,
+            "bay_decision": p.info.get("bay"), "rolled_out_until": p.info.get("rolled_out_until"),
             "assignments": {jid: _as_dict(a) for jid, a in p.assign.items()},
         })
+        stalled_job = next(j for j in jobs if j.id == ro_id)
+        explain = bay == "auto" or bay_chosen_by_manager
+        options[-1]["bay_note"] = _bay_note(p, stalled_job, live.assign[ro_id], options[-1], bay_chosen_by_manager) if explain else None
     if not options:
         raise StallError(409, "The engine could not find a workable plan.")
-    if len(options) == 2 and options[0]["assignments"] == options[1]["assignments"] and options[0]["source_id"] == options[1]["source_id"]:
+    # A second card is worth showing only if it differs in something the manager can see.
+    shown = lambda o: (o["source_id"], o["missed_promises"], o["late_minutes"], o["jobs_moved"], o["bay_blocked_min"], o["bay_decision"])
+    if len(options) == 2 and shown(options[0]) == shown(options[1]):
         options = [dict(options[0], title="Recommended plan")]
     for o in options:
         o["needs_you"] = policy.needs_a_person(o, safe[o["source_id"]])
     if margins:
         for o in options:
-            o["late_margin_min"] = _late_margin(shop, jobs, live, prev, now, stall, pinned, blocks, o["source_id"], o["missed_promises"])
+            o["late_margin_min"] = _late_margin(shop, jobs, live, prev, now, stall, pinned, blocks, o["source_id"], o["missed_promises"],
+                                                o["bay_decision"] or "hold")
             o["late_margin_capped"] = o["late_margin_min"] == MARGIN_STEPS * MARGIN_STEP
     return options
 
@@ -156,7 +194,7 @@ def _store(conn, now, payload):
     return get(conn, cur.lastrowid)
 
 
-def propose(conn, ro_id, part_id, force_source=None):
+def propose(conn, ro_id, part_id, force_source=None, force_bay=None):
     """A part is missing. Work out the sources and plan options, store them, and return them."""
     now = db.get_meta(conn, "now_min", 0)
     order = conn.execute("SELECT * FROM repair_orders WHERE id = ?", (ro_id,)).fetchone()
@@ -182,14 +220,19 @@ def propose(conn, ro_id, part_id, force_source=None):
         raise StallError(422, "That source does not have the part.")
     sources = tuple(Source(c["id"], c["name"], c["eta_min"], c["cost"], c["risk"] or 0.0, c["safe"]) for c in usable)
     stall = Stall(ro_id, part["name"], sources)
-    options = _solve(conn, shop, jobs, plan, plan, now, stall, pinned, blocks, force_source)
+    if force_bay == "roll_out" and (not in_progress or next(j for j in jobs if j.id == ro_id).roll_out is None):
+        raise StallError(422, "This car cannot be rolled out." if in_progress else "This car has not been taken apart, so there is nothing to roll out.")
+    bay = force_bay if in_progress and force_bay else "auto"
+    options = _solve(conn, shop, jobs, plan, plan, now, stall, pinned, blocks, force_source, bay=bay, bay_chosen_by_manager=bay != "auto")
     cheapest = min((s for s in sources if s.safe), key=lambda s: (s.cost, s.eta))
-    engine_pick = _explain_sources(conn, shop, jobs, plan, now, stall, pinned, blocks, cands, options, force_source)
+    engine_pick = _explain_sources(conn, shop, jobs, plan, now, stall, pinned, blocks, cands, options, force_source, bay)
     return _store(conn, now, {
         "engine_source_id": engine_pick,
         "kind": "missing_part", "ro_id": ro_id, "vehicle": order["vehicle"], "description": order["description"], "promise_min": order["promise_min"],
         "part_id": part_id, "part_name": part["name"], "qty": need["qty"], "now_min": now, "in_progress": in_progress,
-        "forced_source": force_source, "current": _as_dict(current), "sources": cands, "options": options,
+        "forced_source": force_source, "forced_bay": force_bay if bay != "auto" else None,
+        "can_roll_out": in_progress and next(j for j in jobs if j.id == ro_id).roll_out is not None,
+        "current": _as_dict(current), "sources": cands, "options": options,
         "no_replan": _no_replan(shop, jobs, plan, now, stall, cheapest, pinned, in_progress),
     })
 
@@ -232,11 +275,11 @@ def check_late(conn, ro_id, part_id, arrives_min, store=False):
         prev = Plan(assign={**plan.assign, ro_id: virtual})
         pins = pinned - {ro_id}
         blks = tuple((r["bay_id"], r["start_min"], r["end_min"]) for r in conn.execute("SELECT * FROM segments WHERE kind = 'hold' AND ro_id != ?", (ro_id,)))
-    options = _solve(conn, shop, jobs, plan, prev, now, stall, pins, blks)
+    options = _solve(conn, shop, jobs, plan, prev, now, stall, pins, blks, bay="hold")  # a car already waiting in its bay stays there
     payload = {
         "kind": "late_part", "ro_id": ro_id, "vehicle": order["vehicle"], "description": order["description"], "promise_min": order["promise_min"],
         "part_id": part_id, "part_name": part["name"], "qty": 0, "now_min": now, "in_progress": waiting,
-        "forced_source": None, "current": _as_dict(current), "old_arrives_min": src["arrives_min"], "new_arrives_min": arrives_min,
+        "forced_source": None, "forced_bay": None, "can_roll_out": False, "current": _as_dict(current), "old_arrives_min": src["arrives_min"], "new_arrives_min": arrives_min,
         "sources": [{"id": src["source_id"], "name": src["source_name"], "kind": "on_its_way", "eta_min": arrives_min - now, "cost": src["cost"],
                      "on_hand": None, "available": True, "risk": None, "risk_basis": None, "safe": True, "outcome": None, "why_not": None}],
         "engine_source_id": src["source_id"],
@@ -307,6 +350,13 @@ def approve(conn, proposal_id, option_key):
                      (a["start_min"], a["end_min"], a["technician"], a["bay"], jid))
     if late and p["in_progress"]:
         conn.execute("UPDATE segments SET end_min = ? WHERE ro_id = ? AND kind = 'hold'", (opt["stalled_job"]["start_min"], ro_id))
+    elif p["in_progress"] and opt.get("bay_decision") == "roll_out":
+        # The car leaves the bay: what is left of the job (plus setting the car up again) is an ordinary job from here on.
+        cur, rest = p["current"], opt["stalled_job"]
+        conn.execute("INSERT INTO segments (ro_id, kind, start_min, end_min, tech_id, bay_id) VALUES (?, 'done', ?, ?, ?, ?)",
+                     (ro_id, cur["start_min"], opt["rolled_out_until"], cur["technician"], cur["bay"]))
+        conn.execute("UPDATE repair_orders SET minutes = ?, release_min = MAX(release_min, ?) WHERE id = ?",
+                     (rest["end_min"] - rest["start_min"], opt["arrives_min"], ro_id))
     elif p["in_progress"]:
         cur = p["current"]
         conn.execute("INSERT INTO segments (ro_id, kind, start_min, end_min, tech_id, bay_id) VALUES (?, 'done', ?, ?, ?, ?)",
@@ -324,7 +374,8 @@ def approve(conn, proposal_id, option_key):
                 for o in opt["late_orders"] if not o["late_before"] or o["ro_id"] == ro_id]
     detail = {"ro_id": ro_id, "part": p["part_name"], "source": opt["source_name"], "arrives_min": opt["arrives_min"], "cost": 0 if late else opt["cost"],
               "option": opt["title"], "missed_promises": opt["missed_promises"], "jobs_moved": [c["ro_id"] for c in opt["changes"]],
-              "bay_blocked_min": opt["bay_blocked_min"], "proven_best": opt["proven_best"],
+              "bay_blocked_min": opt["bay_blocked_min"], "bay_decision": opt.get("bay_decision"), "bay_note": opt.get("bay_note"),
+              "proven_best": opt["proven_best"],
               "needed_a_person_because": opt.get("needs_you", []), "decided_by": "manager",
               "customer_messages": messages, "messages_written_by": "fixed template (LLM not connected)"}
     if late:

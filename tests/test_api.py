@@ -415,3 +415,122 @@ def test_the_demo_day_has_exactly_its_five_designed_shortfalls():
         client.post("/api/clock", json={"now_min": now})
         flagged = {(f["ro_id"], f["part_id"]) for f in client.get("/api/precheck").json()["flagged"]}
         assert flagged == {("RO-1013", "WTR-GSK"), ("RO-1007", "TMG-TNS"), ("RO-1017", "TMG-TNS"), ("RO-1035", "BRK-PAD-F"), ("RO-1040", "BRK-PAD-F")}, now
+
+
+# --- spec 109: hold the bay, or roll the car out? ---
+
+def test_a_car_that_cannot_be_moved_keeps_its_bay_and_says_so():
+    at_eleven()
+    p = client.post("/api/stalls", json={"ro_id": "RO-1013", "part_id": "WTR-GSK"}).json()
+    for o in p["options"]:
+        assert o["bay_decision"] == "hold" and o["rolled_out_until"] is None
+        assert "cannot be moved" in o["bay_note"] and o["bay_blocked_min"] > 0
+
+
+def test_a_job_that_has_not_started_has_no_bay_decision():
+    client.post("/api/reset")
+    p = client.post("/api/stalls", json={"ro_id": "RO-1013", "part_id": "WTR-GSK"}).json()
+    assert all(o["bay_decision"] is None and o["bay_note"] is None for o in p["options"])
+
+
+def test_every_job_says_whether_its_car_can_be_rolled_out():
+    day = client.post("/api/reset").json()["day"]
+    by_kind = {o["description"]: o["roll_out_min"] for o in day["orders"]}
+    assert by_kind["Water pump replacement"] is None and by_kind["Timing belt"] is None, "engine apart: cannot move"
+    assert by_kind["Front brake pads"] == 20, "wheels off: 20 minutes to make it movable"
+
+
+def _stalls_in_progress(times=(180, 210, 240, 270, 300)):
+    """Every (time, job, part) on the demo day where a movable car is on the lift."""
+    for now in times:
+        client.post("/api/reset")
+        day = client.post("/api/clock", json={"now_min": now}).json()
+        for o in day["orders"]:
+            if o["status"] == "in_progress" and o["roll_out_min"] is not None:
+                for part in o["parts"]:
+                    yield now, o, part["part_id"]
+
+
+def test_a_movable_car_gets_a_decision_with_a_reason_either_way():
+    seen = set()
+    for now, o, part_id in _stalls_in_progress(times=(180, 240)):
+        client.post("/api/reset")
+        client.post("/api/clock", json={"now_min": now})
+        r = client.post("/api/stalls", json={"ro_id": o["id"], "part_id": part_id})
+        if r.status_code != 200:
+            continue
+        for opt in r.json()["options"]:
+            assert opt["bay_decision"] in ("hold", "roll_out") and opt["bay_note"]
+            if opt["bay_decision"] == "roll_out":
+                assert opt["bay_blocked_min"] == 0 and opt["rolled_out_until"] == now + o["roll_out_min"]
+                assert any("rolled out" in reason for reason in opt["needs_you"])
+            else:
+                assert "cannot be moved" not in opt["bay_note"]
+            seen.add(opt["bay_decision"])
+    assert "hold" in seen
+
+
+def _movable_stall_at_eleven():
+    """A battery job that is on the lift at 11:00 and can be rolled out."""
+    day = at_eleven()
+    job = next(o for o in day["orders"] if o["status"] == "in_progress" and o["description"] == "Battery replacement")
+    return day, job, job["parts"][0]["part_id"]
+
+
+def test_on_a_day_with_free_bays_the_car_stays_put_and_the_card_says_why():
+    _day, job, part_id = _movable_stall_at_eleven()
+    p = client.post("/api/stalls", json={"ro_id": job["id"], "part_id": part_id}).json()
+    assert p["forced_bay"] is None
+    for o in p["options"]:
+        assert o["bay_decision"] == "hold" and "could be rolled out" in o["bay_note"]
+
+
+def test_a_manager_can_roll_the_car_out_anyway_and_approve_it():
+    day, job, part_id = _movable_stall_at_eleven()
+    now = day["now_min"]
+    p = client.post("/api/stalls", json={"ro_id": job["id"], "part_id": part_id, "force_bay": "roll_out"}).json()
+    assert p["forced_bay"] == "roll_out"
+    opt = p["options"][0]
+    assert opt["bay_decision"] == "roll_out" and opt["bay_blocked_min"] == 0
+    assert opt["rolled_out_until"] == now + job["roll_out_min"]
+    assert "You chose" in opt["bay_note"] and any("rolled out" in r for r in opt["needs_you"])
+    rest = opt["stalled_job"]
+    left = job["end_min"] - now
+    assert rest["end_min"] - rest["start_min"] == left + job["set_up_min"], "what is left of the job, plus setting the car up again"
+    assert rest["start_min"] >= opt["arrives_min"]
+
+    after = client.post(f"/api/proposals/{p['id']}/approve", json={"option": opt["key"]}).json()["day"]
+    mine = [s for s in after["segments"] if s["ro_id"] == job["id"]]
+    assert [s["kind"] for s in mine] == ["done"], "no bay is held for a car that was rolled out"
+    assert mine[0]["end_min"] == opt["rolled_out_until"] and mine[0]["bay"] == job["bay"]
+    moved = _order(after, job["id"])
+    assert moved["status"] == "waiting_for_part" and moved["minutes"] == left + job["set_up_min"]
+    shop, jobs, plan, pinned, blocks = repo.load_engine(app_module.conn())
+    assert job["id"] not in pinned, "a rolled-out car is an ordinary job again"
+    assert (job["bay"], mine[0]["start_min"], mine[0]["end_min"]) in blocks, "its bay is busy until the car is out"
+    assert validate(shop, jobs, plan, now, plan, pinned=pinned, blocks=blocks)
+    log = client.get("/api/log").json()[0]["detail"]
+    assert log["bay_decision"] == "roll_out"
+    # its part can still run late like any other
+    late = client.post("/api/late/check", json={"ro_id": job["id"], "part_id": part_id, "arrives_min": opt["arrives_min"] + 15})
+    assert late.status_code == 200
+
+
+def test_a_car_that_cannot_move_cannot_be_forced_out():
+    at_eleven()
+    r = client.post("/api/stalls", json={"ro_id": "RO-1013", "part_id": "WTR-GSK", "force_bay": "roll_out"})
+    assert r.status_code == 422 and "cannot be rolled out" in r.json()["detail"]
+    client.post("/api/reset")
+    r = client.post("/api/stalls", json={"ro_id": "RO-1013", "part_id": "WTR-GSK", "force_bay": "roll_out"})
+    assert r.status_code == 422, "a car that has not been taken apart has nothing to roll out"
+
+
+def test_two_plans_that_look_the_same_are_shown_once():
+    shown = lambda o: (o["source_id"], o["missed_promises"], o["late_minutes"], o["jobs_moved"], o["bay_blocked_min"], o["bay_decision"])
+    _day, job, part_id = _movable_stall_at_eleven()
+    for body in ({}, {"force_bay": "roll_out"}):
+        _movable_stall_at_eleven()
+        p = client.post("/api/stalls", json={"ro_id": job["id"], "part_id": part_id, **body}).json()
+        assert len({shown(o) for o in p["options"]}) == len(p["options"]), "a second card must differ in something the manager can see"
+        if len(p["options"]) == 1:
+            assert p["options"][0]["title"] == "Recommended plan"

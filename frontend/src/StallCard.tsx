@@ -7,6 +7,8 @@ interface Props {
   busy: boolean
   onPreview: (key: string) => void
   onForce: (sourceId: string | null) => void
+  /** Keep the car in its bay, roll it out, or (null) let the engine decide. */
+  onBay: (bay: 'hold' | 'roll_out' | null) => void
   onApprove: (key: string) => void
   onDismiss: () => void
 }
@@ -25,7 +27,14 @@ function marginText(o: PlanOption, roId: string): string {
   return `${own}No ${further}promise is lost if the part is up to ${span(o.late_margin_min)} late.`
 }
 
-function Option({ o, roId, title, chosen, busy, onPreview, onApprove }: { o: PlanOption; roId: string; title: string; chosen: boolean; busy: boolean; onPreview: () => void; onApprove: () => void }) {
+interface OptionProps {
+  o: PlanOption; roId: string; title: string; chosen: boolean; busy: boolean
+  /** What the manager may switch the bay decision to, if anything. */
+  bayChoice: { label: string; onClick: () => void } | null
+  onPreview: () => void; onApprove: () => void
+}
+
+function Option({ o, roId, title, chosen, busy, bayChoice, onPreview, onApprove }: OptionProps) {
   return (
     <article className={`option ${chosen ? 'chosen' : ''}`}>
       <header>
@@ -53,6 +62,12 @@ function Option({ o, roId, title, chosen, busy, onPreview, onApprove }: { o: Pla
       {o.late_orders.filter((l) => !l.late_before).map((l) => (
         <p key={l.ro_id} className="late-note">{l.ro_id} would be ready at {clock(l.end_min)}, {span(l.end_min - l.promise_min)} after its promise.</p>
       ))}
+      {o.bay_note && (
+        <p className="bay-note">
+          <strong>The bay:</strong> {o.bay_note}{' '}
+          {bayChoice && <button type="button" className="link" disabled={busy} onClick={bayChoice.onClick}>{bayChoice.label}</button>}
+        </p>
+      )}
       <p className={`needs-you ${o.needs_you.length ? '' : 'clear'}`}>
         {o.needs_you.length ? <><strong>Needs you because</strong> {o.needs_you.join('; ')}.</> : <strong>Nothing is traded off in this plan.</strong>}
       </p>
@@ -66,7 +81,7 @@ function Option({ o, roId, title, chosen, busy, onPreview, onApprove }: { o: Pla
 }
 
 /** One stall: where the part could come from, and the plans the engine offers. */
-export function StallCard({ proposal: p, previewKey, busy, onPreview, onForce, onApprove, onDismiss }: Props) {
+export function StallCard({ proposal: p, previewKey, busy, onPreview, onForce, onBay, onApprove, onDismiss }: Props) {
   const shown = p.options.find((o) => o.key === previewKey) ?? p.options[0]
   const nr = p.no_replan
   const late = p.kind === 'late_part'
@@ -77,7 +92,7 @@ export function StallCard({ proposal: p, previewKey, busy, onPreview, onForce, o
           <p className="eyebrow alert">{late ? `Part running late · now due ${clock(p.new_arrives_min!)}, was ${clock(p.old_arrives_min!)}` : `Part missing · reported ${clock(p.now_min)}`}</p>
           <h2>{p.part_name}</h2>
           <p className="muted">
-            {p.ro_id} · {p.description} · {p.vehicle} · {p.in_progress ? `car is already in ${p.current.bay}, so the bay stays blocked` : 'work has not started, so no bay is blocked'}
+            {p.ro_id} · {p.description} · {p.vehicle} · {!p.in_progress ? 'work has not started, so no bay is blocked' : shown.bay_decision === 'roll_out' ? `car is in ${p.current.bay} and would be rolled out` : `car is already in ${p.current.bay}, so the bay stays blocked`}
           </p>
         </div>
         <button type="button" className="ghost" onClick={onDismiss} disabled={busy}>Close without deciding</button>
@@ -140,7 +155,12 @@ export function StallCard({ proposal: p, previewKey, busy, onPreview, onForce, o
         </div>
         <div className="options">
           {p.options.map((o) => (
-            <Option key={o.key} o={o} roId={p.ro_id} title={p.forced_source && p.options.length === 1 ? 'Plan with the source you chose' : o.title} chosen={o.key === shown.key} busy={busy} onPreview={() => onPreview(o.key)} onApprove={() => onApprove(o.key)} />
+            <Option key={o.key} o={o} roId={p.ro_id} title={p.forced_source && p.options.length === 1 ? 'Plan with the source you chose' : o.title} chosen={o.key === shown.key} busy={busy}
+              bayChoice={late || !p.can_roll_out ? null
+                : p.forced_bay ? { label: 'Let the engine decide', onClick: () => onBay(null) }
+                : o.bay_decision === 'hold' ? { label: 'Roll it out anyway', onClick: () => onBay('roll_out') }
+                : { label: 'Keep it in the bay', onClick: () => onBay('hold') }}
+              onPreview={() => onPreview(o.key)} onApprove={() => onApprove(o.key)} />
           ))}
         </div>
       </div>

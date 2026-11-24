@@ -16,8 +16,8 @@ export const getDay = () => call<Day>('/api/day')
 export const setClock = (now_min: number) => call<Day>('/api/clock', post({ now_min }))
 export const resetDay = () => call<{ day: Day }>('/api/reset', post()).then((r) => r.day)
 export const getLog = () => call<LogEntry[]>('/api/log')
-export const reportStall = (ro_id: string, part_id: string, force_source: string | null = null) =>
-  call<Proposal>('/api/stalls', post({ ro_id, part_id, force_source }))
+export const reportStall = (ro_id: string, part_id: string, force_source: string | null = null, force_bay: 'hold' | 'roll_out' | null = null) =>
+  call<Proposal>('/api/stalls', post({ ro_id, part_id, force_source, force_bay }))
 export const getProposal = (id: number) => call<Proposal>(`/api/proposals/${id}`)
 export const approveProposal = (id: number, option: string) => call<{ day: Day }>(`/api/proposals/${id}/approve`, post({ option })).then((r) => r.day)
 export const dismissProposal = (id: number) => call<Day>(`/api/proposals/${id}/dismiss`, post())

@@ -27,10 +27,14 @@ function buildView(day: Day | null, proposal: Proposal | null, option: PlanOptio
     return { orders, segments, moved }
   }
   const stalled = proposal.current
-  const extra: Segment[] = proposal.in_progress ? [
+  // A car that is rolled out keeps its bay and technician only until it is out; nothing is held after that.
+  const rolledOut = option.bay_decision === 'roll_out' && option.rolled_out_until !== null
+  const extra: Segment[] = !proposal.in_progress ? [] : rolledOut ? [
+    { ro_id: proposal.ro_id, kind: 'done', start_min: stalled.start_min, end_min: option.rolled_out_until!, technician: stalled.technician, bay: stalled.bay },
+  ] : [
     { ro_id: proposal.ro_id, kind: 'done', start_min: stalled.start_min, end_min: proposal.now_min, technician: stalled.technician, bay: stalled.bay },
     { ro_id: proposal.ro_id, kind: 'hold', start_min: proposal.now_min, end_min: option.stalled_job.start_min, technician: null, bay: stalled.bay },
-  ] : []
+  ]
   return { orders, segments: [...day.segments, ...extra.filter((s) => s.end_min > s.start_min)], moved }
 }
 
@@ -79,8 +83,8 @@ export default function App() {
   const s = day.summary
   const flagged = day.orders.filter((o) => o.short_of_parts && o.status !== 'done').length
 
-  const openStall = (roId: string, partId: string, force: string | null = null) => run(async () => {
-    const p = await reportStall(roId, partId, force)
+  const openStall = (roId: string, partId: string, force: string | null = null, bay: 'hold' | 'roll_out' | null = null) => run(async () => {
+    const p = await reportStall(roId, partId, force, bay)
     setProposal(p); setPreviewKey(p.options[0].key); setSelectedId(p.ro_id); setNotice(null)
   })
   /** The log and the parts check both change whenever the plan or the stock does. */
@@ -146,7 +150,8 @@ export default function App() {
           <StallCard
             proposal={proposal} previewKey={option!.key} busy={busy}
             onPreview={setPreviewKey}
-            onForce={(src) => { if (proposal.kind === 'missing_part') void openStall(proposal.ro_id, proposal.part_id, src) }}
+            onForce={(src) => { if (proposal.kind === 'missing_part') void openStall(proposal.ro_id, proposal.part_id, src, proposal.forced_bay) }}
+            onBay={(bay) => { if (proposal.kind === 'missing_part') void openStall(proposal.ro_id, proposal.part_id, proposal.forced_source, bay) }}
             onApprove={(key) => void approve(key)}
             onDismiss={() => void dismiss()}
           />

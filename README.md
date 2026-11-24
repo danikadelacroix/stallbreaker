@@ -34,6 +34,9 @@ stores, a vendor and an OEM depot) on a schedule board.
   when it differs, the plan that moves the fewest jobs. The board previews the selected plan:
   the blocked bay is hatched and moved jobs are outlined. You can force a different source
   to see what it costs.
+- **Hold the bay, or roll the car out.** For a car already on the lift the plan says
+  whether it stays in its bay or is rolled out to free it, and why. You can ask for the
+  other way and see what it costs.
 - **Says why it needs you.** Each plan lists what it trades off (a missed promise, a moved
   job, a cost above the spending limit, a source that is unsafe to lend from) or says that
   nothing is traded off.
@@ -69,6 +72,9 @@ Start the API first. "Reset day" in the app rebuilds the same day every time.
   kind for its whole duration.
 - A job stalled in progress keeps its bay but frees its technician until the part arrives.
   A job that has not started simply cannot begin before its part arrives.
+- Some cars can be put back together enough to roll out of the bay while they wait. The
+  engine plans both ways and rolls a car out only when that keeps a promise, cuts waiting or
+  saves money. Cars with the engine or suspension apart are never moved.
 - Where the part comes from is a decision variable in the same model as the schedule, so a
   slower, cheaper source wins whenever the schedule cannot use a faster one.
 - Goals are solved in strict order, and the order is a setting. The default is fewest missed
@@ -103,16 +109,17 @@ as such. The LLM will never choose the plan.
 | `backend/` | FastAPI app and SQLite database: seed data, stock lookup, shortage risk, parts check, stall flow |
 | `frontend/` | React app (Vite, TypeScript): schedule board, parts check, stall card, decision log |
 | `experiments/` | Sample day, 200-stall benchmark, scale check, forecasting baseline, with outputs in `out/` |
-| `tests/` | 39 checks: 9 on the engine, 30 on the API |
+| `tests/` | 53 checks: 15 on the engine, 38 on the API |
 | `data/` | Monash Car Parts dataset (CC BY 4.0) |
 
 ## Tests and experiments
 
 ```bash
-.venv/bin/python -m pytest -q                      # 39 checks
+.venv/bin/python -m pytest -q                      # 53 checks
 .venv/bin/python experiments/toy.py                # 8 jobs, 3 bays, one missing part
 .venv/bin/python experiments/eval.py 200           # 200 seeded stalls, six methods
 .venv/bin/python experiments/scale.py 20           # re-plan time on 12 to 60-job days
+.venv/bin/python experiments/roll_out.py 200       # when rolling a stalled car out of its bay pays
 .venv/bin/python experiments/monash_baseline.py    # forecasting baseline on real data
 ```
 
@@ -168,6 +175,28 @@ A forecast of zero for every part beats every model on this metric, because thre
 quarters of all months have no demand. So this metric cannot decide whether lending a
 part is safe, which is why the app uses a shortage-risk frequency instead.
 
+### When rolling the car out pays
+
+Stalls where the car can be made movable, planned twice: always holding the bay, then
+letting the engine choose. Lift bays and how far away the part is are varied.
+
+| Lift bays | Part at least | Stalls | Rolled out | Promises missed | Late minutes | Bay blocked (min) |
+|---|---|---|---|---|---|---|
+| 3 | as generated | 84 | 0 | 0.08 to 0.08 | 2.6 to 2.6 | 76 to 76 |
+| 3 | 2 h away | 84 | 1 | 0.37 to 0.37 | 15.6 to 15.4 | 125 to 123 |
+| 3 | 4 h away | 84 | 2 | 1.04 to 1.01 | 105.1 to 103.9 | 240 to 234 |
+| 3 | 6 h away | 84 | 4 | 1.07 to 1.01 | 230.7 to 224.3 | 360 to 343 |
+| 2 | as generated | 89 | 19 | 0.57 to 0.42 | 29.2 to 30.4 | 70 to 54 |
+| 2 | 2 h away | 89 | 33 | 0.98 to 0.64 | 71.7 to 55.5 | 123 to 78 |
+| 2 | 4 h away | 89 | 44 | 1.61 to 1.07 | 206.5 to 149.6 | 240 to 121 |
+| 2 | 6 h away | 89 | 46 | 1.70 to 1.07 | 360.7 to 267.1 | 360 to 174 |
+
+With three lift bays the next car nearly always finds another bay, so the engine almost
+never rolls a car out. With two lift bays, or with the part hours away, rolling out keeps
+promises that holding the bay would lose. On the 200-stall benchmark above (three lift bays,
+fast sources) it was never worth it, so that table is unchanged. The roll-out and set-up
+minutes per job type are our assumptions.
+
 ### Scale check
 
 One stall per day on larger simulated shops, 20 days per size, solver capped at 5 seconds.
@@ -192,7 +221,10 @@ dispatch rule. Times were measured on one laptop and will vary from run to run.
 - Prices, travel times and stock levels are invented. Only part demand history is real.
 - Source arrival times are single values, not ranges. A late part can be re-timed, but it
   keeps its original source.
-- The demo day is not very busy, so most stalls move only one or two jobs.
+- The demo day is not very busy, so most stalls move only one or two jobs, and rolling a
+  car out never beats holding its bay there. The app shows that reasoning and lets you roll
+  the car out anyway to see what it does.
+- How long it takes to make a car movable, and which jobs allow it, are our assumptions.
 - The parts check runs on the rest of today's jobs. In a dealership it would run every
   night for the next day.
 - No LLM is connected, and nothing is deployed: the app runs on a laptop.

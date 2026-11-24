@@ -44,6 +44,7 @@ class StallReport(BaseModel):
     ro_id: str = Field(pattern=r"^RO-\d{1,6}$")
     part_id: str = Field(min_length=1, max_length=20, pattern=r"^[A-Z0-9-]+$")
     force_source: str | None = Field(default=None, max_length=20, pattern=r"^[a-z]+$")
+    force_bay: str | None = Field(default=None, pattern=r"^(hold|roll_out)$", description="Keep the car in its bay, or roll it out, whatever the engine advises")
 
 
 class LatePart(BaseModel):
@@ -109,7 +110,7 @@ def log():
 @one_at_a_time
 def report_stall(body: StallReport):
     """A part is missing for a repair order. Returns the sources and the plan options."""
-    return _guard(lambda: stalls.propose(conn(), body.ro_id, body.part_id, body.force_source))
+    return _guard(lambda: stalls.propose(conn(), body.ro_id, body.part_id, body.force_source, body.force_bay))
 
 
 @app.get("/api/proposals/{proposal_id}")

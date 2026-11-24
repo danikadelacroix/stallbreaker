@@ -138,6 +138,8 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .changes { font-size: 13px; margin-bottom: 8px; display: grid; gap: 3px; }
 .late-note { font-size: 13px; color: #7a2323; margin-bottom: 8px; }
 .margin-note { font-size: 13px; color: var(--slate); margin-bottom: 10px; }
+.bay-note { font-size: 13px; color: var(--ink); margin-bottom: 6px; }
+.bay-note .link { font-size: 13px; white-space: nowrap; }
 .needs-you { font-size: 13px; margin-bottom: 6px; padding: 6px 10px; border-radius: 8px; background: #fff6e5; color: #6b4708; }
 .needs-you.clear { background: #eaf6f4; color: #0a5d54; }
 .margin-note.tight, .sources td.tight { color: #7a2323; font-weight: 600; }

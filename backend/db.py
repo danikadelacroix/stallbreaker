@@ -12,11 +12,14 @@ CREATE TABLE IF NOT EXISTS technicians (id TEXT PRIMARY KEY, name TEXT NOT NULL,
 CREATE TABLE IF NOT EXISTS bays (id TEXT PRIMARY KEY, name TEXT NOT NULL, kind TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS parts (id TEXT PRIMARY KEY, name TEXT NOT NULL, unit_cost REAL NOT NULL, series_id TEXT);
 CREATE TABLE IF NOT EXISTS stock (store_id TEXT NOT NULL, part_id TEXT NOT NULL, on_hand INTEGER NOT NULL, PRIMARY KEY (store_id, part_id));
-CREATE TABLE IF NOT EXISTS job_types (code TEXT PRIMARY KEY, description TEXT NOT NULL, minutes INTEGER NOT NULL, skill TEXT NOT NULL, bay_kinds TEXT NOT NULL);
+-- roll_out_min: technician minutes to make a dismantled car movable (NULL = it cannot be moved); set_up_min: extra minutes to set it up again.
+CREATE TABLE IF NOT EXISTS job_types (code TEXT PRIMARY KEY, description TEXT NOT NULL, minutes INTEGER NOT NULL, skill TEXT NOT NULL, bay_kinds TEXT NOT NULL,
+  roll_out_min INTEGER, set_up_min INTEGER NOT NULL DEFAULT 0);
 CREATE TABLE IF NOT EXISTS job_type_parts (code TEXT NOT NULL, part_id TEXT NOT NULL, qty INTEGER NOT NULL, PRIMARY KEY (code, part_id));
 CREATE TABLE IF NOT EXISTS repair_orders (
   id TEXT PRIMARY KEY, vehicle TEXT NOT NULL, job_code TEXT NOT NULL, description TEXT NOT NULL, minutes INTEGER NOT NULL,
-  skill TEXT NOT NULL, bay_kinds TEXT NOT NULL, release_min INTEGER NOT NULL, promise_min INTEGER NOT NULL);
+  skill TEXT NOT NULL, bay_kinds TEXT NOT NULL, release_min INTEGER NOT NULL, promise_min INTEGER NOT NULL,
+  roll_out_min INTEGER, set_up_min INTEGER NOT NULL DEFAULT 0);
 CREATE TABLE IF NOT EXISTS ro_parts (ro_id TEXT NOT NULL, part_id TEXT NOT NULL, qty INTEGER NOT NULL, PRIMARY KEY (ro_id, part_id));
 CREATE TABLE IF NOT EXISTS assignments (ro_id TEXT PRIMARY KEY, start_min INTEGER NOT NULL, end_min INTEGER NOT NULL, tech_id TEXT NOT NULL, bay_id TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -38,6 +41,11 @@ def connect(path=None):
     conn = sqlite3.connect(path or DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.executescript(SCHEMA)
+    if "roll_out_min" not in {r["name"] for r in conn.execute("PRAGMA table_info(repair_orders)")}:
+        # A database from an older version. It only holds the demo day, so rebuild it empty; it is seeded again on first use.
+        for t in TABLES:
+            conn.execute(f"DROP TABLE IF EXISTS {t}")
+        conn.executescript(SCHEMA)
     return conn
 
 

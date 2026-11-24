@@ -24,7 +24,7 @@ then the code. See [CONTRIBUTING.md](../../CONTRIBUTING.md) for the full loop.
 | [106 UI tests](106-ui-tests.md) | Proposed | |
 | [107 Why not this source?](107-why-not-this-source.md) | Built | `tests/test_api.py` |
 | [108 How late can the part be?](108-how-late-can-the-part-be.md) | Built | `tests/test_api.py` |
-| [109 Hold the bay, or roll the car out?](109-hold-or-release-the-bay.md) | Proposed | |
+| [109 Hold the bay, or roll the car out?](109-hold-or-release-the-bay.md) | Built | `tests/test_stallbreaker.py`, `tests/test_api.py` |
 | [110 Substitute part numbers](110-substitute-parts.md) | Proposed | |
 | [111 Act alone, or ask](111-act-alone-or-ask.md) | Proposed | |
 

@@ -18,6 +18,11 @@ OPS = [
     ("Timing belt", 150, "engine", L, 2),
     ("Water pump replacement", 180, "engine", L, 2),
 ]
+# Can a car be made movable part-way through the job? (roll-out minutes, set-up minutes). Our assumptions.
+# Job types not listed cannot be moved while apart.
+MOVABLE = {"Oil service": (10, 10), "Diagnostic scan": (5, 5), "Wheel alignment": (10, 15), "Battery replacement": (10, 5),
+           "AC service": (10, 10), "Front brake pads": (20, 15), "Rotors and brake fluid": (20, 15)}
+
 SKILLSETS = [
     {"engine", "brakes", "general"},
     {"brakes", "general", "electrical"},
@@ -42,7 +47,8 @@ def make_jobs(rng, n=12, first_id=101):
         desc, dur, skill, kinds, _ = rng.choices(OPS, weights)[0]
         release = 0 if i < n // 3 else rng.randrange(0, 301, 15)
         slack = rng.randrange(60, 241, 15)
-        jobs.append(Job(f"RO-{first_id + i}", desc, dur, skill, kinds, due=release + dur + slack, release=release))
+        roll_out, set_up = MOVABLE.get(desc, (None, 0))
+        jobs.append(Job(f"RO-{first_id + i}", desc, dur, skill, kinds, due=release + dur + slack, release=release, roll_out=roll_out, set_up=set_up))
     return jobs
 
 

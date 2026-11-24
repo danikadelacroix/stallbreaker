@@ -13,11 +13,14 @@ Method notes
    same model as the schedule.
  - Objectives are solved lexicographically, e.g. fewest broken promises, then
    least lateness, then fewest moved jobs, then lowest sourcing cost.
+ - Some cars can be put back together enough to roll out of the bay while they wait.
+   hold_or_roll_out plans both ways and keeps the bay blocked unless rolling out is
+   strictly better for the day.
 """
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Optional
 
 from ortools.sat.python import cp_model
@@ -53,6 +56,8 @@ class Job:
     bay_kinds: tuple
     due: int  # promise time
     release: int = 0  # earliest start (car arrival / parts ready)
+    roll_out: Optional[int] = None  # technician minutes to make a dismantled car movable; None = it cannot be moved
+    set_up: int = 0  # extra minutes to set the car up again after it was rolled out
 
 
 @dataclass(frozen=True)
@@ -141,7 +146,7 @@ def replan(shop, jobs, prev, now, stall=None, force_source=None, allow_unsafe=Fa
     """Re-plan everything not yet started. Returns a Plan, or None if infeasible.
 
     pinned: ids of jobs whose current assignment must not change (for example the rest of an
-            earlier stalled job). blocks: (bay, start, end) periods when a bay is unavailable."""
+            earlier stalled job). blocks: (bay or technician, start, end) periods when it is unavailable."""
     t0 = time.perf_counter()
     m = cp_model.CpModel()
     by = {j.id: j for j in jobs}
@@ -168,9 +173,10 @@ def replan(shop, jobs, prev, now, stall=None, force_source=None, allow_unsafe=Fa
         bay_iv[a.bay].append(m.new_interval_var(a.start, a.end - a.start, a.end, f"run_b_{j.id}"))
         hours_before[a.tech] += a.end - max(a.start, now)
         hours_fixed[a.tech] += a.end - max(a.start, now)
-    for bay, b_start, b_end in blocks:
-        if b_end > now and bay in bay_iv:
-            bay_iv[bay].append(m.new_interval_var(b_start, b_end - b_start, b_end, f"block_{bay}_{b_start}"))
+    for res, b_start, b_end in blocks:
+        busy = bay_iv if res in bay_iv else tech_iv if res in tech_iv else None
+        if b_end > now and busy is not None:
+            busy[res].append(m.new_interval_var(b_start, b_end - b_start, b_end, f"block_{res}_{b_start}"))
 
     # Where the part comes from is a decision variable, whether or not the job has started.
     z, eta_expr, cost_expr = None, 0, 0
@@ -457,6 +463,13 @@ def dispatch_edd(shop, jobs, prev, now, stall=None, source=None, pinned=frozense
 
 def validate(shop, jobs, plan, now=0, prev=None, stall=None, pinned=frozenset(), blocks=()):
     """Independent checker: raises AssertionError if a plan breaks any rule."""
+    if plan.info.get("bay") == "roll_out":
+        # Check it as what it physically is: the car occupies its bay and technician until it has been
+        # rolled out, and the remaining work is a job that may then go in any suitable bay.
+        case = _rolled_out_case(jobs, prev, now, stall)
+        assert case is not None, "this car cannot be rolled out"
+        jobs, prev, before = case
+        plan = Plan(assign={**plan.assign, before: prev.assign[before]}, source=plan.source)
     in_progress = _stall_in_progress(prev, now, stall)
     by = {j.id: j for j in jobs}
     techs = {t.id: t for t in shop.techs}
@@ -486,9 +499,9 @@ def validate(shop, jobs, plan, now=0, prev=None, stall=None, pinned=frozenset(),
         if s.kind == "done":
             tsegs[s.tech].append((s.start, s.end, s.job + "(done)"))
             bsegs[s.bay].append((s.start, s.end, s.job + "(done)"))
-    for bay, b_start, b_end in blocks:
+    for res, b_start, b_end in blocks:
         if b_end > now:
-            bsegs[bay].append((b_start, b_end, "(blocked)"))
+            (bsegs if res in bsegs else tsegs)[res].append((b_start, b_end, "(blocked)"))
     if stall:
         a = plan.assign[stall.job]
         assert plan.source is not None and a.start >= now + plan.source.eta, "work starts before the part arrives"
@@ -500,6 +513,85 @@ def validate(shop, jobs, plan, now=0, prev=None, stall=None, pinned=frozenset(),
             for (s1, e1, j1), (s2, e2, j2) in zip(segs, segs[1:]):
                 assert e1 <= s2, f"{name} {r}: {j1} overlaps {j2}"
     return True
+
+
+# Rolling a car out costs technician time, so it has to earn it: a kept promise, less waiting, or money.
+# Moving fewer jobs on the schedule is not enough.
+_RANKED = {"late": "late", "tard": "tard", "cost": "cost"}  # goal name -> metric it is judged by
+
+
+def _rolled_out_case(jobs, prev, now, stall):
+    """The same stall, seen the other way: the car is put back together enough to roll out of the bay.
+
+    Returns (jobs, prev, id of the work up to the roll-out), or None if the car cannot be moved.
+    The technician and the bay stay busy until the car is out. The remaining work, plus the time to
+    set the car up again, becomes a job that has not started: it may go in any suitable bay once
+    the part has arrived."""
+    if not _stall_in_progress(prev, now, stall):
+        return None
+    job = next(j for j in jobs if j.id == stall.job)
+    if job.roll_out is None:
+        return None
+    a = prev.assign[job.id]
+    out_at = now + job.roll_out
+    before = f"{job.id}~before"
+    up_to_roll_out = replace(job, id=before, dur=out_at - a.start, due=H, release=0)
+    rest = replace(job, dur=(a.end - now) + job.set_up, release=out_at)
+    assign = {k: v for k, v in prev.assign.items() if k != job.id}
+    assign[before] = Assign(a.start, out_at, a.tech, a.bay)
+    return [rest if j.id == job.id else j for j in jobs] + [up_to_roll_out], Plan(assign=assign), before
+
+
+def replan_rolled_out(shop, jobs, prev, now, stall, **kw):
+    """Re-plan with the stalled car rolled out of its bay. None if it cannot be moved or nothing fits."""
+    case = _rolled_out_case(jobs, prev, now, stall)
+    if case is None:
+        return None
+    jobs_c, prev_c, before = case
+    plan = replan(shop, jobs_c, prev_c, now, stall, **kw)
+    if plan is None:
+        return None
+    b = plan.assign.pop(before)
+    plan.extra = [Seg(stall.job, b.start, b.end, b.tech, b.bay, "done")]
+    plan.hold = 0
+    plan.info.update(bay="roll_out", rolled_out_until=b.end)
+    return plan
+
+
+def hold_or_roll_out(shop, jobs, prev, now, stall, order=("late", "tard", "moves", "cost", "shift"), bay="auto", **kw):
+    """Plan a stall both ways and keep the better one: hold the bay, or roll the car out.
+
+    The bay stays blocked unless rolling out is strictly better on promises, lateness or sourcing
+    cost, taken in the order given by 'order'. Moving fewer jobs is not a reason to roll a car out. plan.info says which was chosen ('bay'), why ('bay_why'), and what
+    the other way would have cost ('other'). bay='hold' or 'roll_out' forces one of them."""
+    if not _stall_in_progress(prev, now, stall):
+        plan = replan(shop, jobs, prev, now, stall, order=order, **kw)
+        if plan is not None:
+            plan.info.update(bay=None, bay_why="not_started", other=None)
+        return plan
+    hold = None if bay == "roll_out" else replan(shop, jobs, prev, now, stall, order=order, **kw)
+    roll = None if bay == "hold" else replan_rolled_out(shop, jobs, prev, now, stall, order=order, **kw)
+    if hold is None and roll is None:
+        return None
+
+    def rank(p):
+        m = metrics(jobs, p, prev, now, stall)
+        return tuple(m[_RANKED[k]] for k in order if k in _RANKED), m
+
+    movable = next(j for j in jobs if j.id == stall.job).roll_out is not None
+    if hold is not None:
+        hold.info.update(bay="hold", bay_why="no_gain" if movable else "cannot_move", other=None)
+    if roll is None:
+        return hold
+    if hold is None:
+        roll.info.update(bay_why="only_way", other=None)
+        return roll
+    (hold_key, hold_m), (roll_key, roll_m) = rank(hold), rank(roll)
+    best, other, other_m = (roll, hold, hold_m) if roll_key < hold_key else (hold, roll, roll_m)
+    best.info.update(bay_why="saves" if best is roll else "no_gain", other=other_m,
+                     seconds=hold.info["seconds"] + roll.info["seconds"],
+                     proven=hold.info.get("proven", True) and roll.info.get("proven", True))
+    return best
 
 
 def metrics(jobs, plan, prev=None, now=0, stall=None):

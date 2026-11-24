@@ -16,14 +16,19 @@ def clock(minutes):
 
 def load_engine(conn):
     """Shop, jobs and the current plan, as the solver expects them, plus what must stay put:
-    the remaining work of jobs already stalled (pinned) and the bays they are blocking."""
+    the remaining work of cars waiting in their bay (pinned), the bays they are blocking, and
+    the bay and technician still busy rolling a car out. A car that was rolled out is an
+    ordinary job again: it can go in any suitable bay once its part is here."""
     techs = tuple(Tech(r["id"], frozenset(json.loads(r["skills"]))) for r in conn.execute("SELECT * FROM technicians ORDER BY rowid"))
     bays = tuple(Bay(r["id"], r["kind"]) for r in conn.execute("SELECT * FROM bays ORDER BY rowid"))
-    jobs = [Job(r["id"], r["description"], r["minutes"], r["skill"], tuple(json.loads(r["bay_kinds"])), due=r["promise_min"], release=r["release_min"])
+    jobs = [Job(r["id"], r["description"], r["minutes"], r["skill"], tuple(json.loads(r["bay_kinds"])), due=r["promise_min"], release=r["release_min"],
+                roll_out=r["roll_out_min"], set_up=r["set_up_min"])
             for r in conn.execute("SELECT * FROM repair_orders ORDER BY id")]
     assign = {r["ro_id"]: Assign(r["start_min"], r["end_min"], r["tech_id"], r["bay_id"]) for r in conn.execute("SELECT * FROM assignments")}
-    pinned = frozenset(r["ro_id"] for r in conn.execute("SELECT DISTINCT ro_id FROM segments"))
+    pinned = frozenset(r["ro_id"] for r in conn.execute("SELECT DISTINCT ro_id FROM segments WHERE kind = 'hold'"))
     blocks = tuple((r["bay_id"], r["start_min"], r["end_min"]) for r in conn.execute("SELECT * FROM segments WHERE kind = 'hold'"))
+    for r in conn.execute("SELECT * FROM segments WHERE kind = 'done'"):
+        blocks += ((r["bay_id"], r["start_min"], r["end_min"]), (r["tech_id"], r["start_min"], r["end_min"]))
     return Shop(techs, bays), jobs, Plan(assign=assign), pinned, blocks
 
 
@@ -70,7 +75,7 @@ def day(conn):
     sourced = {(r["ro_id"], r["part_id"]): r for r in conn.execute("SELECT * FROM sourced")}
     segments = [{"ro_id": r["ro_id"], "kind": r["kind"], "start_min": r["start_min"], "end_min": r["end_min"], "technician": r["tech_id"], "bay": r["bay_id"]}
                 for r in conn.execute("SELECT * FROM segments ORDER BY id")]
-    holds = {s["ro_id"]: s for s in segments if s["kind"] == "hold"}
+    stalled = {s["ro_id"] for s in segments}  # taken apart, then stopped for a part (waiting in the bay, or rolled out)
     shortfalls = peg(conn, now)
     needs = {}
     for r in conn.execute("SELECT * FROM ro_parts ORDER BY part_id"):
@@ -87,9 +92,10 @@ def day(conn):
         orders.append({
             "id": r["id"], "vehicle": r["vehicle"], "description": r["description"], "minutes": r["minutes"], "skill": r["skill"],
             "release_min": r["release_min"], "promise_min": r["promise_min"], "parts": needs.get(r["id"], []),
+            "roll_out_min": r["roll_out_min"], "set_up_min": r["set_up_min"],
             "start_min": a["start_min"] if a else None, "end_min": a["end_min"] if a else None,
             "technician": a["tech_id"] if a else None, "bay": a["bay_id"] if a else None,
-            "status": ("waiting_for_part" if r["id"] in holds and now < holds[r["id"]]["end_min"]
+            "status": ("waiting_for_part" if r["id"] in stalled and now < a["start_min"]
                        else status_of(a["start_min"], a["end_min"], now)) if a else "unplanned",
             "late": bool(a and a["end_min"] > r["promise_min"]),
             "short_of_parts": any(p["shortfall"] for p in needs.get(r["id"], [])),

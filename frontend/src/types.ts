@@ -10,6 +10,8 @@ export interface Order {
   id: string; vehicle: string; description: string; minutes: number; skill: string
   release_min: number; promise_min: number; parts: PartNeed[]
   start_min: number | null; end_min: number | null; technician: string | null; bay: string | null
+  /** Technician minutes to make the car movable part-way through the job. Null: it cannot be moved while apart. */
+  roll_out_min: number | null; set_up_min: number
   status: OrderStatus; late: boolean; short_of_parts: boolean
 }
 
@@ -52,6 +54,8 @@ export interface PlanOption {
   late_margin_min: number; late_margin_capped: boolean
   /** Why this plan must be approved by a person. Empty when nothing is traded off. */
   needs_you: string[]
+  /** What happens to a car already on the lift: it waits in its bay, or it is rolled out. Null if work had not started. */
+  bay_decision: 'hold' | 'roll_out' | null; bay_note: string | null; rolled_out_until: number | null
   changes: { ro_id: string; description: string; before: Slot; after: Slot }[]
   late_orders: { ro_id: string; vehicle: string; description: string; promise_min: number; end_min: number; late_before: boolean }[]
   assignments: Record<string, Slot>
@@ -63,7 +67,7 @@ export interface Proposal {
   kind: 'missing_part' | 'late_part'; old_arrives_min?: number; new_arrives_min?: number
   ro_id: string; vehicle: string; description: string; promise_min: number
   part_id: string; part_name: string; qty: number; now_min: number; in_progress: boolean
-  forced_source: string | null; engine_source_id: string; current: Slot; sources: SourceOption[]; options: PlanOption[]
+  forced_source: string | null; forced_bay: 'hold' | 'roll_out' | null; can_roll_out: boolean; engine_source_id: string; current: Slot; sources: SourceOption[]; options: PlanOption[]
   no_replan: { source_id: string; source_name: string; arrives_min: number; missed_promises: number; late_minutes: number; bay_blocked_min: number }
 }
 

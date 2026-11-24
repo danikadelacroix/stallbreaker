@@ -1,4 +1,4 @@
-"""StallBreaker benchmark: N seeded stalls, six ways of responding, plus negative controls.
+"""StallBreaker benchmark: N seeded stalls, seven ways of responding, plus negative controls.
 
 Run:  .venv/bin/python experiments/eval.py [N]
 Writes experiments/out/eval_results.csv and eval_summary.md.
@@ -11,13 +11,14 @@ import sys
 from multiprocessing import Pool
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from shopcore import dispatch_edd, metrics, replan, right_shift, validate
+from shopcore import dispatch_edd, hold_or_roll_out, metrics, replan, right_shift, validate
 from shopgen import make_day, make_stall
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out")
 JOINT = ("late", "tard", "cost", "moves", "shift", "hold")
 METHODS = ["wait, cheapest source", "wait, fastest source", "rule dispatch, fastest source",
-           "solver, cheapest source fixed", "solver, fastest source fixed", "StallBreaker (joint)"]
+           "solver, cheapest source fixed", "solver, fastest source fixed", "StallBreaker (joint)",
+           "StallBreaker (joint, may roll the car out)"]
 
 
 def one(seed):
@@ -37,14 +38,17 @@ def one(seed):
         METHODS[3]: replan(shop, jobs, base, now, stall, force_source=cheapest.id, order=JOINT, workers=2),
         METHODS[4]: replan(shop, jobs, base, now, stall, force_source=fastest.id, order=JOINT, workers=2),
         METHODS[5]: replan(shop, jobs, base, now, stall, order=JOINT, workers=2),
+        METHODS[6]: hold_or_roll_out(shop, jobs, base, now, stall, order=JOINT, workers=2),
     }
     rows = []
+    by = {j.id: j for j in jobs}
     if any(p is None for p in plans.values()):
         raise RuntimeError(f"seed {seed}: a method found no feasible plan")
     for name, p in plans.items():
         validate(shop, jobs, p, now, base, stall)
         mt = metrics(jobs, p, base, now, stall)
         rows.append(dict(seed=seed, method=name, base_late=metrics(jobs, base)["late"], **mt,
+                         movable=by[stall.job].roll_out is not None, rolled_out=p.info.get("bay") == "roll_out",
                          seconds=round(p.info["seconds"], 4), proven=p.info.get("proven", True),
                          picked_fastest=mt["source"] == fastest.id, picked_cheapest=mt["source"] == cheapest.id))
     # negative control: nothing is wrong, so the re-plan must not touch anything
@@ -84,6 +88,14 @@ def main():
               f"{sum(not x['picked_fastest'] and not x['picked_cheapest'] for x in j)}.",
               f"- Negative controls (no stall, plan must stay untouched): {controls_ok} of {len(res)} passed.",
               f"- Every plan from every method passed the independent rule checker (validate)."]
+    r7 = [x for x in rows if x["method"] == METHODS[6]]
+    movable, rolled = [x for x in r7 if x["movable"]], [x for x in r7 if x["rolled_out"]]
+    gain = lambda k: sum(a[k] - b[k] for a, b in zip(j, r7))
+    lines += ["",
+              f"- The stalled car could be made movable in {len(movable)} of {len(r7)} stalls (our assumption per job type). "
+              f"The engine rolled it out in {len(rolled)} of those: only where that kept a promise, cut waiting or saved money.",
+              f"- Over all {len(r7)} stalls, allowing a roll-out saved {gain('late')} missed promises, {gain('tard')} late minutes, "
+              f"${gain('cost'):.0f} of sourcing cost and {gain('hold')} minutes of blocked bay in total."]
     text = "\n".join(lines)
     open(os.path.join(OUT, "eval_summary.md"), "w").write(text + "\n")
     print(text)

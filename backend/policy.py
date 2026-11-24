@@ -18,6 +18,8 @@ def needs_a_person(option, source_safe, spend_limit=SPEND_LIMIT):
         reasons.append(f"{_n(option['missed_promises'], 'promise')} would be missed")
     if not source_safe:
         reasons.append("the source is unsafe to lend from")
+    if option.get("bay_decision") == "roll_out":
+        reasons.append("the car would be rolled out of its bay")
     if option["jobs_moved"]:
         reasons.append(f"{_n(option['jobs_moved'], 'job')} would move")
     if option["cost"] > spend_limit:
