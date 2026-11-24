@@ -6,9 +6,9 @@ from dataclasses import replace
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
-from shopcore import Assign, Plan, Source, Stall, metrics, replan, right_shift, validate  # noqa: E402
+from shopcore import Assign, Plan, Source, Stall, _stall_in_progress, metrics, replan, right_shift, validate  # noqa: E402
 
-from . import db, repo, sourcing  # noqa: E402
+from . import db, policy, repo, sourcing  # noqa: E402
 
 OPTIONS = [
     ("keep_promises", "Fewest missed promises", ("late", "tard", "cost", "moves", "shift", "hold")),
@@ -37,7 +37,7 @@ def _late_margin(shop, jobs, live, prev, now, stall, pinned, blocks, source_id, 
     def still_fine(steps):
         later = replace(src, eta=src.eta + steps * MARGIN_STEP)
         one = Stall(stall.job, stall.part, (later,))
-        p = replan(shop, jobs, prev, now, one, force_source=later.id, order=("late",), time_limit=1.5, pinned=pinned, blocks=blocks)
+        p = replan(shop, jobs, prev, now, one, force_source=later.id, order=("late",), time_limit=1.5, pinned=pinned, blocks=blocks, deterministic=True)
         return p is not None and metrics(jobs, p, live, now, one)["late"] <= missed
 
     if still_fine(MARGIN_STEPS):
@@ -66,7 +66,7 @@ def _why_not(source, outcome, best):
         return f"{more} more promise{'s' if more > 1 else ''} missed."
     more = outcome["late_minutes"] - best["late_minutes"]
     if more > 0:
-        return f"No more promises missed, but customers wait {more} minutes longer in total."
+        return f"No more promises missed, but {more} more late minutes."
     more = outcome["cost"] - best["cost"]
     if more > 0:
         return f"Keeps the same promises, but costs ${more:.0f} more."
@@ -85,7 +85,7 @@ def _explain_sources(conn, shop, jobs, plan, now, stall, pinned, blocks, cands, 
             what_if = _solve(conn, shop, jobs, plan, plan, now, stall, pinned, blocks, src.id, only=OPTIONS[:1])
             outcomes[src.id] = _outcome_of(what_if[0])
     if forced:
-        free = replan(shop, jobs, plan, now, stall, order=OPTIONS[0][2], time_limit=SOLVE_SECONDS, pinned=pinned, blocks=blocks)
+        free = replan(shop, jobs, plan, now, stall, order=OPTIONS[0][2], time_limit=SOLVE_SECONDS, pinned=pinned, blocks=blocks, deterministic=True)
         engine_pick = free.source.id if free else forced
     else:
         engine_pick = options[0]["source_id"]
@@ -101,22 +101,24 @@ def _solve(conn, shop, jobs, live, prev, now, stall, pinned, blocks, force_sourc
     """Ask the engine for each kind of plan. 'live' is the plan on the board, used to list what would move;
     'prev' is what the engine re-plans from (the same, except when a waiting job is being re-timed)."""
     ro_id = stall.job
+    dismantled = _stall_in_progress(prev, now, stall)  # if not, the stalled job is just one more job that may move
+    safe = {s.id: s.safe for s in stall.sources}
     info = {r["id"]: r for r in conn.execute("SELECT id, vehicle, promise_min FROM repair_orders")}
     options = []
     for key, title, goal_order in (only or OPTIONS):
-        p = replan(shop, jobs, prev, now, stall, force_source=force_source, order=goal_order, time_limit=SOLVE_SECONDS, pinned=pinned, blocks=blocks)
+        p = replan(shop, jobs, prev, now, stall, force_source=force_source, order=goal_order, time_limit=SOLVE_SECONDS, pinned=pinned, blocks=blocks, deterministic=True)
         if p is None:
             continue
         validate(shop, jobs, p, now, prev, stall, pinned, blocks)
         m = metrics(jobs, p, live, now, stall)
         changes = [{"ro_id": j.id, "description": j.desc, "before": _as_dict(live.assign[j.id]), "after": _as_dict(p.assign[j.id])}
-                   for j in jobs if j.id != ro_id and live.assign[j.id].start >= now and p.assign[j.id] != live.assign[j.id]]
+                   for j in jobs if not (dismantled and j.id == ro_id) and live.assign[j.id].start >= now and p.assign[j.id] != live.assign[j.id]]
         late = [{"ro_id": j.id, "vehicle": info[j.id]["vehicle"], "description": j.desc, "promise_min": j.due, "end_min": p.assign[j.id].end,
                  "late_before": live.assign[j.id].end > j.due} for j in jobs if p.assign[j.id].end > j.due]
         options.append({
             "key": key, "title": title, "source_id": p.source.id, "source_name": p.source.name,
             "arrives_min": now + p.source.eta, "cost": p.source.cost,
-            "missed_promises": m["late"], "late_minutes": m["tard"], "jobs_moved": m["moved"], "bay_blocked_min": p.hold,
+            "missed_promises": m["late"], "late_minutes": m["tard"], "jobs_moved": len(changes), "bay_blocked_min": p.hold,
             "proven_best": p.info["proven"], "solve_seconds": round(p.info["seconds"], 3),
             "stalled_job": _as_dict(p.assign[ro_id]), "changes": changes, "late_orders": late,
             "assignments": {jid: _as_dict(a) for jid, a in p.assign.items()},
@@ -125,6 +127,8 @@ def _solve(conn, shop, jobs, live, prev, now, stall, pinned, blocks, force_sourc
         raise StallError(409, "The engine could not find a workable plan.")
     if len(options) == 2 and options[0]["assignments"] == options[1]["assignments"] and options[0]["source_id"] == options[1]["source_id"]:
         options = [dict(options[0], title="Recommended plan")]
+    for o in options:
+        o["needs_you"] = policy.needs_a_person(o, safe[o["source_id"]])
     if margins:
         for o in options:
             o["late_margin_min"] = _late_margin(shop, jobs, live, prev, now, stall, pinned, blocks, o["source_id"], o["missed_promises"])
@@ -170,7 +174,7 @@ def propose(conn, ro_id, part_id, force_source=None):
     current = plan.assign[ro_id]
     if current.end <= now:
         raise StallError(409, f"{ro_id} is already finished.")
-    in_progress = current.start <= now
+    in_progress = current.start < now
 
     cands = sourcing.candidates(conn, part_id, need["qty"])
     usable = [c for c in cands if c["available"]]
@@ -190,11 +194,12 @@ def propose(conn, ro_id, part_id, force_source=None):
     })
 
 
-def check_late(conn, ro_id, part_id, arrives_min):
+def check_late(conn, ro_id, part_id, arrives_min, store=False):
     """A part that is already on its way will arrive at a different time. Does the plan still hold?
 
     If the job was not due to (re)start before the new arrival, nothing has to change. If it was,
-    the engine re-plans around the new arrival time. Nothing is saved here except the proposal."""
+    the engine re-plans around the new arrival time. Nothing is saved unless store is set, so a
+    slider can ask as often as it likes; replan_late saves the new plans as a proposal."""
     now = db.get_meta(conn, "now_min", 0)
     src = conn.execute("SELECT * FROM sourced WHERE ro_id = ? AND part_id = ?", (ro_id, part_id)).fetchone()
     if src is None:
@@ -207,7 +212,7 @@ def check_late(conn, ro_id, part_id, arrives_min):
     current = plan.assign[ro_id]
     if current.end <= now:
         raise StallError(409, f"{ro_id} is already finished.")
-    if current.start <= now and ro_id not in pinned:
+    if current.start < now and ro_id not in pinned:
         raise StallError(409, f"{ro_id} is already being worked on with its part.")
     if arrives_min <= current.start:
         # Any plan drafted for a later arrival time is no longer relevant.
@@ -228,7 +233,7 @@ def check_late(conn, ro_id, part_id, arrives_min):
         pins = pinned - {ro_id}
         blks = tuple((r["bay_id"], r["start_min"], r["end_min"]) for r in conn.execute("SELECT * FROM segments WHERE kind = 'hold' AND ro_id != ?", (ro_id,)))
     options = _solve(conn, shop, jobs, plan, prev, now, stall, pins, blks)
-    proposal = _store(conn, now, {
+    payload = {
         "kind": "late_part", "ro_id": ro_id, "vehicle": order["vehicle"], "description": order["description"], "promise_min": order["promise_min"],
         "part_id": part_id, "part_name": part["name"], "qty": 0, "now_min": now, "in_progress": waiting,
         "forced_source": None, "current": _as_dict(current), "old_arrives_min": src["arrives_min"], "new_arrives_min": arrives_min,
@@ -236,8 +241,20 @@ def check_late(conn, ro_id, part_id, arrives_min):
                      "on_hand": None, "available": True, "risk": None, "risk_basis": None, "safe": True, "outcome": None, "why_not": None}],
         "engine_source_id": src["source_id"],
         "options": options, "no_replan": _no_replan(shop, jobs, prev, now, stall, source, pins, waiting),
-    })
-    return {"holds": False, "proposal": proposal}
+    }
+    if store:
+        return _store(conn, now, payload)
+    best = options[0]
+    return {"holds": False, "arrives_min": arrives_min, "missed_promises": best["missed_promises"],
+            "late_minutes": best["late_minutes"], "jobs_moved": best["jobs_moved"]}
+
+
+def replan_late(conn, ro_id, part_id, arrives_min):
+    """Save the new plans for a part that will arrive too late for the current plan."""
+    result = check_late(conn, ro_id, part_id, arrives_min, store=True)
+    if result.get("holds"):
+        raise StallError(409, "The plan still holds with that arrival time. Record the new time instead.")
+    return result
 
 
 def confirm_late(conn, ro_id, part_id, arrives_min):
@@ -248,10 +265,13 @@ def confirm_late(conn, ro_id, part_id, arrives_min):
     now = db.get_meta(conn, "now_min", 0)
     old = conn.execute("SELECT arrives_min FROM sourced WHERE ro_id = ? AND part_id = ?", (ro_id, part_id)).fetchone()["arrives_min"]
     conn.execute("UPDATE sourced SET arrives_min = ? WHERE ro_id = ? AND part_id = ?", (arrives_min, ro_id, part_id))
+    if ro_id not in repo.load_engine(conn)[3]:  # not taken apart yet: it must not start before the part is here
+        conn.execute("UPDATE repair_orders SET release_min = MAX(release_min, ?) WHERE id = ?", (arrives_min, ro_id))
     part = conn.execute("SELECT name FROM parts WHERE id = ?", (part_id,)).fetchone()["name"]
     conn.execute("INSERT INTO audit_log (at_min, kind, detail) VALUES (?, 'part_late_plan_holds', ?)",
                  (now, json.dumps({"ro_id": ro_id, "part": part, "old_arrives_min": old, "arrives_min": arrives_min, "starts_min": result["starts_min"], "spare_min": result["spare_min"]})))
     conn.commit()
+    db.bump_plan_version(conn)
     return result
 
 
@@ -262,9 +282,12 @@ def get(conn, proposal_id):
     return {"id": row["id"], "status": row["status"], "plan_version": row["plan_version"], **json.loads(row["payload"])}
 
 
-def _customer_message(vehicle, ro_id, promise_min, end_min):
-    """Fixed wording for now. An LLM will draft this later; it will never change the plan."""
-    return (f"Update on your {vehicle} ({ro_id}): a part for the repair had to be brought in from another location. "
+def _customer_message(vehicle, ro_id, promise_min, end_min, waiting_for_part):
+    """Fixed wording for now. An LLM will draft this later; it will never change the plan.
+    Only the customer whose car is waiting for the part is told about a part."""
+    why = ("a part for the repair had to be brought in from another location" if waiting_for_part
+           else "we had to re-arrange today's work after a delay on another repair")
+    return (f"Update on your {vehicle} ({ro_id}): {why}. "
             f"It will be ready at {repo.clock(end_min)}, not {repo.clock(promise_min)} as promised. We are sorry for the delay.")
 
 
@@ -297,11 +320,12 @@ def approve(conn, proposal_id, option_key):
     else:
         conn.execute("INSERT INTO sourced VALUES (?, ?, ?, ?, ?, ?)", (ro_id, p["part_id"], opt["source_id"], opt["source_name"], opt["arrives_min"], opt["cost"]))
         conn.execute("UPDATE stock SET on_hand = on_hand - ? WHERE store_id = ? AND part_id = ?", (p["qty"], opt["source_id"], p["part_id"]))
-    messages = [{"ro_id": o["ro_id"], "text": _customer_message(o["vehicle"], o["ro_id"], o["promise_min"], o["end_min"])}
+    messages = [{"ro_id": o["ro_id"], "text": _customer_message(o["vehicle"], o["ro_id"], o["promise_min"], o["end_min"], o["ro_id"] == ro_id)}
                 for o in opt["late_orders"] if not o["late_before"] or o["ro_id"] == ro_id]
     detail = {"ro_id": ro_id, "part": p["part_name"], "source": opt["source_name"], "arrives_min": opt["arrives_min"], "cost": 0 if late else opt["cost"],
               "option": opt["title"], "missed_promises": opt["missed_promises"], "jobs_moved": [c["ro_id"] for c in opt["changes"]],
               "bay_blocked_min": opt["bay_blocked_min"], "proven_best": opt["proven_best"],
+              "needed_a_person_because": opt.get("needs_you", []), "decided_by": "manager",
               "customer_messages": messages, "messages_written_by": "fixed template (LLM not connected)"}
     if late:
         detail["old_arrives_min"] = p["old_arrives_min"]

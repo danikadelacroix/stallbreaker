@@ -24,6 +24,7 @@ export const dismissProposal = (id: number) => call<Day>(`/api/proposals/${id}/d
 export const getPrecheck = () => call<Precheck>('/api/precheck')
 export const orderPrecheck = () => call<{ precheck: Precheck; day: Day }>('/api/precheck/order', post())
 export const checkLate = (ro_id: string, part_id: string, arrives_min: number) => call<LateCheck>('/api/late/check', post({ ro_id, part_id, arrives_min }))
+export const replanLate = (ro_id: string, part_id: string, arrives_min: number) => call<Proposal>('/api/late/replan', post({ ro_id, part_id, arrives_min }))
 export const confirmLate = (ro_id: string, part_id: string, arrives_min: number) =>
   call<{ day: Day }>('/api/late/confirm', post({ ro_id, part_id, arrives_min })).then((r) => r.day)
 

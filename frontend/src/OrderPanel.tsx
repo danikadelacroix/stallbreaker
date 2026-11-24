@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { LateCheck, Order, PartNeed, Proposal } from './types'
-import { checkLate, clock } from './api'
+import { checkLate, clock, replanLate } from './api'
 
 const STATUS_LABEL: Record<Order['status'], string> = {
   done: 'Done', in_progress: 'In progress', scheduled: 'Scheduled', waiting_for_part: 'Waiting for a part', unplanned: 'Not planned',
@@ -9,6 +9,8 @@ const SHORT_TEXT = { out_of_stock: 'Not in stock here', claimed_by_earlier_jobs:
 
 interface LateProps { order: Order; part: PartNeed; busy: boolean; onConfirm: (arrives: number) => void; onReplan: (p: Proposal) => void }
 
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
+
 /** Move a part's arrival time and see at once whether the plan can absorb it. */
 function LateControl({ order, part, busy, onConfirm, onReplan }: LateProps) {
   const original = part.arrives_min!
@@ -16,7 +18,9 @@ function LateControl({ order, part, busy, onConfirm, onReplan }: LateProps) {
   const [result, setResult] = useState<{ at: number; check: LateCheck } | null>(null)
   const [problem, setProblem] = useState<string | null>(null)
 
-  // Ask the engine shortly after the slider stops moving.
+  const [opening, setOpening] = useState(false)
+
+  // Ask the engine shortly after the slider stops moving. Asking saves nothing.
   useEffect(() => {
     if (arrives === original) return
     let alive = true
@@ -45,8 +49,17 @@ function LateControl({ order, part, busy, onConfirm, onReplan }: LateProps) {
       )}
       {verdict && !verdict.holds && (
         <>
-          <p className="verdict bad" role="status">The plan no longer holds: the job was due to {order.status === 'waiting_for_part' ? 'resume' : 'start'} at {clock(order.start_min!)}.</p>
-          <button type="button" className="primary" disabled={busy} onClick={() => onReplan(verdict.proposal)}>See the new plan</button>
+          <p className="verdict bad" role="status">
+            The plan no longer holds: the job was due to {order.status === 'waiting_for_part' ? 'resume' : 'start'} at {clock(order.start_min!)}.
+            The best new plan: {plural(verdict.missed_promises, 'promise')} missed, {plural(verdict.jobs_moved, 'job')} moved.
+          </p>
+          <button type="button" className="primary" disabled={busy || opening} onClick={() => {
+            setOpening(true)
+            replanLate(order.id, part.part_id, arrives)
+              .then(onReplan)
+              .catch((e: unknown) => setProblem(e instanceof Error ? e.message : 'Could not open the new plan'))
+              .finally(() => setOpening(false))
+          }}>{opening ? 'Opening…' : 'See the new plan'}</button>
         </>
       )}
     </div>

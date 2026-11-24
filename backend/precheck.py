@@ -27,7 +27,7 @@ def run(conn):
     flagged = []
     for (ro_id, part_id), reason in repo.peg(conn, now).items():
         o = orders[ro_id]
-        started = o["start_min"] <= now or ro_id in waiting
+        started = o["start_min"] < now or ro_id in waiting
         best = None if started else _best_in_time(conn, part_id, qty[(ro_id, part_id)], now, o["start_min"])
         flagged.append({
             "ro_id": ro_id, "vehicle": o["vehicle"], "description": o["description"], "start_min": o["start_min"], "promise_min": o["promise_min"],
@@ -60,4 +60,6 @@ def order_fixes(conn):
         conn.execute("INSERT INTO audit_log (at_min, kind, detail) VALUES (?, 'parts_ordered_ahead', ?)",
                      (now, json.dumps({"orders": placed, "total_cost": sum(p["cost"] for p in placed)})))
     conn.commit()
+    if placed:
+        db.bump_plan_version(conn)  # stock and release times changed: older proposals are stale
     return placed

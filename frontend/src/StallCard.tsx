@@ -13,14 +13,16 @@ interface Props {
 
 const pctText = (r: number | null) => (r === null ? '—' : `${Math.round(r * 100)}%`)
 const money = (n: number) => `$${Math.round(n)}`
-const slack = (min: number, capped: boolean) => (capped ? `${span(min)} or more` : span(min))
+const slack = (min: number, capped: boolean) => (capped ? `over ${span(min)}` : span(min))
 
 /** One sentence on how much delay of the part the plan can take. */
 function marginText(o: PlanOption, roId: string): string {
   const selfLate = o.late_orders.some((l) => l.ro_id === roId)
   const own = selfLate ? `${roId} gets later with any delay. ` : ''
+  const further = o.missed_promises ? 'further ' : ''
   if (o.late_margin_min === 0) return `${own}No slack: a part 15 min late costs another promise.`
-  return `${own}No ${o.missed_promises ? 'further ' : ''}promise is lost if the part is up to ${slack(o.late_margin_min, o.late_margin_capped)} late.`
+  if (o.late_margin_capped) return `${own}No ${further}promise is lost even if the part is ${span(o.late_margin_min)} late.`
+  return `${own}No ${further}promise is lost if the part is up to ${span(o.late_margin_min)} late.`
 }
 
 function Option({ o, roId, title, chosen, busy, onPreview, onApprove }: { o: PlanOption; roId: string; title: string; chosen: boolean; busy: boolean; onPreview: () => void; onApprove: () => void }) {
@@ -51,6 +53,9 @@ function Option({ o, roId, title, chosen, busy, onPreview, onApprove }: { o: Pla
       {o.late_orders.filter((l) => !l.late_before).map((l) => (
         <p key={l.ro_id} className="late-note">{l.ro_id} would be ready at {clock(l.end_min)}, {span(l.end_min - l.promise_min)} after its promise.</p>
       ))}
+      <p className={`needs-you ${o.needs_you.length ? '' : 'clear'}`}>
+        {o.needs_you.length ? <><strong>Needs you because</strong> {o.needs_you.join('; ')}.</> : <strong>Nothing is traded off in this plan.</strong>}
+      </p>
       <p className={`margin-note ${o.late_margin_min === 0 ? 'tight' : ''}`}><strong>If the part is late:</strong> {marginText(o, roId)}</p>
       <div className="actions">
         <button type="button" className="ghost" onClick={onPreview} aria-pressed={chosen} disabled={chosen}>{chosen ? 'Shown on the board' : 'Show on the board'}</button>

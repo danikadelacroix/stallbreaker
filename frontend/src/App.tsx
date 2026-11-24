@@ -20,12 +20,18 @@ function buildView(day: Day | null, proposal: Proposal | null, option: PlanOptio
     return { ...o, start_min: a.start_min, end_min: a.end_min, technician: a.technician, bay: a.bay, late: a.end_min > o.promise_min,
       status: waiting ? 'waiting_for_part' : o.status, short_of_parts: o.id === proposal.ro_id ? false : o.short_of_parts }
   })
+  const moved = new Set(option.changes.map((c) => c.ro_id))
+  if (proposal.kind === 'late_part') {
+    // The car is already waiting: its blocked bay just lasts until the new restart time.
+    const segments = day.segments.map((s) => (s.ro_id === proposal.ro_id && s.kind === 'hold' ? { ...s, end_min: option.stalled_job.start_min } : s))
+    return { orders, segments, moved }
+  }
   const stalled = proposal.current
   const extra: Segment[] = proposal.in_progress ? [
     { ro_id: proposal.ro_id, kind: 'done', start_min: stalled.start_min, end_min: proposal.now_min, technician: stalled.technician, bay: stalled.bay },
     { ro_id: proposal.ro_id, kind: 'hold', start_min: proposal.now_min, end_min: option.stalled_job.start_min, technician: null, bay: stalled.bay },
   ] : []
-  return { orders, segments: [...day.segments, ...extra.filter((s) => s.end_min > s.start_min)], moved: new Set(option.changes.map((c) => c.ro_id)) }
+  return { orders, segments: [...day.segments, ...extra.filter((s) => s.end_min > s.start_min)], moved }
 }
 
 export default function App() {

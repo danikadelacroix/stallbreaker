@@ -1,5 +1,7 @@
 """StallBreaker API. Run from the repo root:  .venv/bin/python -m uvicorn backend.app:app --port 8000"""
+import functools
 import os
+import threading
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +13,16 @@ app = FastAPI(title="StallBreaker", version="0.1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"], allow_methods=["*"], allow_headers=["*"])
 
 _conn = None
+_lock = threading.RLock()
+
+
+def one_at_a_time(handler):
+    """Requests share one database connection and the solver, so they run one after another."""
+    @functools.wraps(handler)
+    def wrapped(*args, **kwargs):
+        with _lock:
+            return handler(*args, **kwargs)
+    return wrapped
 
 
 def conn():
@@ -53,24 +65,30 @@ def _guard(work):
 
 
 @app.get("/api/health")
+@one_at_a_time
 def health():
     import ortools
     return {"ok": True, "solver": f"OR-Tools {ortools.__version__}"}
 
 
 @app.get("/api/day")
+@one_at_a_time
 def get_day():
     return repo.day(conn())
 
 
 @app.post("/api/clock")
+@one_at_a_time
 def set_clock(body: Clock):
     """Move the demo clock. The plan does not change; only what counts as done, running or still to come."""
-    db.set_meta(conn(), "now_min", body.now_min)
+    if db.get_meta(conn(), "now_min", 0) != body.now_min:
+        db.set_meta(conn(), "now_min", body.now_min)
+        db.bump_plan_version(conn())  # a plan drafted at another time of day must not be approved
     return repo.day(conn())
 
 
 @app.post("/api/reset")
+@one_at_a_time
 def reset(seed_value: int = seed.DEFAULT_SEED):
     """Rebuild the demo day from scratch."""
     if not 0 <= seed_value <= 10**6:
@@ -80,6 +98,7 @@ def reset(seed_value: int = seed.DEFAULT_SEED):
 
 
 @app.get("/api/log")
+@one_at_a_time
 def log():
     import json
     return [{"id": r["id"], "at_min": r["at_min"], "kind": r["kind"], "detail": json.loads(r["detail"])}
@@ -87,35 +106,41 @@ def log():
 
 
 @app.post("/api/stalls")
+@one_at_a_time
 def report_stall(body: StallReport):
     """A part is missing for a repair order. Returns the sources and the plan options."""
     return _guard(lambda: stalls.propose(conn(), body.ro_id, body.part_id, body.force_source))
 
 
 @app.get("/api/proposals/{proposal_id}")
+@one_at_a_time
 def get_proposal(proposal_id: int):
     return _guard(lambda: stalls.get(conn(), proposal_id))
 
 
 @app.post("/api/proposals/{proposal_id}/approve")
+@one_at_a_time
 def approve_proposal(proposal_id: int, body: Approval):
     decided = _guard(lambda: stalls.approve(conn(), proposal_id, body.option))
     return {"decided": decided, "day": repo.day(conn())}
 
 
 @app.post("/api/proposals/{proposal_id}/dismiss")
+@one_at_a_time
 def dismiss_proposal(proposal_id: int):
     _guard(lambda: stalls.dismiss(conn(), proposal_id))
     return repo.day(conn())
 
 
 @app.get("/api/precheck")
+@one_at_a_time
 def get_precheck():
     """Jobs that will be short of a part, and whether each can be fixed without touching the schedule."""
     return precheck.run(conn())
 
 
 @app.post("/api/precheck/order")
+@one_at_a_time
 def order_precheck():
     """Order every part that can arrive before its job starts."""
     placed = precheck.order_fixes(conn())
@@ -123,12 +148,21 @@ def order_precheck():
 
 
 @app.post("/api/late/check")
+@one_at_a_time
 def check_late_part(body: LatePart):
-    """A part on its way will arrive at a new time. Says whether the plan holds, or returns new plans."""
+    """A part on its way will arrive at a new time. Says whether the plan holds. Saves nothing."""
     return _guard(lambda: stalls.check_late(conn(), body.ro_id, body.part_id, body.arrives_min))
 
 
+@app.post("/api/late/replan")
+@one_at_a_time
+def replan_late_part(body: LatePart):
+    """The plan cannot absorb the new arrival time: save the new plans as a proposal to approve."""
+    return _guard(lambda: stalls.replan_late(conn(), body.ro_id, body.part_id, body.arrives_min))
+
+
 @app.post("/api/late/confirm")
+@one_at_a_time
 def confirm_late_part(body: LatePart):
     """Record a new arrival time that the plan can absorb without changes."""
     result = _guard(lambda: stalls.confirm_late(conn(), body.ro_id, body.part_id, body.arrives_min))

@@ -58,7 +58,7 @@ plan costs in missed promises, approves once, and the day is re-planned.
 | A4 | Rule 18 | `test_a_second_stall_plans_around_the_first` |
 | A5 | Rules 12, 16 and 17 | `test_a_stale_proposal_cannot_be_approved` |
 
-Demo numbers (seed 2026, 10:30, RO-1013 gasket kit): recommended source Local vendor, $85,
+Demo numbers (seed 2026, clock at 11:00, RO-1013 gasket kit): recommended source Local vendor, $85,
 1 promise missed by 30 min, 1 job moved, bay blocked 1 h. No re-plan: 2 missed, 375 late
 minutes, bay blocked 4 h. North is unsafe at 71% (36 of 51 months).
 

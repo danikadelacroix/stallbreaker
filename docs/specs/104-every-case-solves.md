@@ -1,6 +1,6 @@
 # 104 Every demo case solves
 
-**Status:** Proposed · **Owner:** unassigned · **Depends on:** 004, 102
+**Status:** Fast version built · **Owner:** unassigned · **Depends on:** 004
 
 ## Why
 
@@ -19,7 +19,7 @@ A user can click any job and report any part missing. None of those clicks may f
 
 | # | Check | Test |
 |---|---|---|
-| A1 | Sample of 10 pairs passes rules 2 and 3 | `test_sample_of_demo_stalls_all_solve` (to write) |
+| A1 | Sample of 10 pairs passes rules 2 and 3 | `test_sample_of_demo_stalls_all_solve` |
 | A2 | Full sweep passes with a written summary | `experiments/every_case.py` (to write), output in `experiments/out/` |
 
 ## Out of scope

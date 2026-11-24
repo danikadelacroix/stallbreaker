@@ -30,13 +30,15 @@ def load_engine(conn):
 def status_of(start, end, now):
     if end <= now:
         return "done"
-    if start <= now:
+    if start < now:  # a job that starts this minute has not been taken apart yet
         return "in_progress"
     return "scheduled"
 
 
 def peg(conn, now):
-    """Hand out the home store's stock to the open jobs in the order they start.
+    """Hand out the home store's stock to the jobs that were open when it was counted, in the
+    order they start. Jobs that have finished since still used their parts, so they count against
+    the shelf, but only jobs still open now are flagged.
 
     Returns {(ro_id, part_id): reason} for every need that cannot be met: 'out_of_stock' when the
     shelf is empty, 'claimed_by_earlier_jobs' when earlier jobs today will use what is there.
@@ -46,14 +48,15 @@ def peg(conn, now):
     ordered = {(r["ro_id"], r["part_id"]) for r in conn.execute("SELECT ro_id, part_id FROM sourced")}
     short = {}
     rows = conn.execute("""SELECT p.ro_id, p.part_id, p.qty FROM ro_parts p JOIN assignments a ON a.ro_id = p.ro_id
-                           WHERE a.end_min > ? ORDER BY a.start_min, p.ro_id, p.part_id""", (now,))
+                           WHERE a.end_min > ? ORDER BY a.start_min, p.ro_id, p.part_id""", (db.get_meta(conn, "stock_counted_min", 0),))
+    finished = {r["ro_id"] for r in conn.execute("SELECT ro_id FROM assignments WHERE end_min <= ?", (now,))}
     for r in rows:
         key = (r["ro_id"], r["part_id"])
         if key in ordered:
             continue
         if shelf.get(r["part_id"], 0) >= r["qty"]:
             shelf[r["part_id"]] -= r["qty"]
-        else:
+        elif r["ro_id"] not in finished:
             short[key] = "out_of_stock" if start_stock.get(r["part_id"], 0) < r["qty"] else "claimed_by_earlier_jobs"
     return short
 

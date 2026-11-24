@@ -16,8 +16,11 @@ def candidates(conn, part_id, qty):
         if entry["available"]:
             left = on_hand - qty
             r, over, total = risk.shortage_risk(part["series_id"], left)
-            entry.update(risk=round(r, 3), safe=r <= risk.RISK_LIMIT,
-                         risk_basis=f"demand was above {left} in {over} of {total} past months")
+            if r is None:
+                entry.update(safe=False, risk_basis="no demand history for this part, so lending cannot be judged")
+            else:
+                entry.update(risk=round(r, 3), safe=r <= risk.RISK_LIMIT,
+                             risk_basis=f"demand was above {left} in {over} of {total} past months")
         out.append(entry)
     for sup in conn.execute("SELECT * FROM suppliers ORDER BY lead_minutes"):
         out.append({"id": sup["id"], "name": sup["name"], "kind": sup["kind"], "eta_min": sup["lead_minutes"], "cost": sup["surcharge"],

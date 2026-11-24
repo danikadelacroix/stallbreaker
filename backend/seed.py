@@ -137,6 +137,7 @@ def build(conn, seed=DEFAULT_SEED, n_orders=40):
     conn.commit()
     db.set_meta(conn, "seed", seed)
     db.set_meta(conn, "now_min", START_CLOCK)
+    db.set_meta(conn, "stock_counted_min", START_CLOCK)  # the shelf holds what jobs open at this time still need
     db.set_meta(conn, "plan_version", 1)
     m = metrics(jobs, plan)
     ex("INSERT INTO audit_log (at_min, kind, detail) VALUES (0, 'morning_plan', ?)",

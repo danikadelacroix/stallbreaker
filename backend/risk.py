@@ -35,9 +35,10 @@ def history(series_id):
 
 
 def shortage_risk(series_id, left_after_lending):
-    """Returns (risk between 0 and 1, months where demand exceeded what is left, months of history)."""
+    """Returns (risk between 0 and 1, months where demand exceeded what is left, months of history).
+    The risk is None when the part has no demand history."""
     months = history(series_id)
     if not months:
-        return 0.0, 0, 0
+        return None, 0, 0  # no history: the risk is unknown, which is not the same as safe
     over = sum(1 for d in months if d > left_after_lending)
     return over / len(months), over, len(months)

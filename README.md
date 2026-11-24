@@ -34,6 +34,9 @@ stores, a vendor and an OEM depot) on a schedule board.
   when it differs, the plan that moves the fewest jobs. The board previews the selected plan:
   the blocked bay is hatched and moved jobs are outlined. You can force a different source
   to see what it costs.
+- **Says why it needs you.** Each plan lists what it trades off (a missed promise, a moved
+  job, a cost above the spending limit, a source that is unsafe to lend from) or says that
+  nothing is traded off.
 - **Approve once.** The approved plan becomes the live schedule. The decision goes into a
   log with a draft message for any customer whose promise time is missed.
 - **A part runs late.** For a part already on its way, a slider shows at once whether the
@@ -100,13 +103,13 @@ as such. The LLM will never choose the plan.
 | `backend/` | FastAPI app and SQLite database: seed data, stock lookup, shortage risk, parts check, stall flow |
 | `frontend/` | React app (Vite, TypeScript): schedule board, parts check, stall card, decision log |
 | `experiments/` | Sample day, 200-stall benchmark, scale check, forecasting baseline, with outputs in `out/` |
-| `tests/` | 27 checks: 9 on the engine, 18 on the API |
+| `tests/` | 39 checks: 9 on the engine, 30 on the API |
 | `data/` | Monash Car Parts dataset (CC BY 4.0) |
 
 ## Tests and experiments
 
 ```bash
-.venv/bin/python -m pytest -q                      # 27 checks
+.venv/bin/python -m pytest -q                      # 39 checks
 .venv/bin/python experiments/toy.py                # 8 jobs, 3 bays, one missing part
 .venv/bin/python experiments/eval.py 200           # 200 seeded stalls, six methods
 .venv/bin/python experiments/scale.py 20           # re-plan time on 12 to 60-job days

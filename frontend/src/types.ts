@@ -50,6 +50,8 @@ export interface PlanOption {
   proven_best: boolean; solve_seconds: number; stalled_job: Slot
   /** How late the part can be before another promise is lost, in 15-minute steps up to 4 hours. */
   late_margin_min: number; late_margin_capped: boolean
+  /** Why this plan must be approved by a person. Empty when nothing is traded off. */
+  needs_you: string[]
   changes: { ro_id: string; description: string; before: Slot; after: Slot }[]
   late_orders: { ro_id: string; vehicle: string; description: string; promise_min: number; end_min: number; late_before: boolean }[]
   assignments: Record<string, Slot>
@@ -84,4 +86,4 @@ export interface Precheck {
 
 export type LateCheck =
   | { holds: true; starts_min: number; spare_min: number; arrives_min: number }
-  | { holds: false; proposal: Proposal }
+  | { holds: false; arrives_min: number; missed_promises: number; late_minutes: number; jobs_moved: number }

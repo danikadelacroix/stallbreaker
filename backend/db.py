@@ -53,6 +53,11 @@ def get_meta(conn, key, default=None):
     return json.loads(row["value"]) if row else default
 
 
+def bump_plan_version(conn):
+    """The day changed, so any plan drafted before this moment must not be approved."""
+    set_meta(conn, "plan_version", get_meta(conn, "plan_version", 1) + 1)
+
+
 def set_meta(conn, key, value):
     conn.execute("INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", (key, json.dumps(value)))
     conn.commit()

@@ -9,13 +9,13 @@ that will run short of a part and order the part while there is still time.
 
 ## Rules
 
-1. The home store's shelf stock is handed out to the open jobs in the order they start ("pegging"). Parts already on their way for a job are skipped.
+1. The home store's shelf stock is handed out, in the order jobs start, to every job that was open when the stock was counted ("pegging"). Jobs that have finished since still used their parts; only jobs still open are flagged, so a shortfall does not vanish when the clock moves. Parts already on their way for a job are skipped.
 2. A need that cannot be met is flagged with a reason: `out_of_stock` (the shelf never had enough) or `claimed_by_earlier_jobs` (it is on the shelf but earlier jobs will use it).
 3. For each flagged job that has not started, look for the cheapest safe source that arrives no later than the job's start. If there is one, it is the job's `fix`.
 4. A job already started, or already waiting for a part, has no quiet fix. It needs the stall flow (004).
 5. "Order the fixes" places every fix without touching the schedule. Each order is re-checked against live stock, because one order can use up what another relied on.
 6. Ordering is idempotent: a second run orders nothing.
-7. The order raises the job's release time to the arrival time and adds a `parts_ordered_ahead` entry to the log.
+7. The order raises the job's release time to the arrival time, adds a `parts_ordered_ahead` entry to the log, and raises `plan_version`.
 
 In a dealership this would run every night for the next day. In the demo it runs on the rest of today.
 

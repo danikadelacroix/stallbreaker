@@ -109,7 +109,7 @@ def _stall_in_progress(prev, now, stall):
     if not stall or not prev or stall.job not in prev.assign:
         return False
     a = prev.assign[stall.job]
-    return a.start <= now < a.end
+    return a.start < now < a.end
 
 
 def _split(jobs, prev, now, stall, pinned=frozenset()):
