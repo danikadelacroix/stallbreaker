@@ -1,4 +1,4 @@
-import type { Day, LateCheck, LogEntry, Precheck, Proposal } from './types'
+import type { Day, IntakeInfo, LateCheck, LogEntry, NoteReading, Precheck, Proposal } from './types'
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...init })
@@ -21,6 +21,8 @@ export const reportStall = (ro_id: string, part_id: string, force_source: string
 export const getProposal = (id: number) => call<Proposal>(`/api/proposals/${id}`)
 export const approveProposal = (id: number, option: string) => call<{ day: Day }>(`/api/proposals/${id}/approve`, post({ option })).then((r) => r.day)
 export const dismissProposal = (id: number) => call<Day>(`/api/proposals/${id}/dismiss`, post())
+export const readNote = (text: string) => call<NoteReading>('/api/intake', post({ text }))
+export const getIntakeInfo = () => call<IntakeInfo>('/api/intake/info')
 export const getPrecheck = () => call<Precheck>('/api/precheck')
 export const orderPrecheck = () => call<{ precheck: Precheck; day: Day }>('/api/precheck/order', post())
 export const checkLate = (ro_id: string, part_id: string, arrives_min: number) => call<LateCheck>('/api/late/check', post({ ro_id, part_id, arrives_min }))

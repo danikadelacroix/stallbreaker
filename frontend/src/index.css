@@ -187,6 +187,18 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .table-scroll, .board-scroll { position: relative; }
 
 /* ---- parts check ---- */
+/* ---- read a note ---- */
+.intake { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; min-width: 0; }
+.intake label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+.intake textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 15px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; resize: vertical; }
+.intake-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+.intake-foot p { flex: 1 1 260px; }
+.reading { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: #eaf6f4; }
+.reading.unclear { background: #fff6e5; }
+.reading .understood { font-size: 16px; line-height: 1.5; margin: 2px 0 6px; }
+.reading .actions { margin-top: 10px; }
+.fallback { margin-top: 8px; color: #6b4708; }
+
 .precheck { background: var(--paper); border: 1px solid var(--line); border-top: 4px solid var(--teal); border-radius: 12px; padding: 16px; margin-bottom: 16px; min-width: 0; }
 .precheck header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 10px; }
 .precheck h2 { font-size: 18px; }

@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from . import db, precheck, repo, seed, stalls
+from . import db, intake, precheck, repo, seed, stalls
 
 app = FastAPI(title="StallBreaker", version="0.1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"], allow_methods=["*"], allow_headers=["*"])
@@ -51,6 +51,10 @@ class LatePart(BaseModel):
     ro_id: str = Field(pattern=r"^RO-\d{1,6}$")
     part_id: str = Field(min_length=1, max_length=20, pattern=r"^[A-Z0-9-]+$")
     arrives_min: int = Field(ge=0, le=900, description="New arrival time, minutes after 08:00")
+
+
+class Note(BaseModel):
+    text: str = Field(min_length=1, max_length=600, description="What the technician typed or said")
 
 
 class Approval(BaseModel):
@@ -131,6 +135,20 @@ def approve_proposal(proposal_id: int, body: Approval):
 def dismiss_proposal(proposal_id: int):
     _guard(lambda: stalls.dismiss(conn(), proposal_id))
     return repo.day(conn())
+
+
+@app.post("/api/intake")
+@one_at_a_time
+def read_note(body: Note):
+    """Read a technician's note into a repair order and a part. Saves nothing: a person confirms the reading first."""
+    return intake.read(conn(), body.text)
+
+
+@app.get("/api/intake/info")
+@one_at_a_time
+def intake_info():
+    """Which reader is in use, whether notes leave the machine, and how the reader scored on the test notes."""
+    return intake.info()
 
 
 @app.get("/api/precheck")

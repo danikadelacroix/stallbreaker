@@ -1,0 +1,74 @@
+{"id": 1, "split": "dev", "text": "1013 wp off, gskt kit in bin is for the 2.0 not 2.5t", "kind": "missing_part", "ro_id": "RO-1013", "part_id": "WTR-GSK", "arrives_min": null}
+{"id": 2, "split": "held_out", "text": "RO-1013 no gasket kit on the shelf, pump is here", "kind": "missing_part", "ro_id": "RO-1013", "part_id": "WTR-GSK", "arrives_min": null}
+{"id": 3, "split": "dev", "text": "bay 7 explorer - need water pump gasket set, none in stock", "kind": "missing_part", "ro_id": "RO-1013", "part_id": "WTR-GSK", "arrives_min": null}
+{"id": 4, "split": "held_out", "text": "Pooja: 2020 Explorer, coolant jug is empty, need 1 gal 50/50", "kind": "missing_part", "ro_id": "RO-1013", "part_id": "CLT-5050", "arrives_min": null}
+{"id": 5, "split": "dev", "text": "1004 timing job - tensioner missing from the kit box", "kind": "missing_part", "ro_id": "RO-1004", "part_id": "TMG-TNS", "arrives_min": null}
+{"id": 6, "split": "held_out", "text": "outback in bay 5 belt tensioner is the wrong one", "kind": "missing_part", "ro_id": "RO-1004", "part_id": "TMG-TNS", "arrives_min": null}
+{"id": 7, "split": "dev", "text": "RO 1007 t-belt kit not here yet", "kind": "missing_part", "ro_id": "RO-1007", "part_id": "TMG-KIT", "arrives_min": null}
+{"id": 8, "split": "held_out", "text": "1007: no tensionr in parts cage", "kind": "missing_part", "ro_id": "RO-1007", "part_id": "TMG-TNS", "arrives_min": null}
+{"id": 9, "split": "dev", "text": "ro1021 timing belt kit box has no belt in it, need a new kit", "kind": "missing_part", "ro_id": "RO-1021", "part_id": "TMG-KIT", "arrives_min": null}
+{"id": 10, "split": "held_out", "text": "1005 lower arm is for the wrong side, need LH", "kind": "missing_part", "ro_id": "RO-1005", "part_id": "SUS-ARM-L", "arrives_min": null}
+{"id": 11, "split": "dev", "text": "altima bay 1 - bushings missing", "kind": "missing_part", "ro_id": "RO-1005", "part_id": "SUS-BSH", "arrives_min": null}
+{"id": 12, "split": "held_out", "text": "1024 control arm bushing kit short 2 bushes", "kind": "missing_part", "ro_id": "RO-1024", "part_id": "SUS-BSH", "arrives_min": null}
+{"id": 13, "split": "dev", "text": "tucson on 6 has no refrigerant left for it, need a charge", "kind": "missing_part", "ro_id": "RO-1036", "part_id": "AC-RFG", "arrives_min": null}
+{"id": 14, "split": "held_out", "text": "1036 cabin filter not in bin", "kind": "missing_part", "ro_id": "RO-1036", "part_id": "CAB-FLT", "arrives_min": null}
+{"id": 15, "split": "dev", "text": "accord batt is dead on arrival, need another H6", "kind": "missing_part", "ro_id": "RO-1039", "part_id": "BAT-H6", "arrives_min": null}
+{"id": 16, "split": "held_out", "text": "bay 4 battery wrong group size", "kind": "missing_part", "ro_id": "RO-1039", "part_id": "BAT-H6", "arrives_min": null}
+{"id": 17, "split": "dev", "text": "1015 rav4 - no H6 battery on shelf", "kind": "missing_part", "ro_id": "RO-1015", "part_id": "BAT-H6", "arrives_min": null}
+{"id": 18, "split": "held_out", "text": "1023 silverado front pads missing", "kind": "missing_part", "ro_id": "RO-1023", "part_id": "BRK-PAD-F", "arrives_min": null}
+{"id": 19, "split": "dev", "text": "RO-1030: pad set box is empty", "kind": "missing_part", "ro_id": "RO-1030", "part_id": "BRK-PAD-F", "arrives_min": null}
+{"id": 20, "split": "held_out", "text": "1035 rotors are the wrong size, pads ok", "kind": "missing_part", "ro_id": "RO-1035", "part_id": "BRK-ROT-F", "arrives_min": null}
+{"id": 21, "split": "dev", "text": "camry 1035 out of dot 4", "kind": "missing_part", "ro_id": "RO-1035", "part_id": "BRK-FLD", "arrives_min": null}
+{"id": 22, "split": "held_out", "text": "1025 sorento no oil filter", "kind": "missing_part", "ro_id": "RO-1025", "part_id": "OIL-FLT", "arrives_min": null}
+{"id": 23, "split": "dev", "text": "kia in for oil service, we are out of 5w30", "kind": "missing_part", "ro_id": "RO-1025", "part_id": "OIL-5W30", "arrives_min": null}
+{"id": 24, "split": "held_out", "text": "f150 oil change filter is wrong thread", "kind": "missing_part", "ro_id": "RO-1027", "part_id": "OIL-FLT", "arrives_min": null}
+{"id": 25, "split": "dev", "text": "1019 need cabin air filter, none here", "kind": "missing_part", "ro_id": "RO-1019", "part_id": "CAB-FLT", "arrives_min": null}
+{"id": 26, "split": "held_out", "text": "north says tensioner for 1017 wont be here till 12:30", "kind": "late_part", "ro_id": "RO-1017", "part_id": "TMG-TNS", "arrives_min": 270}
+{"id": 27, "split": "dev", "text": "pads for 1035 now coming 2:15 not 12:50", "kind": "late_part", "ro_id": "RO-1035", "part_id": "BRK-PAD-F", "arrives_min": 375}
+{"id": 28, "split": "held_out", "text": "1040 brake pads delayed, east says 1:40pm", "kind": "late_part", "ro_id": "RO-1040", "part_id": "BRK-PAD-F", "arrives_min": 340}
+{"id": 29, "split": "dev", "text": "1013 thermostat housing bolt snapped, need 1", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
+{"id": 30, "split": "held_out", "text": "1026 done, corolla ready for pickup", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
+{"id": 31, "split": "dev", "text": "9999 needs a water pump", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
+{"id": 32, "split": "held_out", "text": "explorer needs a part", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
+{"id": 33, "split": "dev", "text": "1024 all parts here, starting now", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
+{"id": 34, "split": "held_out", "text": "wrangler alignment rack is busy", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
+{"id": 35, "split": "outside", "text": "1013 pooja - no 50/50 coolant on the shelf, parts says zero on hand", "kind": "missing_part", "ro_id": "RO-1013", "part_id": "CLT-5050", "arrives_min": null}
+{"id": 36, "split": "outside", "text": "1013 water pump bolt snapped off in the block, need extractor kit. pump n gasket fine", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
+{"id": 37, "split": "outside", "text": "17 silverado front pads, box has rears in it. wrong part pulled", "kind": "missing_part", "ro_id": "RO-1023", "part_id": "BRK-PAD-F", "arrives_min": null}
+{"id": 38, "split": "outside", "text": "RO-1031 5w30 jug leaking, cap cracked half of it gone", "kind": "missing_part", "ro_id": "RO-1031", "part_id": "OIL-5W30", "arrives_min": null}
+{"id": 39, "split": "outside", "text": "sorento oil filter wrong thread wont spin on", "kind": "missing_part", "ro_id": "RO-1025", "part_id": "OIL-FLT", "arrives_min": null}
+{"id": 40, "split": "outside", "text": "isha rav4 - timing kit box missing the idler pulley, incomplete", "kind": "missing_part", "ro_id": "RO-1021", "part_id": "TMG-KIT", "arrives_min": null}
+{"id": 41, "split": "outside", "text": "RO-1040 brk pads, east truck stuck in traffic new eta 2:15pm", "kind": "late_part", "ro_id": "RO-1040", "part_id": "BRK-PAD-F", "arrives_min": 375}
+{"id": 42, "split": "outside", "text": "ro-1035 front rotors wrong dia, way too big for the 16 camry. fluid ok", "kind": "missing_part", "ro_id": "RO-1035", "part_id": "BRK-ROT-F", "arrives_min": null}
+{"id": 43, "split": "outside", "text": "RO 1019 cabin fliter wrong size, too wide for the housing", "kind": "missing_part", "ro_id": "RO-1019", "part_id": "CAB-FLT", "arrives_min": null}
+{"id": 44, "split": "outside", "text": "RO-1021 belt tensioner defective, spring has no tension out of box", "kind": "missing_part", "ro_id": "RO-1021", "part_id": "TMG-TNS", "arrives_min": null}
+{"id": 45, "split": "outside", "text": "east store says pads running late, prob 1:30", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
+{"id": 46, "split": "outside", "text": "ro 1004 tensioner is the wrong one, pulley too small for the outback. kit itself is ok", "kind": "missing_part", "ro_id": "RO-1004", "part_id": "TMG-TNS", "arrives_min": null}
+{"id": 47, "split": "outside", "text": "ro1035 rotors and fluid are here. pads from east pushed back to 1:45", "kind": "late_part", "ro_id": "RO-1035", "part_id": "BRK-PAD-F", "arrives_min": 345}
+{"id": 48, "split": "outside", "text": "1024 camry bushing kit is for the wrong model yr, sleeves dont fit", "kind": "missing_part", "ro_id": "RO-1024", "part_id": "SUS-BSH", "arrives_min": null}
+{"id": 49, "split": "outside", "text": "RO-1039 new h6 tested 12.6v all good, installing now", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
+{"id": 50, "split": "outside", "text": "ro 1030 frt brake pads not in the kitting bin, parts cant find them", "kind": "missing_part", "ro_id": "RO-1030", "part_id": "BRK-PAD-F", "arrives_min": null}
+{"id": 51, "split": "outside", "text": "RO 1035 brake fluid on shelf is dot 3 not dot 4, no dot4 in stock", "kind": "missing_part", "ro_id": "RO-1035", "part_id": "BRK-FLD", "arrives_min": null}
+{"id": 52, "split": "outside", "text": "16 silverado pads coming from east now 3 pm not 12:50", "kind": "late_part", "ro_id": "RO-1040", "part_id": "BRK-PAD-F", "arrives_min": 420}
+{"id": 53, "split": "outside", "text": "north store called, tucson tensioner not leaving yet. new eta 1:15 pm", "kind": "late_part", "ro_id": "RO-1017", "part_id": "TMG-TNS", "arrives_min": 315}
+{"id": 54, "split": "outside", "text": "1036 cabin filter torn, pleats ripped. need new one", "kind": "missing_part", "ro_id": "RO-1036", "part_id": "CAB-FLT", "arrives_min": null}
+{"id": 55, "split": "outside", "text": "23 wrangler oil change - oil filter crushed, can is dented in", "kind": "missing_part", "ro_id": "RO-1028", "part_id": "OIL-FLT", "arrives_min": null}
+{"id": 56, "split": "outside", "text": "battery job - no h6 on the shelf at all", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
+{"id": 57, "split": "outside", "text": "ro-1017 timing kit not in the bin and shelf is empty. tensioner still coming from north thats fine", "kind": "missing_part", "ro_id": "RO-1017", "part_id": "TMG-KIT", "arrives_min": null}
+{"id": 58, "split": "outside", "text": "RO-1017 tensioner from north delayed, driver says 12:30 now", "kind": "late_part", "ro_id": "RO-1017", "part_id": "TMG-TNS", "arrives_min": 270}
+{"id": 59, "split": "outside", "text": "bay 9 alignment rack - front left sensor head wont calibrate, 1014 stuck", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
+{"id": 60, "split": "outside", "text": "ro1024 lower control arm bent, shipping damage. bushings ok", "kind": "missing_part", "ro_id": "RO-1024", "part_id": "SUS-ARM-L", "arrives_min": null}
+{"id": 61, "split": "outside", "text": "meera explorer bay 3 timing kit wrong, belt has wrong tooth count wont seat", "kind": "missing_part", "ro_id": "RO-1007", "part_id": "TMG-KIT", "arrives_min": null}
+{"id": 62, "split": "outside", "text": "sanas altima - bushing kit short 2 bushings, bag was already open. arm is fine", "kind": "missing_part", "ro_id": "RO-1005", "part_id": "SUS-BSH", "arrives_min": null}
+{"id": 63, "split": "outside", "text": "ro 1012 oil filter was the wrong one fyi", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
+{"id": 64, "split": "outside", "text": "RO-1027 f150 no 5w30 on shelf only 0w20, filter is here", "kind": "missing_part", "ro_id": "RO-1027", "part_id": "OIL-5W30", "arrives_min": null}
+{"id": 65, "split": "outside", "text": "sana camry rotor job - east says the pads wont get here till 14:10 now", "kind": "late_part", "ro_id": "RO-1035", "part_id": "BRK-PAD-F", "arrives_min": 370}
+{"id": 66, "split": "outside", "text": "ro 1023 silverado rotors scored bad, need a new pair", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
+{"id": 67, "split": "outside", "text": "kavya tucson ac - refrigerant cyl empty, guage reads zero", "kind": "missing_part", "ro_id": "RO-1036", "part_id": "AC-RFG", "arrives_min": null}
+{"id": 68, "split": "outside", "text": "tara rav4 battery job, h6 from stock reads 9.8v dead cell. need a diff one", "kind": "missing_part", "ro_id": "RO-1015", "part_id": "BAT-H6", "arrives_min": null}
+{"id": 69, "split": "outside", "text": "RO-1052 front pads missing from bin", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
+{"id": 70, "split": "outside", "text": "RO-1013 gasket kit missing the big o ring, cant close it up", "kind": "missing_part", "ro_id": "RO-1013", "part_id": "WTR-GSK", "arrives_min": null}
+{"id": 71, "split": "outside", "text": "new water pump for the 2020 explorer has a cracked housing right out of the box, need another", "kind": "missing_part", "ro_id": "RO-1013", "part_id": "WTR-PMP", "arrives_min": null}
+{"id": 72, "split": "outside", "text": "ro 1039 accord battery wrong group they gave h7, wont fit tray", "kind": "missing_part", "ro_id": "RO-1039", "part_id": "BAT-H6", "arrives_min": null}
+{"id": 73, "split": "outside", "text": "1019 ac svc - refrigerant out of stock, parts counter says none till tmrw", "kind": "missing_part", "ro_id": "RO-1019", "part_id": "AC-RFG", "arrives_min": null}
+{"id": 74, "split": "outside", "text": "1032 altima lca wrong side, they sent RH need LH", "kind": "missing_part", "ro_id": "RO-1032", "part_id": "SUS-ARM-L", "arrives_min": null}

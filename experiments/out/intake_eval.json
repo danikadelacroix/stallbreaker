@@ -1,0 +1,22 @@
+{
+ "rules": {
+  "dev": {
+   "right": 17,
+   "of": 17
+  },
+  "held_out": {
+   "right": 17,
+   "of": 17
+  },
+  "outside": {
+   "right": 32,
+   "of": 40
+  },
+  "wrong": [],
+  "outside_misses": {
+   "said_unclear": 4,
+   "read_it_wrong": 2,
+   "opened_a_note_it_should_not": 2
+  }
+ }
+}

@@ -26,6 +26,7 @@ then the code. See [CONTRIBUTING.md](../../CONTRIBUTING.md) for the full loop.
 | [108 How late can the part be?](108-how-late-can-the-part-be.md) | Built | `tests/test_api.py` |
 | [109 Hold the bay, or roll the car out?](109-hold-or-release-the-bay.md) | Built | `tests/test_stallbreaker.py`, `tests/test_api.py` |
 | [110 Substitute part numbers](110-substitute-parts.md) | Proposed | |
+| [112 Read the note](112-read-the-note.md) | Built with the rules reader; no model scored yet | `tests/test_intake.py` |
 | [111 Act alone, or ask](111-act-alone-or-ask.md) | Proposed | |
 
 Status moves Proposed → Agreed (both of us have read it) → In progress (owner named) → Built

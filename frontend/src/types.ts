@@ -88,6 +88,23 @@ export interface Precheck {
   fixable_without_replan: number; need_a_decision: number; fix_cost: number
 }
 
+/** What a technician's note was read as. Nothing is opened until a person confirms it. */
+export interface NoteReading {
+  kind: 'missing_part' | 'late_part' | 'unclear'
+  ro_id: string | null; part_id: string | null; arrives_min: number | null
+  vehicle: string | null; description: string | null; part_name: string | null
+  /** The exact words of the note the reading rests on. */
+  quote: string | null; why_unclear: string | null
+  /** 'rules', or 'model: <name>'. */
+  read_by: string
+  /** Set when a model was set up but its answer could not be used. */
+  fell_back_because: string | null
+}
+
+export interface ReaderScore { dev: { right: number; of: number }; held_out: { right: number; of: number }; outside: { right: number; of: number } }
+
+export interface IntakeInfo { reader: string; sends_notes_out: boolean; eval: Record<string, ReaderScore> | null }
+
 export type LateCheck =
   | { holds: true; starts_min: number; spare_min: number; arrives_min: number }
   | { holds: false; arrives_min: number; missed_promises: number; late_minutes: number; jobs_moved: number }

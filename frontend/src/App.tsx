@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import type { Day, LogEntry, Order, PlanOption, Precheck, Proposal, Segment } from './types'
-import { approveProposal, clock, confirmLate, dismissProposal, getDay, getLog, getPrecheck, getProposal, orderPrecheck, reportStall, resetDay, setClock } from './api'
+import { approveProposal, checkLate, clock, confirmLate, dismissProposal, getDay, getLog, getPrecheck, getProposal, orderPrecheck, replanLate, reportStall, resetDay, setClock } from './api'
 import { Board } from './Board'
 import { OrderPanel } from './OrderPanel'
 import { StallCard } from './StallCard'
 import { LogPanel } from './LogPanel'
+import { IntakePanel } from './IntakePanel'
 import { PrecheckPanel } from './PrecheckPanel'
 
 const message = (e: unknown) => (e instanceof Error ? e.message : 'Something went wrong')
@@ -112,6 +113,16 @@ export default function App() {
     setDay(await confirmLate(roId, partId, arrives)); await refreshSide()
     setNotice(`New arrival time recorded for ${roId}. The plan did not change.`)
   })
+  /** A note said a part on its way will be late: record the time if the plan holds, otherwise open the new plans. */
+  const lateFromNote = (roId: string, partId: string, arrives: number) => run(async () => {
+    const verdict = await checkLate(roId, partId, arrives)
+    if (verdict.holds) {
+      setDay(await confirmLate(roId, partId, arrives)); await refreshSide(); setSelectedId(roId)
+      setNotice(`New arrival time recorded for ${roId}. The plan still holds.`)
+    } else {
+      lateReplan(await replanLate(roId, partId, arrives))
+    }
+  })
   const lateReplan = (p: Proposal) => { setProposal(p); setPreviewKey(p.options[0].key); setSelectedId(p.ro_id); setNotice(null) }
 
   return (
@@ -145,6 +156,7 @@ export default function App() {
           <li className={s.promises_at_risk ? 'warn' : 'good'}><strong>{s.promises_at_risk}</strong><span>promises missed</span></li>
           <li className={flagged ? 'warn' : 'good'}><strong>{flagged}</strong><span>jobs missing a part</span></li>
         </ul>
+        {!proposal && <IntakePanel busy={busy} onMissing={(ro, part) => void openStall(ro, part)} onLate={(ro, part, t) => void lateFromNote(ro, part, t)} />}
         {!proposal && check && <PrecheckPanel check={check} busy={busy} onOrder={() => void orderAhead()} onDecide={(ro, part) => void openStall(ro, part)} />}
         {proposal && (
           <StallCard
