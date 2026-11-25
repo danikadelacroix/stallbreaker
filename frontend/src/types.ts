@@ -1,5 +1,22 @@
+/** A part that has been ordered. It is only a claim by its source until it is received. */
+export interface PartRequest extends WayBack {
+  state: 'requested' | 'confirmed' | 'received'; source_id: string; source_name: string; arrives_min: number
+  /** Someone should chase this: the source has not answered in time, or the part should be here and is not. */
+  chase: 'no_answer' | 'not_here' | null
+}
+
+/** When the part is needed, which other source could step in, and until when without changing the plan. */
+export interface WayBack {
+  /** When the job is due to start or resume. A part that arrives by then changes nothing. */
+  needed_by_min: number
+  /** The last moment to order the backup and still have it by then. Null: there was no such moment. */
+  switch_by_min: number | null
+  backup_name: string | null; backup_eta_min: number | null
+}
+
 export interface PartNeed {
   part_id: string; name: string; qty: number; on_hand_home: number; sourced_from: string | null; arrives_min: number | null
+  request: PartRequest | null
   /** Why this job will not get the part from the shelf, if it will not. */
   shortfall: 'out_of_stock' | 'claimed_by_earlier_jobs' | null
 }
@@ -27,7 +44,7 @@ export interface Day {
   orders: Order[]
   segments: Segment[]
   open_proposal_id: number | null
-  summary: { orders: number; done: number; in_progress: number; waiting_for_part: number; scheduled: number; promises_at_risk: number; last_finish_min: number }
+  summary: { orders: number; done: number; in_progress: number; waiting_for_part: number; scheduled: number; promises_at_risk: number; requests_to_chase: number; last_finish_min: number }
 }
 
 export interface Slot { start_min: number; end_min: number; technician: string; bay: string }
@@ -46,7 +63,7 @@ export interface SourceOutcome {
   cost: number; arrives_min: number; proven_best: boolean; late_margin_min: number; late_margin_capped: boolean
 }
 
-export interface PlanOption {
+export interface PlanOption extends WayBack {
   key: string; title: string; source_id: string; source_name: string; arrives_min: number; cost: number
   missed_promises: number; late_minutes: number; jobs_moved: number; bay_blocked_min: number
   proven_best: boolean; solve_seconds: number; stalled_job: Slot
@@ -64,7 +81,9 @@ export interface PlanOption {
 export interface Proposal {
   id: number; status: string; plan_version: number
   /** A part that is missing, or a part already on its way that will arrive at a new time. */
-  kind: 'missing_part' | 'late_part'; old_arrives_min?: number; new_arrives_min?: number
+  kind: 'missing_part' | 'late_part'; old_arrives_min?: number; new_arrives_min?: number | null
+  /** For a part on its way: why its source is being planned again, and which source it was. */
+  why?: 'new_time' | 'cannot_supply' | 'no_answer'; old_source_id?: string; old_source_name?: string
   ro_id: string; vehicle: string; description: string; promise_min: number
   part_id: string; part_name: string; qty: number; now_min: number; in_progress: boolean
   forced_source: string | null; forced_bay: 'hold' | 'roll_out' | null; can_roll_out: boolean; engine_source_id: string; current: Slot; sources: SourceOption[]; options: PlanOption[]

@@ -3,12 +3,13 @@ import json
 import os
 import sys
 from dataclasses import replace
+from types import SimpleNamespace
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 from shopcore import Assign, Plan, Source, Stall, _stall_in_progress, hold_or_roll_out, metrics, right_shift, validate  # noqa: E402
 
-from . import db, policy, repo, sourcing  # noqa: E402
+from . import claims, db, policy, repo, sourcing  # noqa: E402
 
 OPTIONS = [
     ("keep_promises", "Fewest missed promises", ("late", "tard", "cost", "moves", "shift", "hold")),
@@ -76,16 +77,16 @@ def _why_not(source, outcome, best):
     return "As good as the chosen source."
 
 
-def _explain_sources(conn, shop, jobs, plan, now, stall, pinned, blocks, cands, options, forced, bay="auto"):
+def _explain_sources(conn, shop, jobs, live, prev, now, stall, pinned, blocks, cands, options, forced, bay="auto"):
     """For every source that has the part: what the day would look like with it, and, if the engine
     did not choose it, why not. Each outcome is a real re-plan with that source forced."""
     outcomes = {options[0]["source_id"]: _outcome_of(options[0])}
     for src in stall.sources:
         if src.id not in outcomes:
-            what_if = _solve(conn, shop, jobs, plan, plan, now, stall, pinned, blocks, src.id, only=OPTIONS[:1], bay=bay)
+            what_if = _solve(conn, shop, jobs, live, prev, now, stall, pinned, blocks, src.id, only=OPTIONS[:1], bay=bay)
             outcomes[src.id] = _outcome_of(what_if[0])
     if forced:
-        free = hold_or_roll_out(shop, jobs, plan, now, stall, order=OPTIONS[0][2], time_limit=SOLVE_SECONDS, pinned=pinned, blocks=blocks, deterministic=True)
+        free = hold_or_roll_out(shop, jobs, prev, now, stall, order=OPTIONS[0][2], bay=bay, time_limit=SOLVE_SECONDS, pinned=pinned, blocks=blocks, deterministic=True)
         engine_pick = free.source.id if free else forced
     else:
         engine_pick = options[0]["source_id"]
@@ -204,8 +205,6 @@ def propose(conn, ro_id, part_id, force_source=None, force_bay=None):
     part = conn.execute("SELECT * FROM parts WHERE id = ?", (part_id,)).fetchone()
     if need is None or part is None:
         raise StallError(409, f"{ro_id} does not use part {part_id}.")
-    if conn.execute("SELECT 1 FROM sourced WHERE ro_id = ? AND part_id = ?", (ro_id, part_id)).fetchone():
-        raise StallError(409, f"{part['name']} is already on its way for {ro_id}.")
     shop, jobs, plan, pinned, blocks = repo.load_engine(conn)
     if ro_id in pinned:
         raise StallError(409, f"{ro_id} is already waiting for a part.")
@@ -213,6 +212,11 @@ def propose(conn, ro_id, part_id, force_source=None, force_bay=None):
     if current.end <= now:
         raise StallError(409, f"{ro_id} is already finished.")
     in_progress = current.start < now
+    ordered = conn.execute("SELECT state FROM sourced WHERE ro_id = ? AND part_id = ?", (ro_id, part_id)).fetchone()
+    if ordered and ordered["state"] == "received":
+        raise StallError(409, f"{part['name']} has already been received for {ro_id}.")
+    if ordered and not in_progress:  # once the job is under way without the part, it is a missing part like any other
+        raise StallError(409, f"{part['name']} is already on its way for {ro_id}.")
 
     cands = sourcing.candidates(conn, part_id, need["qty"])
     usable = [c for c in cands if c["available"]]
@@ -225,7 +229,8 @@ def propose(conn, ro_id, part_id, force_source=None, force_bay=None):
     bay = force_bay if in_progress and force_bay else "auto"
     options = _solve(conn, shop, jobs, plan, plan, now, stall, pinned, blocks, force_source, bay=bay, bay_chosen_by_manager=bay != "auto")
     cheapest = min((s for s in sources if s.safe), key=lambda s: (s.cost, s.eta))
-    engine_pick = _explain_sources(conn, shop, jobs, plan, now, stall, pinned, blocks, cands, options, force_source, bay)
+    engine_pick = _explain_sources(conn, shop, jobs, plan, plan, now, stall, pinned, blocks, cands, options, force_source, bay)
+    _add_way_back(conn, options, part_id, need["qty"], now)
     return _store(conn, now, {
         "engine_source_id": engine_pick,
         "kind": "missing_part", "ro_id": ro_id, "vehicle": order["vehicle"], "description": order["description"], "promise_min": order["promise_min"],
@@ -237,67 +242,117 @@ def propose(conn, ro_id, part_id, force_source=None, force_bay=None):
     })
 
 
-def check_late(conn, ro_id, part_id, arrives_min, store=False):
-    """A part that is already on its way will arrive at a different time. Does the plan still hold?
+def _add_way_back(conn, options, part_id, qty, now, moved_from=None):
+    """Each plan says when its part is needed, which other source could step in, and until when (spec 113)."""
+    for o in options:
+        o.update(claims.way_back(conn, part_id, qty, o["source_id"], o["stalled_job"]["start_min"], now, moved_from))
 
-    If the job was not due to (re)start before the new arrival, nothing has to change. If it was,
-    the engine re-plans around the new arrival time. Nothing is saved unless store is set, so a
-    slider can ask as often as it likes; replan_late saves the new plans as a proposal."""
+
+def _on_its_way(conn, ro_id, part_id):
+    """The state of a part that has been ordered, as the engine needs it to plan around a change."""
     now = db.get_meta(conn, "now_min", 0)
     src = conn.execute("SELECT * FROM sourced WHERE ro_id = ? AND part_id = ?", (ro_id, part_id)).fetchone()
     if src is None:
         raise StallError(409, f"No part is on its way for {ro_id}.")
-    if arrives_min < now:
-        raise StallError(422, "The new arrival time cannot be in the past.")
-    order = conn.execute("SELECT * FROM repair_orders WHERE id = ?", (ro_id,)).fetchone()
-    part = conn.execute("SELECT * FROM parts WHERE id = ?", (part_id,)).fetchone()
     shop, jobs, plan, pinned, blocks = repo.load_engine(conn)
     current = plan.assign[ro_id]
     if current.end <= now:
         raise StallError(409, f"{ro_id} is already finished.")
     if current.start < now and ro_id not in pinned:
-        raise StallError(409, f"{ro_id} is already being worked on with its part.")
-    if arrives_min <= current.start:
-        # Any plan drafted for a later arrival time is no longer relevant.
-        conn.execute("UPDATE proposals SET status = 'replaced' WHERE status = 'open' AND ro_id = ? AND part_id = ?", (ro_id, part_id))
-        conn.commit()
-        return {"holds": True, "starts_min": current.start, "spare_min": current.start - arrives_min, "arrives_min": arrives_min}
-
+        raise StallError(409, f"{ro_id} is already under way. If its part is not here, report it missing.")
     waiting = ro_id in pinned  # the car is dismantled and its bay is blocked
-    source = Source(src["source_id"], src["source_name"], arrives_min - now, 0, 0.0, True)
-    stall = Stall(ro_id, part["name"], (source,))
     prev, pins, blks = plan, pinned, blocks
     if waiting:
         # Re-time the waiting job: treat the rest of its work as in progress from now, in the same bay.
-        done = conn.execute("SELECT * FROM segments WHERE ro_id = ? AND kind = 'done'", (ro_id,)).fetchone()
+        done = conn.execute("SELECT * FROM segments WHERE ro_id = ? AND kind = 'done' ORDER BY id DESC", (ro_id,)).fetchone()
         rest = current.end - current.start
         virtual = Assign(min(done["start_min"], now), now + rest, done["tech_id"], current.bay)
         prev = Plan(assign={**plan.assign, ro_id: virtual})
         pins = pinned - {ro_id}
-        blks = tuple((r["bay_id"], r["start_min"], r["end_min"]) for r in conn.execute("SELECT * FROM segments WHERE kind = 'hold' AND ro_id != ?", (ro_id,)))
-    options = _solve(conn, shop, jobs, plan, prev, now, stall, pins, blks, bay="hold")  # a car already waiting in its bay stays there
-    payload = {
-        "kind": "late_part", "ro_id": ro_id, "vehicle": order["vehicle"], "description": order["description"], "promise_min": order["promise_min"],
-        "part_id": part_id, "part_name": part["name"], "qty": 0, "now_min": now, "in_progress": waiting,
-        "forced_source": None, "forced_bay": None, "can_roll_out": False, "current": _as_dict(current), "old_arrives_min": src["arrives_min"], "new_arrives_min": arrives_min,
-        "sources": [{"id": src["source_id"], "name": src["source_name"], "kind": "on_its_way", "eta_min": arrives_min - now, "cost": src["cost"],
-                     "on_hand": None, "available": True, "risk": None, "risk_basis": None, "safe": True, "outcome": None, "why_not": None}],
-        "engine_source_id": src["source_id"],
-        "options": options, "no_replan": _no_replan(shop, jobs, prev, now, stall, source, pins, waiting),
-    }
-    if store:
-        return _store(conn, now, payload)
-    best = options[0]
+        blks = ()  # everything other cars are holding stays blocked: bays waiting for a part, and a car still being rolled out
+        for r in conn.execute("SELECT * FROM segments WHERE ro_id != ?", (ro_id,)):
+            blks += ((r["bay_id"], r["start_min"], r["end_min"]),) + (((r["tech_id"], r["start_min"], r["end_min"]),) if r["kind"] == "done" else ())
+    return SimpleNamespace(
+        now=now, src=src, shop=shop, jobs=jobs, plan=plan, prev=prev, pins=pins, blks=blks, current=current, waiting=waiting,
+        order=conn.execute("SELECT * FROM repair_orders WHERE id = ?", (ro_id,)).fetchone(),
+        part=conn.execute("SELECT * FROM parts WHERE id = ?", (part_id,)).fetchone(),
+        qty=conn.execute("SELECT qty FROM ro_parts WHERE ro_id = ? AND part_id = ?", (ro_id, part_id)).fetchone()["qty"])
+
+
+def check_late(conn, ro_id, part_id, arrives_min):
+    """A part that is already on its way will arrive at a different time. Does the plan still hold?
+
+    If the job was not due to (re)start before the new arrival, nothing has to change. If it was,
+    the answer says what staying with this source would cost. Nothing is saved, so a slider can ask
+    as often as it likes; replan_late saves the new plans as a proposal."""
+    st = _on_its_way(conn, ro_id, part_id)
+    if arrives_min < st.now:
+        raise StallError(422, "The new arrival time cannot be in the past.")
+    if arrives_min <= st.current.start:
+        # Any plan drafted for a later arrival time is no longer relevant.
+        conn.execute("UPDATE proposals SET status = 'replaced' WHERE status = 'open' AND ro_id = ? AND part_id = ?", (ro_id, part_id))
+        conn.commit()
+        return {"holds": True, "starts_min": st.current.start, "spare_min": st.current.start - arrives_min, "arrives_min": arrives_min}
+    stall = Stall(ro_id, st.part["name"], (Source(st.src["source_id"], st.src["source_name"], arrives_min - st.now, 0, 0.0, True),))
+    best = _solve(conn, st.shop, st.jobs, st.plan, st.prev, st.now, stall, st.pins, st.blks, only=OPTIONS[:1], margins=False, bay="hold")[0]
     return {"holds": False, "arrives_min": arrives_min, "missed_promises": best["missed_promises"],
             "late_minutes": best["late_minutes"], "jobs_moved": best["jobs_moved"]}
 
 
-def replan_late(conn, ro_id, part_id, arrives_min):
-    """Save the new plans for a part that will arrive too late for the current plan."""
-    result = check_late(conn, ro_id, part_id, arrives_min, store=True)
-    if result.get("holds"):
-        raise StallError(409, "The plan still holds with that arrival time. Record the new time instead.")
-    return result
+def replan_late(conn, ro_id, part_id, arrives_min=None, cannot_supply=False, force_source=None):
+    """The source of a part on its way has slipped, said no, or not answered: plan the day again.
+
+    Every other source that has the part is in the running, timed from now. So is the current
+    source: at its new time if it gave one, at its recorded time if that is still ahead, and not at
+    all if it cannot supply. The result is saved as a proposal to approve (spec 113)."""
+    st = _on_its_way(conn, ro_id, part_id)
+    now, src = st.now, st.src
+    if arrives_min is not None:
+        if cannot_supply:
+            raise StallError(422, "Give a new arrival time, or say the source cannot supply, not both.")
+        if arrives_min < now:
+            raise StallError(422, "The new arrival time cannot be in the past.")
+        if arrives_min <= st.current.start:
+            raise StallError(409, "The plan still holds with that arrival time. Record the new time instead.")
+    why = "cannot_supply" if cannot_supply else "new_time" if arrives_min is not None else "no_answer"
+    stays_at = arrives_min if arrives_min is not None else src["arrives_min"] if not cannot_supply and src["arrives_min"] > now else None
+    # The current source is taken from the request itself: the stock table already has this part taken off.
+    table = [{"id": src["source_id"], "name": src["source_name"], "kind": "on_its_way", "eta_min": (stays_at or now) - now, "cost": src["cost"],
+              "on_hand": None, "available": stays_at is not None, "risk": None, "risk_basis": None, "safe": True}]
+    others = [c for c in sourcing.candidates(conn, part_id, st.qty) if c["id"] != src["source_id"]]
+    sources = [Source(src["source_id"], src["source_name"], stays_at - now, 0, 0.0, True)] if stays_at is not None else []  # staying costs nothing new
+    sources += [Source(c["id"], c["name"], c["eta_min"], c["cost"], c["risk"] or 0.0, c["safe"]) for c in others if c["available"]]
+    if force_source and force_source not in {x.id for x in sources}:
+        raise StallError(422, "That source is not in the running for this part.")
+    stall = Stall(ro_id, st.part["name"], tuple(sources))
+    options = _solve(conn, st.shop, st.jobs, st.plan, st.prev, now, stall, st.pins, st.blks, force_source, bay="hold")  # a car waiting in its bay stays there
+    table += others
+    engine_pick = _explain_sources(conn, st.shop, st.jobs, st.plan, st.prev, now, stall, st.pins, st.blks, table, options, force_source, "hold")
+    _add_way_back(conn, options, part_id, st.qty, now, src["source_id"])
+    waits_for = sources[0] if stays_at is not None else min((x for x in sources if x.safe), key=lambda x: (x.cost, x.eta))
+    return _store(conn, now, {
+        "kind": "late_part", "why": why, "old_source_id": src["source_id"], "old_source_name": src["source_name"],
+        "ro_id": ro_id, "vehicle": st.order["vehicle"], "description": st.order["description"], "promise_min": st.order["promise_min"],
+        "part_id": part_id, "part_name": st.part["name"], "qty": st.qty, "now_min": now, "in_progress": st.waiting,
+        "forced_source": force_source, "forced_bay": None, "can_roll_out": False, "current": _as_dict(st.current),
+        "old_arrives_min": src["arrives_min"], "new_arrives_min": arrives_min,
+        "sources": table, "engine_source_id": engine_pick, "options": options,
+        "no_replan": _no_replan(st.shop, st.jobs, st.prev, now, Stall(ro_id, st.part["name"], (waits_for,)), waits_for, st.pins, st.waiting),
+    })
+
+
+def answer(conn, ro_id, part_id, what):
+    """Record what the source said about a part on its way: it confirmed it, or the part has been received."""
+    src = conn.execute("SELECT * FROM sourced WHERE ro_id = ? AND part_id = ?", (ro_id, part_id)).fetchone()
+    if src is None:
+        raise StallError(409, f"No part is on its way for {ro_id}.")
+    now = db.get_meta(conn, "now_min", 0)
+    part = conn.execute("SELECT name FROM parts WHERE id = ?", (part_id,)).fetchone()["name"]
+    conn.execute("UPDATE sourced SET state = ? WHERE ro_id = ? AND part_id = ?", (what, ro_id, part_id))
+    conn.execute("UPDATE proposals SET status = 'replaced' WHERE status = 'open' AND ro_id = ? AND part_id = ?", (ro_id, part_id))
+    conn.execute("INSERT INTO audit_log (at_min, kind, detail) VALUES (?, 'request_answered', ?)",
+                 (now, json.dumps({"ro_id": ro_id, "part": part, "source": src["source_name"], "answer": what, "arrives_min": src["arrives_min"]})))
+    conn.commit()
 
 
 def confirm_late(conn, ro_id, part_id, arrives_min):
@@ -307,7 +362,7 @@ def confirm_late(conn, ro_id, part_id, arrives_min):
         raise StallError(409, "The plan does not hold with that arrival time. Approve one of the new plans instead.")
     now = db.get_meta(conn, "now_min", 0)
     old = conn.execute("SELECT arrives_min FROM sourced WHERE ro_id = ? AND part_id = ?", (ro_id, part_id)).fetchone()["arrives_min"]
-    conn.execute("UPDATE sourced SET arrives_min = ? WHERE ro_id = ? AND part_id = ?", (arrives_min, ro_id, part_id))
+    conn.execute("UPDATE sourced SET arrives_min = ?, state = 'confirmed' WHERE ro_id = ? AND part_id = ?", (arrives_min, ro_id, part_id))
     if ro_id not in repo.load_engine(conn)[3]:  # not taken apart yet: it must not start before the part is here
         conn.execute("UPDATE repair_orders SET release_min = MAX(release_min, ?) WHERE id = ?", (arrives_min, ro_id))
     part = conn.execute("SELECT name FROM parts WHERE id = ?", (part_id,)).fetchone()["name"]
@@ -365,22 +420,30 @@ def approve(conn, proposal_id, option_key):
                      (ro_id, now, opt["stalled_job"]["start_min"], cur["bay"]))
     else:
         conn.execute("UPDATE repair_orders SET release_min = MAX(release_min, ?) WHERE id = ?", (opt["arrives_min"], ro_id))
-    if late:
-        conn.execute("UPDATE sourced SET arrives_min = ? WHERE ro_id = ? AND part_id = ?", (opt["arrives_min"], ro_id, p["part_id"]))
-    else:
-        conn.execute("INSERT INTO sourced VALUES (?, ?, ?, ?, ?, ?)", (ro_id, p["part_id"], opt["source_id"], opt["source_name"], opt["arrives_min"], opt["cost"]))
-        conn.execute("UPDATE stock SET on_hand = on_hand - ? WHERE store_id = ? AND part_id = ?", (p["qty"], opt["source_id"], p["part_id"]))
+    kept = late and opt["source_id"] == p["old_source_id"]
+    if kept:  # the same source at a new time; if the source gave that time, that is its confirmation
+        conn.execute("UPDATE sourced SET arrives_min = ?, state = CASE WHEN ? THEN 'confirmed' ELSE state END WHERE ro_id = ? AND part_id = ?",
+                     (opt["arrives_min"], p["why"] == "new_time", ro_id, p["part_id"]))
+    else:  # a new request; any earlier one for this part is cancelled
+        said_no = late and p["why"] == "cannot_supply"
+        claims.cancel(conn, ro_id, p["part_id"], p["qty"], give_back=not said_no)
+        claims.place(conn, ro_id, p["part_id"], p["qty"], opt["source_id"], opt["source_name"], opt["arrives_min"], opt["cost"], now,
+                     moved_from=p["old_source_id"] if late else None)
     messages = [{"ro_id": o["ro_id"], "text": _customer_message(o["vehicle"], o["ro_id"], o["promise_min"], o["end_min"], o["ro_id"] == ro_id)}
                 for o in opt["late_orders"] if not o["late_before"] or o["ro_id"] == ro_id]
-    detail = {"ro_id": ro_id, "part": p["part_name"], "source": opt["source_name"], "arrives_min": opt["arrives_min"], "cost": 0 if late else opt["cost"],
+    detail = {"ro_id": ro_id, "part": p["part_name"], "source": opt["source_name"], "arrives_min": opt["arrives_min"], "cost": 0 if kept else opt["cost"],
               "option": opt["title"], "missed_promises": opt["missed_promises"], "jobs_moved": [c["ro_id"] for c in opt["changes"]],
               "bay_blocked_min": opt["bay_blocked_min"], "bay_decision": opt.get("bay_decision"), "bay_note": opt.get("bay_note"),
               "proven_best": opt["proven_best"],
               "needed_a_person_because": opt.get("needs_you", []), "decided_by": "manager",
               "customer_messages": messages, "messages_written_by": "fixed template (LLM not connected)"}
     if late:
-        detail["old_arrives_min"] = p["old_arrives_min"]
-    conn.execute("INSERT INTO audit_log (at_min, kind, detail) VALUES (?, ?, ?)", (now, "part_late_replanned" if late else "stall_resolved", json.dumps(detail)))
+        detail.update(old_arrives_min=p["old_arrives_min"], why=p["why"])
+    if late and not kept:
+        detail.update(old_source=p["old_source_name"],
+                      to_do_by_hand=[f"Cancel the request with {p['old_source_name']}.", f"Order {p['part_name']} from {opt['source_name']}."])
+    kind = "stall_resolved" if not late else "part_late_replanned" if kept else "source_switched"
+    conn.execute("INSERT INTO audit_log (at_min, kind, detail) VALUES (?, ?, ?)", (now, kind, json.dumps(detail)))
     conn.execute("UPDATE proposals SET status = 'approved' WHERE id = ?", (proposal_id,))
     conn.commit()
     db.set_meta(conn, "plan_version", p["plan_version"] + 1)

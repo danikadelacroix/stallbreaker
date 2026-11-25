@@ -1,6 +1,6 @@
 # 113 A source is a claim until the part is here
 
-**Status:** In progress · **Owner:** danikadelacroix · **Depends on:** 003, 004, 005, 107, 108 · **Changes:** 005 (a late part may now change source)
+**Status:** Built · **Owner:** danikadelacroix · **Depends on:** 003, 004, 005, 107, 108 · **Changes:** 005 (a late part may now change source) · **Code:** `backend/claims.py`, `backend/stalls.py` (`replan_late`, `answer`)
 
 ## Why
 
@@ -16,7 +16,7 @@ source when the first one fails.
 
 1. Every ordered part is a request. It is `requested` when placed (ordered ahead in 003, by approving a plan in 004, or by a change of source here), `confirmed` when a person records that the source said yes, and `received` when a person records that the part is in the building. The job panel shows the state.
 2. For each request the app works out, from the plan as it stands, when the part is needed: the time its job is due to start or resume (`needed_by_min`). A part that arrives by then changes nothing in the plan (005 rule 3).
-3. Each request names a backup: the fastest other safe source that has the part, leaving out a source that has already said it cannot supply this request. Its switch-by time (`switch_by_min`) is `needed_by_min` less the backup's delivery time: order the backup by then and the plan holds exactly as it is. If that moment had already passed when the order was placed, the screen says there is no way back that leaves the plan untouched, and how long the backup would take.
+3. Each request names a backup: the fastest other safe source that has the part, leaving out the source a request was just moved away from. Its switch-by time (`switch_by_min`) is `needed_by_min` less the backup's delivery time: order the backup by then and the plan holds exactly as it is. If that moment had already passed when the order was placed, the screen says there is no way back that leaves the plan untouched, and how long the backup would take.
 4. Every plan option shows its backup and switch-by time before it is approved, next to how late the part can be (108), so a plan with no way back can be told apart from one with hours of room.
 5. Nothing is reserved at the backup, and passing the switch-by time changes nothing by itself. Both values are worked out afresh whenever they are shown, so they follow the plan when it changes.
 
@@ -64,6 +64,12 @@ source when the first one fails.
 | A9 | Rules 10, 11: no answer: the current source competes at its recorded time; a source that cannot supply cannot be forced | `test_with_no_answer_the_current_source_stays_in_the_running_at_its_recorded_time` |
 | A10 | Rule 13: a sister store gets its part back when its request is cancelled, but not when it said it cannot supply | `test_a_cancelled_sister_store_gets_its_part_back_unless_it_said_no` |
 | A11 | Rule 14 | `test_a_job_taken_apart_without_its_part_is_a_missing_part_that_replaces_the_request` |
+
+## Demo numbers (seed 2026)
+
+- Parts ordered ahead at 11:00: the belt tensioner for RO-1017 comes from Sister store North at 11:40 and is needed by 12:15. The backup is Local vendor, 60 minutes away, so the switch-by time is 11:15. At 11:15 the request is listed for chasing; ordering from the vendor at that minute leaves the plan exactly as it is, and 15 minutes later it does not.
+- The stall on RO-1013 at 11:00, approved with Local vendor arriving 12:00: the car is waiting in its bay, the nearest safe backup (Sister store East) is 110 minutes away, so there is no way back that leaves the plan untouched, and the card says so before approval.
+- The vendor then gives a new time of 14:00. Staying with it means 150 late minutes. The engine changes to Sister store East, arriving 12:50, for 80 late minutes; the same single promise is missed either way.
 
 ## Limits we know about
 

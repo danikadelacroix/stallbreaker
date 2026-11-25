@@ -3,6 +3,10 @@ import { clock } from './api'
 
 const money = (n: unknown) => (typeof n === 'number' ? `$${Math.round(n)}` : '')
 
+const SWITCH_WHY: Record<string, string> = {
+  new_time: 'the first source gave a later time', cannot_supply: 'the first source could not supply it', no_answer: 'the first source had not answered',
+}
+
 /** What has been decided today, newest first. */
 export function LogPanel({ entries }: { entries: LogEntry[] }) {
   return (
@@ -29,16 +33,27 @@ export function LogPanel({ entries }: { entries: LogEntry[] }) {
               </li>
             )
           }
-          if (e.kind === 'stall_resolved' || e.kind === 'part_late_replanned') {
+          if (e.kind === 'request_answered') {
+            return (
+              <li key={e.id}>
+                <p><time>{clock(e.at_min)}</time> <strong>{String(d.ro_id)}</strong>: {String(d.part)} from {String(d.source)} {d.answer === 'received' ? 'has been received' : `was confirmed by the source for ${clock(Number(d.arrives_min))}`}.</p>
+              </li>
+            )
+          }
+          if (e.kind === 'stall_resolved' || e.kind === 'part_late_replanned' || e.kind === 'source_switched') {
+            const byHand = Array.isArray(d.to_do_by_hand) ? (d.to_do_by_hand as string[]) : []
             const moved = Array.isArray(d.jobs_moved) ? (d.jobs_moved as string[]) : []
             return (
               <li key={e.id}>
                 <p>
-                  <time>{clock(e.at_min)}</time> <strong>{String(d.ro_id)}</strong>: {e.kind === 'part_late_replanned'
+                  <time>{clock(e.at_min)}</time> <strong>{String(d.ro_id)}</strong>: {e.kind === 'source_switched'
+                    ? `${String(d.part)}: source changed from ${String(d.old_source)} to ${String(d.source)} (${money(d.cost)}), arriving ${clock(Number(d.arrives_min))}, because ${SWITCH_WHY[String(d.why)] ?? 'the manager chose to'}.`
+                    : e.kind === 'part_late_replanned'
                     ? `${String(d.part)} now arriving ${clock(Number(d.arrives_min))}, not ${clock(Number(d.old_arrives_min))}.`
                     : `${String(d.part)} sourced from ${String(d.source)} (${money(d.cost)}), arriving ${clock(Number(d.arrives_min))}.`}
-                  Plan approved ({String(d.option).toLowerCase()}): {Number(d.missed_promises) === 1 ? '1 promise missed' : `${String(d.missed_promises)} promises missed`}, {moved.length ? `moved ${moved.join(', ')}` : 'no other job moved'}.
+                  {' '}Plan approved ({String(d.option).toLowerCase()}): {Number(d.missed_promises) === 1 ? '1 promise missed' : `${String(d.missed_promises)} promises missed`}, {moved.length ? `moved ${moved.join(', ')}` : 'no other job moved'}.
                 </p>
+                {byHand.length > 0 && <p className="by-hand"><strong>To do by hand:</strong> {byHand.join(' ')}</p>}
                 {(d.customer_messages ?? []).map((m) => (
                   <blockquote key={m.ro_id}>
                     <span className="msg-label">Draft message to the customer of {m.ro_id}</span>

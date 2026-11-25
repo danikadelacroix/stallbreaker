@@ -30,8 +30,11 @@ CREATE TABLE IF NOT EXISTS proposals (id INTEGER PRIMARY KEY AUTOINCREMENT, crea
 -- Extra pieces of a stalled job: the work done before the stall, and the time its bay is blocked waiting for the part.
 CREATE TABLE IF NOT EXISTS segments (id INTEGER PRIMARY KEY AUTOINCREMENT, ro_id TEXT NOT NULL, kind TEXT NOT NULL,
   start_min INTEGER NOT NULL, end_min INTEGER NOT NULL, tech_id TEXT, bay_id TEXT NOT NULL);
+-- A part that has been ordered. state: 'requested', then 'confirmed' by the source, then 'received' here.
+-- requested_min: when it was ordered. moved_from: the source this request was moved away from, which is not offered as its backup.
 CREATE TABLE IF NOT EXISTS sourced (ro_id TEXT NOT NULL, part_id TEXT NOT NULL, source_id TEXT NOT NULL, source_name TEXT NOT NULL,
-  arrives_min INTEGER NOT NULL, cost REAL NOT NULL, PRIMARY KEY (ro_id, part_id));
+  arrives_min INTEGER NOT NULL, cost REAL NOT NULL, state TEXT NOT NULL DEFAULT 'requested', requested_min INTEGER NOT NULL DEFAULT 0,
+  moved_from TEXT, PRIMARY KEY (ro_id, part_id));
 """
 TABLES = ["stores", "suppliers", "technicians", "bays", "parts", "stock", "job_types", "job_type_parts",
           "repair_orders", "ro_parts", "assignments", "meta", "audit_log", "proposals", "segments", "sourced"]
@@ -41,7 +44,8 @@ def connect(path=None):
     conn = sqlite3.connect(path or DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.executescript(SCHEMA)
-    if "roll_out_min" not in {r["name"] for r in conn.execute("PRAGMA table_info(repair_orders)")}:
+    columns = lambda table: {r["name"] for r in conn.execute(f"PRAGMA table_info({table})")}
+    if "roll_out_min" not in columns("repair_orders") or "state" not in columns("sourced"):
         # A database from an older version. It only holds the demo day, so rebuild it empty; it is seeded again on first use.
         for t in TABLES:
             conn.execute(f"DROP TABLE IF EXISTS {t}")

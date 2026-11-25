@@ -28,7 +28,7 @@ then the code. See [CONTRIBUTING.md](../../CONTRIBUTING.md) for the full loop.
 | [110 Substitute part numbers](110-substitute-parts.md) | Proposed | |
 | [112 Read the note](112-read-the-note.md) | Built with the rules reader; no model scored yet | `tests/test_intake.py` |
 | [111 Act alone, or ask](111-act-alone-or-ask.md) | Proposed | |
-| [113 A source is a claim until the part is here](113-a-source-is-a-claim.md) | In progress | `tests/test_claims.py` (failing until built) |
+| [113 A source is a claim until the part is here](113-a-source-is-a-claim.md) | Built | `tests/test_claims.py` |
 
 Status moves Proposed → Agreed (both of us have read it) → In progress (owner named) → Built
 (every acceptance check has a passing test, or a manual check written down in the spec).

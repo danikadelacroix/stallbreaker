@@ -4,7 +4,7 @@
 
 ## Why
 
-The backend has 61 automated checks; the screen has none. The manual checks in 006 should run
+The backend has 72 automated checks; the screen has none. The manual checks in 006 should run
 on every change.
 
 ## Rules

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { LateCheck, Order, PartNeed, Proposal } from './types'
-import { checkLate, clock, replanLate } from './api'
+import { checkLate, clock, replanLate, wayBackText } from './api'
 
 const STATUS_LABEL: Record<Order['status'], string> = {
   done: 'Done', in_progress: 'In progress', scheduled: 'Scheduled', waiting_for_part: 'Waiting for a part', unplanned: 'Not planned',
@@ -51,15 +51,15 @@ function LateControl({ order, part, busy, onConfirm, onReplan }: LateProps) {
         <>
           <p className="verdict bad" role="status">
             The plan no longer holds: the job was due to {order.status === 'waiting_for_part' ? 'resume' : 'start'} at {clock(order.start_min!)}.
-            The best new plan: {plural(verdict.missed_promises, 'promise')} missed, {plural(verdict.jobs_moved, 'job')} moved.
+            Staying with this source: {plural(verdict.missed_promises, 'promise')} missed, {plural(verdict.jobs_moved, 'job')} moved. Another source may do better.
           </p>
           <button type="button" className="primary" disabled={busy || opening} onClick={() => {
             setOpening(true)
-            replanLate(order.id, part.part_id, arrives)
+            replanLate(order.id, part.part_id, { arrives_min: arrives })
               .then(onReplan)
               .catch((e: unknown) => setProblem(e instanceof Error ? e.message : 'Could not open the new plan'))
               .finally(() => setOpening(false))
-          }}>{opening ? 'Opening…' : 'See the new plan'}</button>
+          }}>{opening ? 'Opening…' : 'See the options'}</button>
         </>
       )}
     </div>
@@ -67,14 +67,21 @@ function LateControl({ order, part, busy, onConfirm, onReplan }: LateProps) {
 }
 
 interface Props {
-  order: Order | null; busy: boolean; canReport: boolean
+  order: Order | null; busy: boolean; canReport: boolean; now: number
   onReport: (roId: string, partId: string) => void
   onLateConfirm: (roId: string, partId: string, arrives: number) => void
   onLateReplan: (p: Proposal) => void
+  /** The source confirmed the part, or the part is here. */
+  onAnswer: (roId: string, partId: string, answer: 'confirmed' | 'received') => void
+  /** The source cannot supply the part, or has not answered: look at the other sources. */
+  onOtherSources: (roId: string, partId: string, cannotSupply: boolean) => void
 }
 
+const STATE_TEXT = { requested: 'Requested, not confirmed', confirmed: 'Confirmed by the source', received: 'Received' }
+const CHASE_TEXT = { no_answer: 'No answer yet. Chase the source, or look at the others.', not_here: 'It should be here by now.' }
+
 /** Details of the repair order picked on the board, with a way to report a part missing or running late. */
-export function OrderPanel({ order, busy, canReport, onReport, onLateConfirm, onLateReplan }: Props) {
+export function OrderPanel({ order, busy, canReport, now, onReport, onLateConfirm, onLateReplan, onAnswer, onOtherSources }: Props) {
   const [lateFor, setLateFor] = useState<string | null>(null)
   if (!order) {
     return (
@@ -108,26 +115,48 @@ export function OrderPanel({ order, busy, canReport, onReport, onLateConfirm, on
       {order.parts.length === 0 ? <p className="muted">No parts for this job.</p> : (
         <ul className="parts">
           {order.parts.map((p) => {
-            const onItsWay = !!p.sourced_from && order.status !== 'done' && order.status !== 'in_progress'
+            const req = p.request
+            const expected = !!req && req.state !== 'received' && order.status !== 'done'
+            const onItsWay = expected && order.status !== 'in_progress'
+            // The clock has passed the job's start and the part never came: the car is apart without it.
+            const apartWithout = expected && order.status === 'in_progress'
             return (
-              <li key={p.part_id} className={p.shortfall ? 'short' : ''}>
+              <li key={p.part_id} className={p.shortfall || req?.chase ? 'short' : ''}>
                 <div className="part-line">
                   <div>
                     <span>{p.name}</span>
                     <span className="stock">
-                      {p.sourced_from ? `Arriving ${clock(p.arrives_min!)} from ${p.sourced_from}` : p.shortfall ? SHORT_TEXT[p.shortfall] : `${p.on_hand_home} in stock`}
+                      {req ? `${req.state === 'received' ? 'From' : `Arriving ${clock(req.arrives_min)} from`} ${req.source_name}` : p.shortfall ? SHORT_TEXT[p.shortfall] : `${p.on_hand_home} in stock`}
                     </span>
                   </div>
-                  {open && !p.sourced_from && (
-                    <button type="button" className="link" disabled={busy || !canReport} onClick={() => onReport(order.id, p.part_id)}>Report missing</button>
-                  )}
-                  {onItsWay && canReport && (
-                    <button type="button" className="link" disabled={busy} aria-expanded={lateFor === lateKey(p)}
-                      onClick={() => setLateFor(lateFor === lateKey(p) ? null : lateKey(p))}>
-                      {lateFor === lateKey(p) ? 'Close' : 'Running late?'}
-                    </button>
+                  {open && (!req || apartWithout) && (
+                    <button type="button" className="link" disabled={busy || !canReport} onClick={() => onReport(order.id, p.part_id)}>{apartWithout ? 'Not here: report missing' : 'Report missing'}</button>
                   )}
                 </div>
+                {req && (
+                  <div className={`request ${req.state}`}>
+                    <p><span className={`badge ${req.state === 'requested' ? 'warn' : 'ok'}`}>{STATE_TEXT[req.state]}</span></p>
+                    {expected && req.chase && <p className="chase" role="status">{CHASE_TEXT[req.chase]}</p>}
+                    {onItsWay && <p className="muted small">Needed by {clock(req.needed_by_min)}. {wayBackText(req, req.source_name, now)}</p>}
+                    {expected && canReport && (
+                      <p className="answers">
+                        <span className="muted small">What did {req.source_name} say?</span>
+                        {req.state === 'requested' && <button type="button" className="link" disabled={busy} onClick={() => onAnswer(order.id, p.part_id, 'confirmed')}>Confirmed</button>}
+                        <button type="button" className="link" disabled={busy} onClick={() => onAnswer(order.id, p.part_id, 'received')}>It is here</button>
+                        {onItsWay && (
+                          <>
+                            <button type="button" className="link" disabled={busy} aria-expanded={lateFor === lateKey(p)}
+                              onClick={() => setLateFor(lateFor === lateKey(p) ? null : lateKey(p))}>
+                              {lateFor === lateKey(p) ? 'Close' : 'New time'}
+                            </button>
+                            <button type="button" className="link" disabled={busy} onClick={() => onOtherSources(order.id, p.part_id, true)}>Cannot supply</button>
+                            <button type="button" className="link" disabled={busy} onClick={() => onOtherSources(order.id, p.part_id, false)}>No answer: other sources</button>
+                          </>
+                        )}
+                      </p>
+                    )}
+                  </div>
+                )}
                 {onItsWay && canReport && lateFor === lateKey(p) && (
                   <LateControl key={lateKey(p)} order={order} part={p} busy={busy}
                     onConfirm={(t) => { setLateFor(null); onLateConfirm(order.id, p.part_id, t) }}

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { Day, LogEntry, Order, PlanOption, Precheck, Proposal, Segment } from './types'
-import { approveProposal, checkLate, clock, confirmLate, dismissProposal, getDay, getLog, getPrecheck, getProposal, orderPrecheck, replanLate, reportStall, resetDay, setClock } from './api'
+import { answerRequest, approveProposal, checkLate, clock, confirmLate, dismissProposal, getDay, getLog, getPrecheck, getProposal, orderPrecheck, replanLate, reportStall, resetDay, setClock } from './api'
+import type { SourceNews } from './api'
+import { ChasePanel } from './ChasePanel'
 import { Board } from './Board'
 import { OrderPanel } from './OrderPanel'
 import { StallCard } from './StallCard'
@@ -95,9 +97,11 @@ export default function App() {
     const chosen = proposal.options.find((o) => o.key === key)
     setDay(await approveProposal(proposal.id, key))
     await refreshSide()
-    setNotice(proposal.kind === 'late_part'
-      ? `New plan approved for ${proposal.ro_id} after the late part. The decision is in the log below.`
-      : `Plan approved for ${proposal.ro_id}: ${proposal.part_name} from ${chosen?.source_name}. The decision is in the log below.`)
+    setNotice(proposal.kind !== 'late_part'
+      ? `Plan approved for ${proposal.ro_id}: ${proposal.part_name} from ${chosen?.source_name}. The decision is in the log below.`
+      : chosen?.source_id === proposal.old_source_id
+        ? `New plan approved for ${proposal.ro_id}: staying with ${chosen?.source_name}. The decision is in the log below.`
+        : `Source changed for ${proposal.ro_id}: ${proposal.part_name} now from ${chosen?.source_name}. What to do by hand is in the log below.`)
     setProposal(null)
   })
   const dismiss = () => run(async () => {
@@ -120,8 +124,14 @@ export default function App() {
       setDay(await confirmLate(roId, partId, arrives)); await refreshSide(); setSelectedId(roId)
       setNotice(`New arrival time recorded for ${roId}. The plan still holds.`)
     } else {
-      lateReplan(await replanLate(roId, partId, arrives))
+      lateReplan(await replanLate(roId, partId, { arrives_min: arrives }))
     }
+  })
+  /** Plan the source of a part on its way again: it slipped, cannot supply, or has not answered. */
+  const otherSources = (roId: string, partId: string, news: SourceNews) => run(async () => { lateReplan(await replanLate(roId, partId, news)) })
+  const answer = (roId: string, partId: string, what: 'confirmed' | 'received') => run(async () => {
+    setDay(await answerRequest(roId, partId, what)); await refreshSide()
+    setNotice(what === 'confirmed' ? `Recorded: the source confirmed the part for ${roId}.` : `Recorded: the part for ${roId} is here.`)
   })
   const lateReplan = (p: Proposal) => { setProposal(p); setPreviewKey(p.options[0].key); setSelectedId(p.ro_id); setNotice(null) }
 
@@ -155,14 +165,19 @@ export default function App() {
           <li><strong>{s.scheduled}</strong><span>still to start</span></li>
           <li className={s.promises_at_risk ? 'warn' : 'good'}><strong>{s.promises_at_risk}</strong><span>promises missed</span></li>
           <li className={flagged ? 'warn' : 'good'}><strong>{flagged}</strong><span>jobs missing a part</span></li>
+          <li className={s.requests_to_chase ? 'warn' : 'good'}><strong>{s.requests_to_chase}</strong><span>ordered parts to chase</span></li>
         </ul>
+        {!proposal && <ChasePanel day={day} onOpen={setSelectedId} />}
         {!proposal && <IntakePanel busy={busy} onMissing={(ro, part) => void openStall(ro, part)} onLate={(ro, part, t) => void lateFromNote(ro, part, t)} />}
         {!proposal && check && <PrecheckPanel check={check} busy={busy} onOrder={() => void orderAhead()} onDecide={(ro, part) => void openStall(ro, part)} />}
         {proposal && (
           <StallCard
             proposal={proposal} previewKey={option!.key} busy={busy}
             onPreview={setPreviewKey}
-            onForce={(src) => { if (proposal.kind === 'missing_part') void openStall(proposal.ro_id, proposal.part_id, src, proposal.forced_bay) }}
+            onForce={(src) => {
+              if (proposal.kind === 'missing_part') void openStall(proposal.ro_id, proposal.part_id, src, proposal.forced_bay)
+              else void otherSources(proposal.ro_id, proposal.part_id, { arrives_min: proposal.new_arrives_min ?? undefined, cannot_supply: proposal.why === 'cannot_supply', force_source: src })
+            }}
             onBay={(bay) => { if (proposal.kind === 'missing_part') void openStall(proposal.ro_id, proposal.part_id, proposal.forced_source, bay) }}
             onApprove={(key) => void approve(key)}
             onDismiss={() => void dismiss()}
@@ -171,7 +186,9 @@ export default function App() {
         <div className="layout">
           <Board day={day} orders={view.orders} segments={view.segments} selectedId={selectedId} onSelect={setSelectedId}
             moved={view.moved} preview={proposal && option ? option.title : null} />
-          <OrderPanel order={selected} busy={busy} canReport={!proposal} onReport={(ro, part) => void openStall(ro, part)}
+          <OrderPanel order={selected} busy={busy} canReport={!proposal} now={day.now_min} onReport={(ro, part) => void openStall(ro, part)}
+            onAnswer={(ro, part, what) => void answer(ro, part, what)}
+            onOtherSources={(ro, part, cannotSupply) => void otherSources(ro, part, { cannot_supply: cannotSupply })}
             onLateConfirm={(ro, part, t) => void lateConfirm(ro, part, t)} onLateReplan={lateReplan} />
         </div>
         <LogPanel entries={log} />

@@ -7,7 +7,7 @@ the job needs a re-plan, which is the stall flow.
 """
 import json
 
-from . import db, repo, sourcing
+from . import claims, db, repo, sourcing
 
 
 def _best_in_time(conn, part_id, qty, now, start_min):
@@ -51,8 +51,7 @@ def order_fixes(conn):
         best = _best_in_time(conn, f["part_id"], f["qty"], now, f["start_min"])
         if best is None:
             continue
-        conn.execute("INSERT INTO sourced VALUES (?, ?, ?, ?, ?, ?)", (f["ro_id"], f["part_id"], best["id"], best["name"], now + best["eta_min"], best["cost"]))
-        conn.execute("UPDATE stock SET on_hand = on_hand - ? WHERE store_id = ? AND part_id = ?", (f["qty"], best["id"], f["part_id"]))
+        claims.place(conn, f["ro_id"], f["part_id"], f["qty"], best["id"], best["name"], now + best["eta_min"], best["cost"], now)
         conn.execute("UPDATE repair_orders SET release_min = MAX(release_min, ?) WHERE id = ?", (now + best["eta_min"], f["ro_id"]))
         placed.append({"ro_id": f["ro_id"], "part": f["part_name"], "source": best["name"], "arrives_min": now + best["eta_min"],
                        "job_starts_min": f["start_min"], "cost": best["cost"]})

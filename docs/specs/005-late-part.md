@@ -13,7 +13,7 @@ plan still holds, and if not, what the new plan is.
 2. The new arrival time cannot be in the past (422). A job already finished, or already being worked on with its part, cannot be re-timed (409).
 3. If the part still arrives no later than the job's start, the plan holds. The answer gives the spare minutes. Nothing is saved until the manager confirms.
 4. Confirming saves the new arrival time, keeps a job that has not been taken apart from starting before it (its release time moves to the arrival), raises `plan_version`, and adds a `part_late_plan_holds` log entry. Confirming a time that does not hold is rejected with 409.
-5. If the plan does not hold, the check says what the best new plan would cost (missed promises, jobs moved) and saves nothing, so a slider can ask as often as it likes. Only `replan` saves a `late_part` proposal, approved like any other (004 rules 12 to 17).
+5. If the plan does not hold, the check says what staying with the same source would cost (missed promises, jobs moved) and saves nothing, so a slider can ask as often as it likes. Only `replan` saves a `late_part` proposal, approved like any other (004 rules 12 to 17). Since 113, that proposal puts every other source in the running too.
 6. For a car already taken apart, the re-plan keeps it in the same bay, its remaining work keeps the same length, and the blocked-bay hold is extended to the new restart time.
 7. Any open proposal drafted for an older arrival time is replaced once a time that holds is checked.
 8. Approving a late-part plan adds a `part_late_replanned` log entry.
@@ -23,7 +23,7 @@ plan still holds, and if not, what the new plan is.
 | Method | Path | Body | Returns |
 |---|---|---|---|
 | POST | `/api/late/check` | `{ro_id, part_id, arrives_min}` | `{holds: true, starts_min, spare_min, arrives_min}` or `{holds: false, arrives_min, missed_promises, late_minutes, jobs_moved}`; saves nothing |
-| POST | `/api/late/replan` | same | the saved `late_part` proposal; 409 if the plan still holds |
+| POST | `/api/late/replan` | same, plus the fields in 113 | the saved `late_part` proposal; 409 if the plan still holds |
 | POST | `/api/late/confirm` | same | `{result, day}` |
 
 ## Acceptance checks
@@ -35,5 +35,5 @@ plan still holds, and if not, what the new plan is.
 
 ## Out of scope
 
-Switching to a different source when a part runs late (it keeps its source today). Arrival
-times as ranges.
+Arrival times as ranges. Changing source when a part runs late was out of scope here and is
+now covered by [113](113-a-source-is-a-claim.md).

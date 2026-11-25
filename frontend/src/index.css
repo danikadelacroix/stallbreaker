@@ -224,3 +224,16 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .log .sub li { border: none; padding: 0; font-size: 13px; }
 .parts li > .part-line { flex-direction: row; justify-content: space-between; align-items: center; }
 .parts li > .part-line > div { display: flex; flex-direction: column; }
+
+/* ---- ordered parts: requested, confirmed, received (spec 113) ---- */
+.request { margin-top: 6px; display: grid; gap: 4px; }
+.request .badge { margin-left: 0; }
+.request .chase { font-size: 13px; font-weight: 600; color: #8f1d1d; }
+.request .answers { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+.request .answers .muted { flex-basis: 100%; }
+.chase-panel { background: #fff6e5; border: 1px solid #f0d9a8; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; min-width: 0; }
+.chase-panel ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
+.chase-panel li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; font-size: 14px; }
+.chase-panel li p { flex: 1 1 320px; }
+.chase-panel .link { white-space: nowrap; }
+.log .by-hand { font-size: 13px; margin-top: 4px; padding: 6px 10px; background: #fff6e5; border-radius: 8px; color: #6b4708; }

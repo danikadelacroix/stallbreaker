@@ -53,6 +53,20 @@ class LatePart(BaseModel):
     arrives_min: int = Field(ge=0, le=900, description="New arrival time, minutes after 08:00")
 
 
+class Replan(BaseModel):
+    ro_id: str = Field(pattern=r"^RO-\d{1,6}$")
+    part_id: str = Field(min_length=1, max_length=20, pattern=r"^[A-Z0-9-]+$")
+    arrives_min: int | None = Field(default=None, ge=0, le=900, description="The new arrival time the source gave, if it gave one")
+    cannot_supply: bool = Field(default=False, description="The source said it cannot supply the part")
+    force_source: str | None = Field(default=None, max_length=20, pattern=r"^[a-z]+$")
+
+
+class Answer(BaseModel):
+    ro_id: str = Field(pattern=r"^RO-\d{1,6}$")
+    part_id: str = Field(min_length=1, max_length=20, pattern=r"^[A-Z0-9-]+$")
+    answer: str = Field(pattern=r"^(confirmed|received)$")
+
+
 class Note(BaseModel):
     text: str = Field(min_length=1, max_length=600, description="What the technician typed or said")
 
@@ -175,9 +189,17 @@ def check_late_part(body: LatePart):
 
 @app.post("/api/late/replan")
 @one_at_a_time
-def replan_late_part(body: LatePart):
-    """The plan cannot absorb the new arrival time: save the new plans as a proposal to approve."""
-    return _guard(lambda: stalls.replan_late(conn(), body.ro_id, body.part_id, body.arrives_min))
+def replan_late_part(body: Replan):
+    """The source slipped, said no, or has not answered: plan the day again with every source in the running."""
+    return _guard(lambda: stalls.replan_late(conn(), body.ro_id, body.part_id, body.arrives_min, body.cannot_supply, body.force_source))
+
+
+@app.post("/api/requests/answer")
+@one_at_a_time
+def answer_request(body: Answer):
+    """Record that a source confirmed a part, or that the part has been received. The plan is not touched."""
+    _guard(lambda: stalls.answer(conn(), body.ro_id, body.part_id, body.answer))
+    return {"day": repo.day(conn())}
 
 
 @app.post("/api/late/confirm")

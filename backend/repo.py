@@ -7,7 +7,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 from shopcore import Assign, Bay, Job, Plan, Shop, Tech  # noqa: E402
 
-from . import db  # noqa: E402
+from . import claims, db  # noqa: E402
 
 
 def clock(minutes):
@@ -100,6 +100,10 @@ def day(conn):
             "late": bool(a and a["end_min"] > r["promise_min"]),
             "short_of_parts": any(p["shortfall"] for p in needs.get(r["id"], [])),
         })
+    requests = claims.of_day(conn, now, orders)
+    for o in orders:
+        for p in o["parts"]:
+            p["request"] = requests.get((o["id"], p["part_id"]))  # None: nothing has been ordered for this part
     planned = [o for o in orders if o["end_min"] is not None]
     return {
         "store": {"id": home["id"], "name": home["name"]},
@@ -118,6 +122,7 @@ def day(conn):
             "waiting_for_part": sum(o["status"] == "waiting_for_part" for o in orders),
             "scheduled": sum(o["status"] == "scheduled" for o in orders),
             "promises_at_risk": sum(o["late"] for o in planned),
+            "requests_to_chase": sum(r["chase"] is not None for r in requests.values()),
             "last_finish_min": max((o["end_min"] for o in planned), default=0),
         },
     }

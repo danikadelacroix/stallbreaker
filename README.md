@@ -45,8 +45,15 @@ stores, a vendor and an OEM depot) on a schedule board.
   nothing is traded off.
 - **Approve once.** The approved plan becomes the live schedule. The decision goes into a
   log with a draft message for any customer whose promise time is missed.
-- **A part runs late.** For a part already on its way, a slider shows at once whether the
-  plan can absorb the new arrival time or needs a re-plan.
+- **An ordered part is not a part in hand.** Every ordered part is requested, then confirmed
+  by the source, then received. Each one shows when it is needed, which other source could
+  step in, and the last moment to switch to it without changing the plan. Parts nobody has
+  confirmed in time, or that should be here and are not, are listed for chasing.
+- **A source slips, says no, or goes quiet.** A slider shows at once whether the plan can
+  absorb a new arrival time. If it cannot, the engine plans the day again with every source
+  in the running, the first one included at its new time, and says what each would cost.
+  The log lists what a person must then do by hand: cancel with one source, order from the
+  other. The app never contacts a source itself.
 - **Nothing is lost on refresh.** Every change is saved, including a stall that is still
   waiting for a decision.
 
@@ -125,13 +132,13 @@ Customer messages still use a fixed template and are labelled as such.
 | `backend/` | FastAPI app and SQLite database: seed data, stock lookup, shortage risk, parts check, stall flow |
 | `frontend/` | React app (Vite, TypeScript): schedule board, parts check, stall card, decision log |
 | `experiments/` | Sample day, 200-stall benchmark, scale check, forecasting baseline, with outputs in `out/` |
-| `tests/` | 61 checks: 15 on the engine, 38 on the API, 8 on reading notes |
+| `tests/` | 72 checks: 15 on the engine, 38 on the API, 8 on reading notes, 11 on ordered parts |
 | `data/` | Monash Car Parts dataset (CC BY 4.0) |
 
 ## Tests and experiments
 
 ```bash
-.venv/bin/python -m pytest -q                      # 61 checks
+.venv/bin/python -m pytest -q                      # 72 checks
 .venv/bin/python experiments/toy.py                # 8 jobs, 3 bays, one missing part
 .venv/bin/python experiments/eval.py 200           # 200 seeded stalls, six methods
 .venv/bin/python experiments/scale.py 20           # re-plan time on 12 to 60-job days
@@ -251,8 +258,10 @@ dispatch rule. Times were measured on one laptop and will vary from run to run.
   choosing source and schedule together mainly lowers sourcing cost. It also leaves the bay
   blocked about 18 minutes longer on average, never at the cost of a promise.
 - Prices, travel times and stock levels are invented. Only part demand history is real.
-- Source arrival times are single values, not ranges. A late part can be re-timed, but it
-  keeps its original source.
+- Source arrival times are single values, not ranges, and delivery times are fixed per
+  source. Real shuttle and vendor runs leave at set times.
+- The app does not know a part has arrived until someone says so. The demo clock starts a
+  job at its planned time either way.
 - The demo day is not very busy, so most stalls move only one or two jobs, and rolling a
   car out never beats holding its bay there. The app shows that reasoning and lets you roll
   the car out anyway to see what it does.
@@ -265,7 +274,7 @@ dispatch rule. Times were measured on one laptop and will vary from run to run.
 
 ## Next
 
-A model reader scored against the plain rules, reading a store's reply to a parts request, a
+A model reader scored against the plain rules, reading a source's reply from pasted text, a
 results page inside the app, deployment, and a stockout-risk model in place of the simple
 frequency rule. Each has a spec in [docs/specs](docs/specs/README.md).
 

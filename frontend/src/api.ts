@@ -1,4 +1,4 @@
-import type { Day, IntakeInfo, LateCheck, LogEntry, NoteReading, Precheck, Proposal } from './types'
+import type { Day, IntakeInfo, LateCheck, LogEntry, NoteReading, Precheck, Proposal, WayBack } from './types'
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...init })
@@ -26,7 +26,11 @@ export const getIntakeInfo = () => call<IntakeInfo>('/api/intake/info')
 export const getPrecheck = () => call<Precheck>('/api/precheck')
 export const orderPrecheck = () => call<{ precheck: Precheck; day: Day }>('/api/precheck/order', post())
 export const checkLate = (ro_id: string, part_id: string, arrives_min: number) => call<LateCheck>('/api/late/check', post({ ro_id, part_id, arrives_min }))
-export const replanLate = (ro_id: string, part_id: string, arrives_min: number) => call<Proposal>('/api/late/replan', post({ ro_id, part_id, arrives_min }))
+/** What is known about the source of a part on its way: a new time, that it cannot supply, or nothing (no answer). */
+export interface SourceNews { arrives_min?: number; cannot_supply?: boolean; force_source?: string | null }
+export const replanLate = (ro_id: string, part_id: string, news: SourceNews = {}) => call<Proposal>('/api/late/replan', post({ ro_id, part_id, ...news }))
+export const answerRequest = (ro_id: string, part_id: string, answer: 'confirmed' | 'received') =>
+  call<{ day: Day }>('/api/requests/answer', post({ ro_id, part_id, answer })).then((r) => r.day)
 export const confirmLate = (ro_id: string, part_id: string, arrives_min: number) =>
   call<{ day: Day }>('/api/late/confirm', post({ ro_id, part_id, arrives_min })).then((r) => r.day)
 
@@ -35,6 +39,15 @@ export function clock(min: number): string {
   const h = 8 + Math.floor(min / 60)
   const m = min % 60
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+}
+
+/** One sentence on what can still be done if the source of a part falls through. */
+export function wayBackText(w: WayBack, sourceName: string, now: number): string {
+  if (!w.backup_name) return 'No other safe source has this part.'
+  if (w.switch_by_min === null) return `No way back that leaves the plan untouched: ${w.backup_name} would take ${span(w.backup_eta_min!)} from the moment you order.`
+  if (now === w.switch_by_min) return `Now is the last moment to switch to ${w.backup_name} without changing the plan.`
+  if (now > w.switch_by_min) return `The last moment to switch to ${w.backup_name} without changing the plan was ${clock(w.switch_by_min)}.`
+  return `If ${sourceName} falls through, ${w.backup_name} can still get the part here in time if you switch by ${clock(w.switch_by_min)}.`
 }
 
 /** A length of time in plain words, e.g. 110 -> "1 h 50 min". */

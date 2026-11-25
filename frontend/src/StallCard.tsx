@@ -1,5 +1,5 @@
 import type { PlanOption, Proposal } from './types'
-import { clock, span } from './api'
+import { clock, span, wayBackText } from './api'
 
 interface Props {
   proposal: Proposal
@@ -28,13 +28,15 @@ function marginText(o: PlanOption, roId: string): string {
 }
 
 interface OptionProps {
-  o: PlanOption; roId: string; title: string; chosen: boolean; busy: boolean
+  o: PlanOption; roId: string; title: string; chosen: boolean; busy: boolean; now: number
+  /** True when this plan stays with a source that has already been ordered from. */
+  alreadyOrdered: boolean
   /** What the manager may switch the bay decision to, if anything. */
   bayChoice: { label: string; onClick: () => void } | null
   onPreview: () => void; onApprove: () => void
 }
 
-function Option({ o, roId, title, chosen, busy, bayChoice, onPreview, onApprove }: OptionProps) {
+function Option({ o, roId, title, chosen, busy, now, alreadyOrdered, bayChoice, onPreview, onApprove }: OptionProps) {
   return (
     <article className={`option ${chosen ? 'chosen' : ''}`}>
       <header>
@@ -43,7 +45,7 @@ function Option({ o, roId, title, chosen, busy, bayChoice, onPreview, onApprove 
           {o.proven_best ? `Proven best in ${o.solve_seconds.toFixed(2)} s` : 'Best found within the time limit'}
         </span>
       </header>
-      <p className="via">Part from <strong>{o.source_name}</strong>, arriving {clock(o.arrives_min)}, {money(o.cost)}</p>
+      <p className="via">Part from <strong>{o.source_name}</strong>, arriving {clock(o.arrives_min)}, {alreadyOrdered ? 'already ordered' : money(o.cost)}</p>
       <ul className="metrics">
         <li className={o.missed_promises ? 'bad' : 'good'}><strong>{o.missed_promises}</strong><span>{o.missed_promises === 1 ? 'promise missed' : 'promises missed'}</span></li>
         <li><strong>{o.late_minutes}</strong><span>late minutes</span></li>
@@ -72,6 +74,7 @@ function Option({ o, roId, title, chosen, busy, bayChoice, onPreview, onApprove 
         {o.needs_you.length ? <><strong>Needs you because</strong> {o.needs_you.join('; ')}.</> : <strong>Nothing is traded off in this plan.</strong>}
       </p>
       <p className={`margin-note ${o.late_margin_min === 0 ? 'tight' : ''}`}><strong>If the part is late:</strong> {marginText(o, roId)}</p>
+      <p className="margin-note"><strong>If the source falls through:</strong> {wayBackText(o, o.source_name, now)}</p>
       <div className="actions">
         <button type="button" className="ghost" onClick={onPreview} aria-pressed={chosen} disabled={chosen}>{chosen ? 'Shown on the board' : 'Show on the board'}</button>
         <button type="button" className="primary" onClick={onApprove} disabled={busy}>Approve this plan</button>
@@ -85,11 +88,16 @@ export function StallCard({ proposal: p, previewKey, busy, onPreview, onForce, o
   const shown = p.options.find((o) => o.key === previewKey) ?? p.options[0]
   const nr = p.no_replan
   const late = p.kind === 'late_part'
+  const gone = p.why === 'cannot_supply' ? 'cannot supply' : 'past its time'
+  const headline = !late ? `Part missing · reported ${clock(p.now_min)}`
+    : p.why === 'cannot_supply' ? `${p.old_source_name} cannot supply the part · it was due ${clock(p.old_arrives_min!)}`
+    : p.why === 'no_answer' ? `No answer from ${p.old_source_name} · the part is due ${clock(p.old_arrives_min!)}`
+    : `Part running late · now due ${clock(p.new_arrives_min!)}, was ${clock(p.old_arrives_min!)}`
   return (
-    <section className="stall" aria-label="Missing part">
+    <section className="stall" aria-label={late ? 'Part on its way' : 'Missing part'}>
       <header className="stall-head">
         <div>
-          <p className="eyebrow alert">{late ? `Part running late · now due ${clock(p.new_arrives_min!)}, was ${clock(p.old_arrives_min!)}` : `Part missing · reported ${clock(p.now_min)}`}</p>
+          <p className="eyebrow alert">{headline}</p>
           <h2>{p.part_name}</h2>
           <p className="muted">
             {p.ro_id} · {p.description} · {p.vehicle} · {!p.in_progress ? 'work has not started, so no bay is blocked' : shown.bay_decision === 'roll_out' ? `car is in ${p.current.bay} and would be rolled out` : `car is already in ${p.current.bay}, so the bay stays blocked`}
@@ -100,11 +108,11 @@ export function StallCard({ proposal: p, previewKey, busy, onPreview, onForce, o
 
       <div className="stall-body">
         <div className="sources">
-          <h3>{late ? 'The part is already on its way' : 'Where the part can come from'}</h3>
+          <h3>{late ? 'Stay with this source, or change it' : 'Where the part can come from'}</h3>
           <div className="table-scroll">
             <table>
               <thead>
-                <tr><th scope="col">Source</th><th scope="col">Stock</th><th scope="col">Arrives</th><th scope="col">Cost</th><th scope="col">Shortage risk</th>{!late && <><th scope="col">The day with this source</th><th scope="col">Part can be late by</th></>}<th scope="col"><span className="visually-hidden">Choose</span></th></tr>
+                <tr><th scope="col">Source</th><th scope="col">Stock</th><th scope="col">Arrives</th><th scope="col">Cost</th><th scope="col">Shortage risk</th><th scope="col">The day with this source</th><th scope="col">Part can be late by</th><th scope="col"><span className="visually-hidden">Choose</span></th></tr>
               </thead>
               <tbody>
                 {p.sources.map((s) => {
@@ -114,17 +122,17 @@ export function StallCard({ proposal: p, previewKey, busy, onPreview, onForce, o
                       <th scope="row">
                         {s.name}
                         {picked && <span className="badge ok">Chosen</span>}
-                        {!picked && !late && s.id === p.engine_source_id && <span className="badge ok">Engine's pick</span>}
+                        {!picked && s.id === p.engine_source_id && <span className="badge ok">Engine's pick</span>}
                         {s.available && !s.safe && <span className="badge warn">Unsafe to lend</span>}
                       </th>
-                      <td>{late ? 'ordered' : s.on_hand === null ? 'supplier' : s.available ? `${s.on_hand} on hand` : 'none to spare'}</td>
+                      <td>{s.id === p.old_source_id ? (s.available ? 'ordered' : gone) : s.on_hand === null ? 'supplier' : s.available ? `${s.on_hand} on hand` : 'none to spare'}</td>
                       <td>{s.available ? clock(p.now_min + s.eta_min) : '—'}</td>
                       <td>{s.available ? money(s.cost) : '—'}</td>
                       <td title={s.risk_basis ?? undefined}>
                         {s.available ? pctText(s.risk) : '—'}
                         {s.available && s.risk_basis && s.kind === 'sister_store' && <small>{s.risk_basis}</small>}
                       </td>
-                      {!late && (
+                      {(
                         <>
                           <td>
                             {s.outcome ? `${s.outcome.missed_promises === 1 ? '1 promise missed' : `${s.outcome.missed_promises} promises missed`}, ${s.outcome.late_minutes} late min` : '—'}
@@ -134,7 +142,7 @@ export function StallCard({ proposal: p, previewKey, busy, onPreview, onForce, o
                         </>
                       )}
                       <td>
-                        {!late && s.available && p.forced_source !== s.id && (
+                        {s.available && p.forced_source !== s.id && (
                           <button type="button" className="link" disabled={busy} onClick={() => onForce(s.id)}>Use this one</button>
                         )}
                       </td>
@@ -150,12 +158,13 @@ export function StallCard({ proposal: p, previewKey, busy, onPreview, onForce, o
             </p>
           )}
           <p className="baseline">
-            <strong>If nobody re-plans</strong> and the shop {late ? 'just waits' : `waits for ${nr.source_name}`} (arrives {clock(nr.arrives_min)}): {nr.missed_promises === 1 ? '1 promise missed' : `${nr.missed_promises} promises missed`}, {nr.late_minutes} late minutes{nr.bay_blocked_min ? `, bay blocked ${span(nr.bay_blocked_min)}` : ''}.
+            <strong>If nobody re-plans</strong> and the shop waits for {nr.source_name} (arrives {clock(nr.arrives_min)}): {nr.missed_promises === 1 ? '1 promise missed' : `${nr.missed_promises} promises missed`}, {nr.late_minutes} late minutes{nr.bay_blocked_min ? `, bay blocked ${span(nr.bay_blocked_min)}` : ''}.
           </p>
         </div>
         <div className="options">
           {p.options.map((o) => (
-            <Option key={o.key} o={o} roId={p.ro_id} title={p.forced_source && p.options.length === 1 ? 'Plan with the source you chose' : o.title} chosen={o.key === shown.key} busy={busy}
+            <Option key={o.key} o={o} roId={p.ro_id} title={p.forced_source && p.options.length === 1 ? 'Plan with the source you chose' : o.title} chosen={o.key === shown.key} busy={busy} now={p.now_min}
+              alreadyOrdered={late && o.source_id === p.old_source_id}
               bayChoice={late || !p.can_roll_out ? null
                 : p.forced_bay ? { label: 'Let the engine decide', onClick: () => onBay(null) }
                 : o.bay_decision === 'hold' ? { label: 'Roll it out anyway', onClick: () => onBay('roll_out') }
