@@ -53,17 +53,17 @@ source when the first one fails.
 
 | # | Check | Test |
 |---|---|---|
-| A1 | Rules 1, 7: a part ordered by approving a plan, and one ordered ahead, are `requested`; an answer makes them `confirmed`, then `received`, without touching the plan | to write |
-| A2 | Rules 2, 3: `needed_by_min` is the job's start, and `switch_by_min` is that less the delivery time of the fastest other safe source | to write |
-| A3 | Rules 3, 4: a plan with no way back says so before approval, and what an option shows is what the request shows after approval | to write |
-| A4 | Rule 3: ordering the named backup at the switch-by time leaves the plan exactly as it is | to write |
-| A5 | Rule 6: `no_answer` at the switch-by time, `not_here` at the arrival time, neither once received | to write |
-| A6 | Rule 8 | to write |
-| A7 | Rules 10, 12, 13: a source that cannot supply, for a car waiting in its bay: it is out of the running and is not the new backup, the car stays put, the plan passes the engine's checker, the new request is `requested`, the log says what to do by hand | to write |
-| A8 | Rules 10, 11, 13: a new time the plan cannot absorb: the old source competes at its new time, every source has an outcome, and the manager can stay with it | to write |
-| A9 | Rules 10, 11: no answer: the current source competes at its recorded time; a source that cannot supply cannot be forced | to write |
-| A10 | Rule 13: a sister store gets its part back when its request is cancelled, but not when it said it cannot supply | to write |
-| A11 | Rule 14 | to write |
+| A1 | Rules 1, 7: a part ordered by approving a plan, and one ordered ahead, are `requested`; an answer makes them `confirmed`, then `received`, without touching the plan | `test_an_ordered_part_is_only_requested_until_a_person_says_otherwise` |
+| A2 | Rules 2, 3: `needed_by_min` is the job's start, and `switch_by_min` is that less the delivery time of the fastest other safe source | `test_a_request_says_when_the_part_is_needed_and_the_last_moment_to_switch` |
+| A3 | Rules 3, 4: a plan with no way back says so before approval, and what an option shows is what the request shows after approval | `test_a_plan_says_before_approval_whether_there_is_a_way_back` |
+| A4 | Rule 3: ordering the named backup at the switch-by time leaves the plan exactly as it is | `test_ordering_the_backup_at_the_switch_by_time_leaves_the_plan_as_it_is` |
+| A5 | Rule 6: `no_answer` at the switch-by time, `not_here` at the arrival time, neither once received | `test_a_request_needs_chasing_when_unanswered_or_not_here` |
+| A6 | Rule 8 | `test_a_new_time_the_plan_can_absorb_is_recorded_and_confirms_the_request` |
+| A7 | Rules 10, 12, 13: a source that cannot supply, for a car waiting in its bay: it is out of the running and is not the new backup, the car stays put, the plan passes the engine's checker, the new request is `requested`, the log says what to do by hand | `test_a_source_that_cannot_supply_is_replaced_for_a_car_waiting_in_its_bay` |
+| A8 | Rules 10, 11, 13: a new time the plan cannot absorb: the old source competes at its new time, every source has an outcome, and the manager can stay with it | `test_a_new_time_the_plan_cannot_absorb_puts_the_old_source_up_against_the_others` |
+| A9 | Rules 10, 11: no answer: the current source competes at its recorded time; a source that cannot supply cannot be forced | `test_with_no_answer_the_current_source_stays_in_the_running_at_its_recorded_time` |
+| A10 | Rule 13: a sister store gets its part back when its request is cancelled, but not when it said it cannot supply | `test_a_cancelled_sister_store_gets_its_part_back_unless_it_said_no` |
+| A11 | Rule 14 | `test_a_job_taken_apart_without_its_part_is_a_missing_part_that_replaces_the_request` |
 
 ## Limits we know about
 

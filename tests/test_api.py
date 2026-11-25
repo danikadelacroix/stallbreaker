@@ -192,7 +192,8 @@ def test_a_late_part_for_a_dismantled_car_extends_the_blocked_bay():
     new_arrival = first["arrives_min"] + 60
     body = {"ro_id": "RO-1013", "part_id": "WTR-GSK", "arrives_min": new_arrival}
     assert client.post("/api/late/check", json=body).json()["holds"] is False
-    proposal = client.post("/api/late/replan", json=body).json()
+    # other sources may now take over a late part (spec 113); this check is about staying with the same one
+    proposal = client.post("/api/late/replan", json={**body, "force_source": first["source_id"]}).json()
     assert proposal["kind"] == "late_part"
     opt = proposal["options"][0]
     assert opt["stalled_job"]["start_min"] >= new_arrival and opt["stalled_job"]["bay"] == first["stalled_job"]["bay"]
