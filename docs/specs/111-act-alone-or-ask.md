@@ -1,6 +1,6 @@
 # 111 Act alone, or ask
 
-**Status:** Rule built, acting alone not built · **Owner:** unassigned · **Depends on:** 003, 004
+**Status:** Rule 3 built; acting alone not planned · **Owner:** unassigned · **Depends on:** 003, 004
 
 ## Why
 
@@ -15,7 +15,8 @@ asks is a risk. Ours acts alone only when there is nothing to trade off, and say
 4. Everything done alone is in the decision log, marked as done by the agent, with the rule that allowed it.
 5. With the policy off, nothing changes from today.
 
-Built so far: rule 3. Every plan option carries `needs_you`, the list of reasons from `backend/policy.py`, and the card shows them; an approval logs `needed_a_person_because` and `decided_by`. Acting alone (rules 1, 2 and 4) is not built.
+Built so far: rule 3. Every plan option carries `needs_you`, the list of reasons from `backend/policy.py`, and the card shows them; an approval logs `needed_a_person_because` and `decided_by`. Acting alone (rules 1, 2 and 4) is not planned: an order sent to a source cannot be taken back, so
+every plan waits for a person and the card says why.
 
 ## Acceptance checks
 

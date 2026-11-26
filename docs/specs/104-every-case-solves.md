@@ -12,7 +12,7 @@ A user can click any job and report any part missing. None of those clicks may f
 2. Each must return either a proposal whose options all pass `validate` within 5 seconds, or a clear 409 for a rule in 004 (for example the job is finished).
 3. It never returns 500, and never "could not find a workable plan".
 4. It records per pair: options returned, solve time, proven best or not, missed promises.
-5. It runs on both demo days once 102 is built.
+5. It runs on today's demo day (102, a second busier day, is not planned).
 6. A fast version (a sample of 10 pairs) runs in the normal test suite; the full sweep runs on demand.
 
 ## Acceptance checks

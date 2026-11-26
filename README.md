@@ -57,7 +57,7 @@ stores, a vendor and an OEM depot) on a schedule board.
 - **Nothing is lost on refresh.** Every change is saved, including a stall that is still
   waiting for a decision.
 
-![The parts check and the schedule board](docs/parts-check.jpg)
+![An ordered part with no answer yet, the parts check, and the schedule board](docs/parts-check.jpg)
 
 ## Run the app
 

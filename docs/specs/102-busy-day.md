@@ -1,6 +1,9 @@
 # 102 Busy demo day
 
-**Status:** Proposed · **Owner:** unassigned · **Depends on:** 002
+**Status:** Not planned · **Owner:** unassigned · **Depends on:** 002
+
+Not planned (24 Nov 2026): a second, busier day is a lot of work and shows little that today's
+day does not. The README states the limit instead. The rules below are kept in case it comes back.
 
 ## Why
 

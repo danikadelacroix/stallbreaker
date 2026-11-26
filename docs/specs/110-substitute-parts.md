@@ -1,6 +1,10 @@
 # 110 Substitute part numbers
 
-**Status:** Proposed · **Owner:** unassigned · **Depends on:** 004
+**Status:** Not planned · **Owner:** unassigned · **Depends on:** 004
+
+Not planned (24 Nov 2026): we have no real table of which part numbers replace which, and an
+invented one would be a fitment and warranty claim we cannot back. The rules below are kept in
+case a real table turns up.
 
 ## Why
 
