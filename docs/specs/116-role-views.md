@@ -1,6 +1,6 @@
 # 116 Role views and voice
 
-**Status:** Proposed · **Owner:** danikadelacroix · **Depends on:** 006, 112, 113, 114, 115 · **Code:** `frontend/src/roles/`, `frontend/src/App.tsx`
+**Status:** Built · **Owner:** danikadelacroix · **Depends on:** 006, 112, 113, 114, 115 · **Code:** `frontend/src/roles/`, `frontend/src/App.tsx`
 
 ## Why
 
@@ -51,6 +51,18 @@ screen. Each should open the app and see their own part of the job, in their own
 | M6 | Rule 3: a report made in one tab appears in the manager's tab without a reload | manual |
 | M7 | Rule 13: the mic button appears in Chrome, fills the box, and the reading follows; hidden when unsupported | manual; speech itself cannot be automated |
 | M8 | Both themes and 375 px width on every view, no sideways scroll | manual |
+
+## Where it stands
+
+Checked on 28 Nov 2026 in Chrome with a scripted run across three open tabs. As Pooja, "1013 no gasket
+kit" was confirmed and sent; the technician's screen showed "Waiting for a decision", no plan and no
+price, and paused further reports with the reason (M2, M3). The manager's tab showed the stall within
+seconds without a reload and approved it (M6); the technician's tab then showed Bay 4, 11:30 to 14:30 and
+"Arriving 11:30 from Local vendor" (M2). At the parts counter, ordering ahead filled the list, a pasted
+reply and a button each confirmed a part, and "east cant get the brake pads for 1040" went to the manager
+with no plan shown (M4, M5). The picker, the three addresses and the switcher work (M1); no view scrolls
+sideways at 375 px in either theme (M8). The Speak button appears in Chrome (M7); speech itself was not
+tested by script and needs a try by hand with a microphone.
 
 ## Out of scope
 

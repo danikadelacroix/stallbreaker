@@ -31,7 +31,7 @@ then the code. See [CONTRIBUTING.md](../../CONTRIBUTING.md) for the full loop.
 | [113 A source is a claim until the part is here](113-a-source-is-a-claim.md) | Built | `tests/test_claims.py` |
 | [114 Read a source's reply](114-read-a-source-reply.md) | Built | `tests/test_intake.py` |
 | [115 Landing page, light and dark theme](115-landing-page-and-theme.md) | Built | manual checks |
-| [116 Role views and voice](116-role-views.md) | Proposed | manual checks |
+| [116 Role views and voice](116-role-views.md) | Built | manual checks |
 
 Status moves Proposed → Agreed (both of us have read it) → In progress (owner named) → Built
 (every acceptance check has a passing test, or a manual check written down in the spec).

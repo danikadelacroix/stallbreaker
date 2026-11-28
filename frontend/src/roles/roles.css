@@ -1,0 +1,67 @@
+/* Role views (spec 116). */
+.role-nav { display: flex; border: 1px solid var(--header-line); border-radius: 6px; overflow: hidden; }
+.role-nav a { color: var(--header-muted); text-decoration: none; font-size: 13px; font-weight: 600; padding: 7px 11px; white-space: nowrap; }
+.role-nav a + a { border-left: 1px solid var(--header-line); }
+.role-nav a:hover { color: #fff; }
+.role-nav a[aria-current='page'] { background: var(--accent); color: var(--on-accent); }
+.role-nav a:focus-visible { outline: 2px solid #fff; outline-offset: -3px; }
+.role-clock { font-family: var(--font-mono); font-size: 16px; font-weight: 600; color: #fff; }
+.role-main.narrow { max-width: 760px; }
+.role-h { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; margin: 4px 0 10px; }
+.paused { margin-bottom: 12px; }
+
+/* note box buttons */
+.intake-buttons { display: flex; gap: 8px; align-items: center; }
+.mic { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.mic.on { border-color: var(--red); color: var(--red); }
+.mic-note { margin-top: 6px; }
+
+/* picker */
+.lp .picker { padding-top: 72px; padding-bottom: 96px; }
+.picker h1 { font-size: clamp(2.4rem, 5vw, 3.8rem); line-height: 1; letter-spacing: -0.03em; font-weight: 800; font-stretch: 88%; }
+.picker-roles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 44px !important; }
+@media (max-width: 860px) { .picker-roles { grid-template-columns: 1fr; } }
+.picker-roles a { display: flex; flex-direction: column; gap: 8px; height: 100%; text-decoration: none; background: var(--paper); border: 1px solid var(--line); border-top: 4px solid var(--ink); border-radius: 10px; padding: 22px 22px 20px; }
+.picker-roles a:hover { border-color: var(--accent); border-top-color: var(--accent); }
+.picker-roles strong { font-size: 26px; font-weight: 800; font-stretch: 92%; letter-spacing: -0.015em; }
+.picker-does { color: var(--slate); line-height: 1.55; font-size: 15px; }
+.picker-go { margin-top: auto; padding-top: 16px; font-weight: 700; font-size: 14.5px; color: var(--accent-ink); }
+
+/* technician */
+.who { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.who label { font-weight: 700; }
+.who select { font: inherit; font-weight: 600; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); }
+.jobs { display: grid; gap: 12px; }
+.job { background: var(--paper); border: 1px solid var(--line); border-left: 4px solid var(--bar-scheduled); border-radius: 10px; padding: 14px 16px; }
+.job.in_progress { border-left-color: var(--bar-busy); }
+.job.waiting_for_part { border-left-color: var(--accent); }
+.job-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.job-head .badge { margin-left: 0; flex: none; }
+.job-id { font-family: var(--font-mono); font-size: 12.5px; color: var(--slate); }
+.job h3 { font-size: 19px; font-weight: 800; letter-spacing: -0.01em; margin-top: 2px; }
+.job-late { color: var(--bad-ink); font-size: 13.5px; font-weight: 600; margin-top: 8px; }
+.job-parts { margin-top: 10px; }
+.job-parts li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--tint); font-size: 14.5px; }
+.job-parts li > div { display: flex; flex-direction: column; }
+.part-state { font-size: 13px; color: var(--slate); }
+.part-state.ok { color: var(--ok-ink); font-weight: 600; }
+.part-state.warn { color: var(--warn-text); font-weight: 600; }
+.job-parts .link { white-space: nowrap; font-size: 14px; }
+.done-line { margin-top: 16px; font-size: 13.5px; }
+
+/* parts counter */
+.orders-card { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+.orders-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 760px; }
+.orders-table th, .orders-table td { text-align: left; padding: 9px 10px; border-top: 1px solid var(--tint); vertical-align: top; }
+.orders-table thead th { font-size: 12px; color: var(--slate); font-weight: 600; border-top: none; }
+.orders-table small { display: block; color: var(--slate); font-size: 12px; font-weight: 400; max-width: 300px; }
+.orders-table .badge { margin-left: 0; }
+.orders-table .mono { font-family: var(--font-mono); }
+.orders-table tr.chase { background: var(--warn-bg); }
+.orders-table tr.picked th { box-shadow: inset 3px 0 0 var(--accent); }
+.orders-table .chase-text { color: var(--bad-ink); font-weight: 600; margin-top: 3px; }
+
+@media (max-width: 700px) {
+  .role-nav a { padding: 6px 8px; font-size: 12px; }
+  .job-head { flex-direction: column; }
+}

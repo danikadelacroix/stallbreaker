@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { IntakeInfo, NoteReading } from './types'
 import { clock, getIntakeInfo, readNote } from './api'
+import { useDictation } from './useDictation'
 
 interface Props {
   busy: boolean
@@ -12,6 +13,14 @@ interface Props {
   onAnswer: (roId: string, partId: string, answer: 'confirmed' | 'received') => void
   /** The reading was confirmed: the source cannot supply the part. */
   onCannotSupply: (roId: string, partId: string) => void
+  /** The question above the box, and its example. Each role asks in its own words. */
+  label?: string; placeholder?: string
+  /** The readings this role acts on. Any other reading is shown with `notYours` instead of a yes button. */
+  accept?: NoteReading['kind'][]; notYours?: string
+  /** This role's wording for the yes button, by kind of reading. */
+  yes?: Partial<Record<NoteReading['kind'], string>>
+  /** Set when nothing can be reported right now, with the reason. */
+  paused?: string | null
 }
 
 const YES: Record<NoteReading['kind'], string> = {
@@ -32,7 +41,13 @@ function understood(r: NoteReading): string {
 }
 
 /** A technician's note goes in, a reading comes out, and a person confirms it before anything else happens. */
-export function IntakePanel({ busy, onMissing, onLate, onAnswer, onCannotSupply }: Props) {
+const MicIcon = () => (
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+  </svg>
+)
+
+export function IntakePanel({ busy, onMissing, onLate, onAnswer, onCannotSupply, label, placeholder, accept, notYours, yes, paused }: Props) {
   const [text, setText] = useState('')
   const [reading, setReading] = useState<NoteReading | null>(null)
   const [info, setInfo] = useState<IntakeInfo | null>(null)
@@ -53,14 +68,16 @@ export function IntakePanel({ busy, onMissing, onLate, onAnswer, onCannotSupply 
       .finally(() => setWorking(false))
   }
   const clear = () => { setReading(null); setText('') }
+  const mic = useDictation((heard) => { setText(heard.slice(0, 600)); setReading(null) })
+  const mine = !reading || reading.kind === 'unclear' || !accept || accept.includes(reading.kind)
   const outside = info?.eval?.[info.reader]?.outside
 
   return (
     <section className="intake" aria-label="Read a note">
       <div className="intake-in">
-        <label htmlFor="note">What did the technician or the source say?</label>
+        <label htmlFor="note">{label ?? 'What did the technician or the source say?'}</label>
         <textarea id="note" rows={2} maxLength={600} value={text} disabled={busy || working}
-          placeholder="For example: 1013 wp off, gskt kit in bin is for the 2.0 not 2.5t"
+          placeholder={mic.listening ? 'Listening…' : placeholder ?? 'For example: 1013 wp off, gskt kit in bin is for the 2.0 not 2.5t'}
           onChange={(e) => { setText(e.target.value); setReading(null) }} />
         <div className="intake-foot">
           <p className="muted small">
@@ -69,11 +86,19 @@ export function IntakePanel({ busy, onMissing, onLate, onAnswer, onCannotSupply 
               : 'Read by rules on this machine. Nothing is sent anywhere.'}
             {outside && ` On ${outside.of} test notes written by someone else, this reader got ${outside.right} right.`}
           </p>
-          <button type="button" className="primary" disabled={busy || working || text.trim().length === 0} onClick={read}>
-            {working ? 'Reading…' : 'Read the note'}
-          </button>
+          <div className="intake-buttons">
+            {mic.supported && (
+              <button type="button" className={`ghost mic ${mic.listening ? 'on' : ''}`} aria-pressed={mic.listening} disabled={busy || working} onClick={mic.toggle}>
+                <MicIcon /> {mic.listening ? 'Stop' : 'Speak'}
+              </button>
+            )}
+            <button type="button" className="primary" disabled={busy || working || text.trim().length === 0} onClick={read}>
+              {working ? 'Reading…' : 'Read the note'}
+            </button>
+          </div>
         </div>
       </div>
+      {mic.supported && <p className="muted small mic-note">{mic.problem ?? 'Speak uses this browser’s own speech service to turn your words into text. You still confirm what was understood.'}</p>}
       {problem && <p className="error" role="alert">{problem}</p>}
       {reading && (
         <div className={`reading ${reading.kind === 'unclear' ? 'unclear' : ''}`} role="status">
@@ -91,16 +116,18 @@ export function IntakePanel({ busy, onMissing, onLate, onAnswer, onCannotSupply 
                 <strong>{understood(reading)}</strong>
               </p>
               <p className="muted small">From the words “{reading.quote}”. Read by {reading.read_by.replace('model: ', '')}.</p>
+              {!mine && <p className="fallback">{notYours}</p>}
+              {mine && paused && <p className="fallback">{paused}</p>}
               <div className="actions">
-                <button type="button" className="ghost" disabled={busy} onClick={() => setReading(null)}>No, that is wrong</button>
-                <button type="button" className="primary" disabled={busy} onClick={() => {
+                <button type="button" className="ghost" disabled={busy} onClick={() => setReading(null)}>{mine ? 'No, that is wrong' : 'Close'}</button>
+                {mine && !paused && <button type="button" className="primary" disabled={busy} onClick={() => {
                   const ro = reading.ro_id!, part = reading.part_id!
                   if (reading.kind === 'late_part') onLate(ro, part, reading.arrives_min!)
                   else if (reading.kind === 'confirmed' || reading.kind === 'received') onAnswer(ro, part, reading.kind)
                   else if (reading.kind === 'cannot_supply') onCannotSupply(ro, part)
                   else onMissing(ro, part)
                   clear()
-                }}>{YES[reading.kind]}</button>
+                }}>{yes?.[reading.kind] ?? YES[reading.kind]}</button>}
               </div>
             </>
           )}

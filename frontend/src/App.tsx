@@ -12,6 +12,9 @@ import { PrecheckPanel } from './PrecheckPanel'
 import { StartHere } from './StartHere'
 import { Logo } from './Logo'
 import { ThemeToggle } from './theme'
+import './roles/roles.css'
+import { RoleNav } from './roles/RoleBar'
+import { usePoll } from './usePoll'
 
 const message = (e: unknown) => (e instanceof Error ? e.message : 'Something went wrong')
 
@@ -77,6 +80,24 @@ export default function App() {
     })()
     return () => { alive = false }
   }, [])
+
+  // Another role may have reported a stall, recorded an answer or ordered parts: pick that up (spec 116 rule 3).
+  usePoll(async () => {
+    if (busy || !day) return
+    try {
+      const d = await getDay()
+      const openId = d.open_proposal_id
+      if (openId !== (proposal?.id ?? null)) {
+        const p = openId ? await getProposal(openId) : null
+        setProposal(p); setPreviewKey(p?.options[0]?.key ?? '')
+        if (p) setSelectedId(p.ro_id)
+      }
+      if (d.plan_version !== day.plan_version || openId !== day.open_proposal_id || d.now_min !== day.now_min || JSON.stringify(d.orders) !== JSON.stringify(day.orders)) {
+        setDay(d)
+        const [l, c] = await Promise.all([getLog(), getPrecheck()]); setLog(l); setCheck(c)
+      }
+    } catch { /* the next round will try again */ }
+  })
 
   const option = proposal ? proposal.options.find((o) => o.key === previewKey) ?? proposal.options[0] : null
 
@@ -145,7 +166,7 @@ export default function App() {
           <Logo size={32} />
           <div>
             <h1>StallBreaker</h1>
-            <p>{day.store.name} · service schedule · simulated data</p>
+            <p>{day.store.name} · service manager · simulated data</p>
           </div>
         </a>
         <div className="top-actions">
@@ -162,6 +183,7 @@ export default function App() {
           </button>
           <ThemeToggle />
         </div>
+        <RoleNav role="manager" />
         </div>
       </header>
       <main>

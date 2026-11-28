@@ -61,8 +61,7 @@ After review the look was redone (rules 11 to 14): the dial logo and favicon, wa
 black with safety orange as the one signal colour, green for in-progress bars and good numbers, IBM Plex
 Mono for times and numbers, Archivo for text, and a landing page whose first screen shows the board with
 RO-1013 moved and the decision ticket. A scan of every colour in the styles finds no blue, teal or purple
-hue; the only gradient left is the striped hatching that marks a blocked bay. The hosted `/demo` path relies on the rewrite in `vercel.json`; check it after the
-next deploy.
+hue; the only gradient left is the striped hatching that marks a blocked bay. The hosted `/demo` path works through the rewrite in `vercel.json` (checked on the hosted copy).
 
 ## Out of scope
 

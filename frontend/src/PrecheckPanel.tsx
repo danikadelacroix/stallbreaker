@@ -1,12 +1,14 @@
 import type { Precheck } from './types'
 import { clock } from './api'
 
-interface Props { check: Precheck; busy: boolean; onOrder: () => void; onDecide: (roId: string, partId: string) => void }
+interface Props { check: Precheck; busy: boolean; onOrder: () => void; onDecide: (roId: string, partId: string) => void
+  /** False for a role that does not decide plans: shortfalls that need a decision are shown as waiting for the manager. */
+  canDecide?: boolean }
 
 const WHY = { out_of_stock: 'none on the shelf', claimed_by_earlier_jobs: 'earlier jobs will use the stock' }
 
 /** The parts check: jobs that will run short of a part, found before anyone takes the car apart. */
-export function PrecheckPanel({ check, busy, onOrder, onDecide }: Props) {
+export function PrecheckPanel({ check, busy, onOrder, onDecide, canDecide = true }: Props) {
   if (check.flagged.length === 0) return null
   const n = check.flagged.length
   return (
@@ -43,7 +45,9 @@ export function PrecheckPanel({ check, busy, onOrder, onDecide }: Props) {
                     <><span className="badge warn">Needs a re-plan</span> no safe source arrives before it starts</>
                   )}
                 </td>
-                <td>{!f.fix && <button type="button" className="link" disabled={busy} onClick={() => onDecide(f.ro_id, f.part_id)}>See the options</button>}</td>
+                <td>{!f.fix && (canDecide
+                  ? <button type="button" className="link" disabled={busy} onClick={() => onDecide(f.ro_id, f.part_id)}>See the options</button>
+                  : <span className="muted small">For the service manager</span>)}</td>
               </tr>
             ))}
           </tbody>

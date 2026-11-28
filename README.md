@@ -11,19 +11,27 @@ Built for Tekion's Tek Qubit hackathon (use case: Service Parts Shortage Resolve
 simulated day end to end. All shop data is simulated; part demand history is real.
 Not connected to any dealer system. A language model can be switched on to read notes; without a key, plain rules do it.
 
-**Live:** https://stallbreaker-eight.vercel.app opens on a page that explains the product; the demo is at
-[/demo](https://stallbreaker-eight.vercel.app/demo). Light and dark themes. Every visitor shares one demo
+**Live:** https://stallbreaker-eight.vercel.app opens on a page that explains the product. The demo at
+[/demo](https://stallbreaker-eight.vercel.app/demo) asks who you are: service manager, technician or parts
+counter, each with their own view of the same day. Light and dark themes. Every visitor shares one demo
 day, and it starts over when the server restarts.
 
 ![The landing page: what StallBreaker does, who it is for, and the first stall of the demo day](docs/landing.jpg)
 
 ![A missing part: sources, the recommended plan, and its preview on the board](docs/stall-flow.jpg)
 
+![The technician's view after the manager approved a plan: new bay, new time, and when the part arrives](docs/technician.jpg)
+
 ## What the app does
 
 It shows one day at a dealership (40 repair orders, 10 technicians, 10 bays, two sister
 stores, a vendor and an OEM depot) on a schedule board.
 
+- **A view for each person.** The technician sees their own jobs and reports a missing part by
+  voice or text, without seeing plans or costs. The service manager sees what needs a decision
+  and approves one plan. The parts counter tracks every ordered part, records what the source
+  said and orders ahead within the spending limit. What one does shows up for the others within
+  seconds. These are demo roles: there is no sign-in.
 - **Read a note.** Type or dictate what the technician said ("1013 wp off, gskt kit in bin is
   for the 2.0"). The app works out which repair order and which part, shows what it
   understood with the exact words it relied on, and opens nothing until you confirm. It also
@@ -76,7 +84,7 @@ uv pip install --python .venv/bin/python -r requirements-dev.txt
 # terminal 1: the API (creates and seeds the database on first run)
 .venv/bin/python -m uvicorn backend.app:app --port 8000
 
-# terminal 2: the web app, then open http://localhost:5173 (the demo is at /demo)
+# terminal 2: the web app, then open http://localhost:5173 (the demo is at /demo, the manager's view at /demo/manager)
 cd frontend && npm install && npm run dev
 ```
 

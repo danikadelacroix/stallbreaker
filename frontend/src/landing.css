@@ -144,3 +144,7 @@
   .lp-ticket { width: 94%; margin-right: 8px; }
   .lp-nav-actions .lp-btn.small { padding: 7px 11px; font-size: 13px; }
 }
+
+.lp-roles article .lp-role-link { margin-top: 14px; font-weight: 700; font-size: 14.5px; }
+.lp-role-link a { color: var(--accent-ink); text-decoration: none; }
+.lp-role-link a:hover { text-decoration: underline; text-underline-offset: 4px; }

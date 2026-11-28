@@ -14,9 +14,9 @@ const STEPS = [
 ]
 
 const ROLES = [
-  { who: 'Service manager', verb: 'Decides', text: 'Sees the recommended plan, what it trades off, and what waiting would cost. Nothing is ordered or moved without their approval.' },
-  { who: 'Technician', verb: 'Reports', text: 'Types or dictates what is missing, the way they would tell a colleague, and gets back to the next job.' },
-  { who: 'Parts counter', verb: 'Follows up', text: 'Sees every ordered part as requested, confirmed or received, records what the source said, and knows when to chase.' },
+  { view: 'manager', who: 'Service manager', verb: 'Decides', text: 'Sees the recommended plan, what it trades off, and what waiting would cost. Nothing is ordered or moved without their approval.' },
+  { view: 'technician', who: 'Technician', verb: 'Reports', text: 'Types or dictates what is missing, the way they would tell a colleague, and gets back to the next job.' },
+  { view: 'parts', who: 'Parts counter', verb: 'Follows up', text: 'Sees every ordered part as requested, confirmed or received, records what the source said, and knows when to chase.' },
 ]
 
 const WHY = [
@@ -156,10 +156,11 @@ export function Landing() {
                   <p className="lp-role-verb">{r.verb}</p>
                   <h3>{r.who}</h3>
                   <p>{r.text}</p>
+                  <p className="lp-role-link"><a href={`/demo/${r.view}`}>Open the {r.who.toLowerCase()}’s view <span aria-hidden="true">→</span></a></p>
                 </article>
               ))}
             </div>
-            <p className="lp-note">In this prototype all three work from one screen.</p>
+            <p className="lp-note">Each has their own view in the demo, and all three share the same day.</p>
           </div>
         </section>
 
@@ -195,9 +196,9 @@ export function Landing() {
             </div>
             <div>
               <ol className="lp-try-steps">
-                <li>Open the demo. It is 10:30 at Main Street, a simulated dealership.</li>
+                <li>Open the demo and continue as the service manager. It is 10:30 at Main Street, a simulated dealership.</li>
                 <li>RO-1013’s water pump gasket kit is out of stock and the car is due on the lift. Press <strong>See the options</strong> in the parts check.</li>
-                <li>Compare the sources, preview the plan on the board, and approve it. Then try the note box: “1013 no gasket kit” works too.</li>
+                <li>Compare the sources, preview the plan on the board, and approve it. Then switch to the technician and say it instead: “1013 no gasket kit”.</li>
               </ol>
               <a className="lp-btn primary" href="/demo">Open the live demo <span aria-hidden="true">→</span></a>
             </div>
