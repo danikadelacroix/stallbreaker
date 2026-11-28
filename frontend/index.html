@@ -3,7 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>StallBreaker</title>
+    <title>StallBreaker · keep the service day on track when a part goes missing</title>
+    <meta name="description" content="A re-planning agent for dealership service departments. When a repair stops for a missing or late part, it finds where the part can come from, re-plans bays and technicians, and asks the service manager to approve one plan." />
+    <script>
+      // Set the theme before the first paint so the page never flashes the wrong one.
+      try {
+        var saved = localStorage.getItem('sb-theme')
+        document.documentElement.dataset.theme = saved === 'light' || saved === 'dark' ? saved
+          : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      } catch (e) { document.documentElement.dataset.theme = 'light' }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>

@@ -1,6 +1,6 @@
 # 115 Landing page, light and dark theme
 
-**Status:** Proposed · **Owner:** danikadelacroix · **Depends on:** 006 · **Code:** `frontend/src/Landing.tsx`, `frontend/src/theme.ts`, `frontend/src/index.css`
+**Status:** Built · **Owner:** danikadelacroix · **Depends on:** 006 · **Code:** `frontend/src/Landing.tsx`, `frontend/src/theme.tsx`, `frontend/src/index.css`
 
 ## Why
 
@@ -42,6 +42,15 @@ StallBreaker does and for whom, and within two minutes have used it.
 | M4 | Rule 8: both themes checked on the landing page, the demo with a stall open, and the board | manual, screenshots |
 | M5 | Rule 9: the guide shows once, closes, stays closed after reload | manual |
 | M6 | Rule 10: no sideways scroll at 375 px on either page | manual |
+
+## Where it stands
+
+Checked on 28 Nov 2026 in Chrome, locally: M1 `/` and `/demo` (also loaded directly), M2 section order,
+M3 the switch on both pages and the choice surviving a reload, M4 both themes on the landing page and on
+the demo with the RO-1013 stall open, M5 the guide closing and staying closed, M6 no sideways scroll at
+375 px or 1280 px on either page. In dark, "done" bars are grey and "in progress" brighter so the board's
+states stay apart. The hosted `/demo` path relies on the rewrite in `vercel.json`; check it after the
+next deploy.
 
 ## Out of scope
 

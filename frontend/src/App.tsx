@@ -9,6 +9,9 @@ import { StallCard } from './StallCard'
 import { LogPanel } from './LogPanel'
 import { IntakePanel } from './IntakePanel'
 import { PrecheckPanel } from './PrecheckPanel'
+import { StartHere } from './StartHere'
+import { Logo } from './Logo'
+import { ThemeToggle } from './theme'
 
 const message = (e: unknown) => (e instanceof Error ? e.message : 'Something went wrong')
 
@@ -138,10 +141,14 @@ export default function App() {
   return (
     <>
       <header className="top">
-        <div className="brand">
-          <h1>StallBreaker</h1>
-          <p>{day.store.name} · service schedule · simulated data</p>
-        </div>
+        <a href="/" className="brand brand-link" aria-label="StallBreaker home">
+          <Logo size={32} />
+          <div>
+            <h1>StallBreaker</h1>
+            <p>{day.store.name} · service schedule · simulated data</p>
+          </div>
+        </a>
+        <div className="top-actions">
         <div className="clock">
           <label htmlFor="clock">Demo clock <strong>{clock(day.now_min)}</strong></label>
           <input
@@ -153,6 +160,8 @@ export default function App() {
           })}>
             {busy ? 'Working…' : 'Reset day'}
           </button>
+          <ThemeToggle />
+        </div>
         </div>
       </header>
       <main>
@@ -167,6 +176,7 @@ export default function App() {
           <li className={flagged ? 'warn' : 'good'}><strong>{flagged}</strong><span>jobs missing a part</span></li>
           <li className={s.requests_to_chase ? 'warn' : 'good'}><strong>{s.requests_to_chase}</strong><span>ordered parts to chase</span></li>
         </ul>
+        {!proposal && <StartHere />}
         {!proposal && <ChasePanel day={day} onOpen={setSelectedId} />}
         {!proposal && <IntakePanel busy={busy} onMissing={(ro, part) => void openStall(ro, part)} onLate={(ro, part, t) => void lateFromNote(ro, part, t)}
           onAnswer={(ro, part, what) => { setSelectedId(ro); void answer(ro, part, what) }}
