@@ -8,7 +8,7 @@ Two people work on this repo. The rule that keeps us from breaking each other's 
 ```bash
 git clone https://github.com/danikadelacroix/stallbreaker.git && cd stallbreaker
 uv venv --python 3.12 .venv
-uv pip install --python .venv/bin/python -r requirements.txt
+uv pip install --python .venv/bin/python -r requirements-dev.txt
 cd frontend && npm install && cd ..
 .venv/bin/python -m pytest -q          # expect: 77 passed
 ```

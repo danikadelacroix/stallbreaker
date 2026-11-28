@@ -1,0 +1,9 @@
+# Everything for local work: the app, the tests and the experiments.
+-r requirements.txt
+pytest
+httpx
+numpy
+pandas
+matplotlib
+statsforecast
+statsmodels

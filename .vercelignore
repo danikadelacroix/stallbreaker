@@ -1,0 +1,6 @@
+.venv
+tests
+docs
+frontend/node_modules
+backend/*.db
+**/__pycache__

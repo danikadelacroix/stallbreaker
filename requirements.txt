@@ -1,11 +1,4 @@
+# What the app needs to run (also what the hosted copy installs).
 ortools>=9.10
-matplotlib
-numpy
-pandas
-statsforecast
-statsmodels
-pytest
-# web app
 fastapi
 uvicorn[standard]
-httpx

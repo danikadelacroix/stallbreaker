@@ -65,7 +65,7 @@ stores, a vendor and an OEM depot) on a schedule board.
 
 ```bash
 uv venv --python 3.12 .venv
-uv pip install --python .venv/bin/python -r requirements.txt
+uv pip install --python .venv/bin/python -r requirements-dev.txt
 
 # terminal 1: the API (creates and seeds the database on first run)
 .venv/bin/python -m uvicorn backend.app:app --port 8000
