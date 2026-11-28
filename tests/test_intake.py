@@ -127,6 +127,73 @@ def test_the_published_score_matches_the_rules_reader():
         got = intake.read_with_rules(app_module.conn(), c["text"])
         right[c["split"]] += intake.same_reading(got, c)
     assert all(published[s]["right"] == right[s] for s in right)
+    assert sum(c["split"] == "outside" for c in cases) == 40, "the outside notes are frozen: none added, none removed"
+    assert all(published[s]["of"] == sum(c["split"] == s for c in cases) for s in right)
     assert right["outside"] < published["outside"]["of"], "if this ever reads every outside note, suspect that someone tuned on them"
     info = client.get("/api/intake/info").json()
     assert info["reader"] == "rules" and info["sends_notes_out"] is False and info["eval"]["rules"]["outside"]["right"] == right["outside"]
+
+
+# Spec 114: a source's reply about a part already ordered.
+
+def test_a_reply_is_read_to_the_right_request():
+    at_eleven(order_ahead=True)  # RO-1017 tensioner from North due 11:10; RO-1035 and RO-1040 pads from East due 12:20
+    got = read("north confirmed the tensioner")
+    assert (got["kind"], got["ro_id"], got["part_id"]) == ("confirmed", "RO-1017", "TMG-TNS"), "no repair order named: found by part and source"
+    assert got["source_name"] == "Sister store North" and got["quote"].lower() in "north confirmed the tensioner"
+    here = read("1035 pads from east arrived")
+    assert (here["kind"], here["ro_id"], here["part_id"], here["source_name"]) == ("received", "RO-1035", "BRK-PAD-F", "Sister store East")
+    no = read("east called, cant get the brake pads for 1040, sold out")
+    assert (no["kind"], no["ro_id"], no["part_id"]) == ("cannot_supply", "RO-1040", "BRK-PAD-F")
+    assert read("1013 wp off, gskt kit in bin is for the 2.0 not 2.5t")["source_name"] is None, "a technician's note is not a reply"
+
+
+def test_a_confirm_with_a_later_time_is_late():
+    at_eleven(order_ahead=True)
+    later = read("north says tensioner for 1017 confirmed for 11:40")
+    assert (later["kind"], later["ro_id"], later["arrives_min"]) == ("late_part", "RO-1017", 220)
+    same = read("east confirmed 1035 pads for 12:20")
+    assert (same["kind"], same["ro_id"], same["arrives_min"]) == ("confirmed", "RO-1035", None), "the recorded time is not a delay"
+
+
+def test_a_reply_that_cannot_be_read_says_why():
+    at_eleven(order_ahead=True)
+    denial = read("north hasnt confirmed the tensioner yet")
+    assert denial["kind"] == "unclear" and denial["why_unclear"]
+    two = read("east confirmed the pads")
+    assert two["kind"] == "unclear" and "repair order number" in two["why_unclear"]
+    wrong = read("vendor confirmed the tensioner for 1017")
+    assert wrong["kind"] == "unclear" and "Sister store North" in wrong["why_unclear"]
+    client.post("/api/requests/answer", json={"ro_id": "RO-1035", "part_id": "BRK-PAD-F", "answer": "confirmed"})
+    again = read("east confirmed 1035 pads")
+    assert again["kind"] == "unclear" and "already confirmed" in again["why_unclear"]
+    client.post("/api/requests/answer", json={"ro_id": "RO-1017", "part_id": "TMG-TNS", "answer": "received"})
+    for note in ("tensioner for 1017 is here", "north says tensioner for 1017 wont be here till 12:30"):
+        got = read(note)
+        assert got["kind"] == "unclear" and "already" in got["why_unclear"], note
+    client.post("/api/clock", json={"now_min": 330})  # RO-1040 (13:30) is under way and its pads never came
+    started = read("east cant get the brake pads for 1040")
+    assert started["kind"] == "unclear" and "report it missing" in started["why_unclear"]
+
+
+def test_reading_a_reply_changes_nothing():
+    at_eleven(order_ahead=True)
+    before, log_before = client.get("/api/day").json(), client.get("/api/log").json()
+    for note in ("north confirmed the tensioner", "1035 pads from east arrived", "east cant get the brake pads for 1040"):
+        assert read(note)["kind"] != "unclear", note
+    assert client.get("/api/day").json() == before and client.get("/api/log").json() == log_before
+
+
+def test_a_model_reply_reading_is_checked(monkeypatch):
+    at_eleven(order_ahead=True)
+    note = "north confirmed the tensioner"
+    good = StandIn({"kind": "confirmed", "ro_id": "RO-1017", "part_id": "TMG-TNS", "arrives_min": None, "quote": "north confirmed the tensioner"})
+    monkeypatch.setattr(llm, "reader", lambda: good)
+    got = read(note)
+    assert (got["kind"], got["ro_id"], got["read_by"]) == ("confirmed", "RO-1017", "model: stand-in")
+    assert "Sister store North" in good.sent[0], "the model is told where each part was ordered from"
+    bad = StandIn({"kind": "confirmed", "ro_id": "RO-1013", "part_id": "WTR-GSK", "arrives_min": None, "quote": "north confirmed"})
+    monkeypatch.setattr(llm, "reader", lambda: bad)
+    got = read(note)
+    assert got["read_by"] == "rules" and "on its way" in got["fell_back_because"]
+    assert (got["kind"], got["ro_id"]) == ("confirmed", "RO-1017")

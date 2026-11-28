@@ -72,3 +72,17 @@
 {"id": 72, "split": "outside", "text": "ro 1039 accord battery wrong group they gave h7, wont fit tray", "kind": "missing_part", "ro_id": "RO-1039", "part_id": "BAT-H6", "arrives_min": null}
 {"id": 73, "split": "outside", "text": "1019 ac svc - refrigerant out of stock, parts counter says none till tmrw", "kind": "missing_part", "ro_id": "RO-1019", "part_id": "AC-RFG", "arrives_min": null}
 {"id": 74, "split": "outside", "text": "1032 altima lca wrong side, they sent RH need LH", "kind": "missing_part", "ro_id": "RO-1032", "part_id": "SUS-ARM-L", "arrives_min": null}
+{"id": 75, "split": "dev", "text": "north confirmed the tensioner", "kind": "confirmed", "ro_id": "RO-1017", "part_id": "TMG-TNS", "arrives_min": null}
+{"id": 76, "split": "dev", "text": "1035 pads from east arrived", "kind": "received", "ro_id": "RO-1035", "part_id": "BRK-PAD-F", "arrives_min": null}
+{"id": 77, "split": "dev", "text": "east called, cant get the brake pads for 1040, sold out", "kind": "cannot_supply", "ro_id": "RO-1040", "part_id": "BRK-PAD-F", "arrives_min": null}
+{"id": 78, "split": "dev", "text": "north says tensioner for 1017 confirmed for 11:40", "kind": "late_part", "ro_id": "RO-1017", "part_id": "TMG-TNS", "arrives_min": 220}
+{"id": 79, "split": "dev", "text": "east confirmed the pads", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
+{"id": 80, "split": "dev", "text": "north hasnt confirmed the tensioner yet", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
+{"id": 81, "split": "dev", "text": "tensioner for 1017 is here", "kind": "received", "ro_id": "RO-1017", "part_id": "TMG-TNS", "arrives_min": null}
+{"id": 82, "split": "dev", "text": "east ok'd 1040 front pads, on the 12:20 shuttle", "kind": "confirmed", "ro_id": "RO-1040", "part_id": "BRK-PAD-F", "arrives_min": null}
+{"id": 83, "split": "held_out", "text": "RO-1017 belt tensioner dropped off by north", "kind": "received", "ro_id": "RO-1017", "part_id": "TMG-TNS", "arrives_min": null}
+{"id": 84, "split": "held_out", "text": "sister store north has none left, tensioner for the tucson", "kind": "cannot_supply", "ro_id": "RO-1017", "part_id": "TMG-TNS", "arrives_min": null}
+{"id": 85, "split": "held_out", "text": "east: brake pads for 1035 confirmed", "kind": "confirmed", "ro_id": "RO-1035", "part_id": "BRK-PAD-F", "arrives_min": null}
+{"id": 86, "split": "held_out", "text": "local vendor confirmed tensioner for 1017", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
+{"id": 87, "split": "held_out", "text": "pads for ro 1040 came in from east", "kind": "received", "ro_id": "RO-1040", "part_id": "BRK-PAD-F", "arrives_min": null}
+{"id": 88, "split": "held_out", "text": "north confirmed 1017 tensioner but now 12:00", "kind": "late_part", "ro_id": "RO-1017", "part_id": "TMG-TNS", "arrives_min": 240}
