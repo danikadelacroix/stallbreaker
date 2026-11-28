@@ -1,6 +1,6 @@
 # 115 Landing page, light and dark theme
 
-**Status:** Built · **Owner:** danikadelacroix · **Depends on:** 006 · **Code:** `frontend/src/Landing.tsx`, `frontend/src/theme.tsx`, `frontend/src/index.css`
+**Status:** In progress · **Owner:** danikadelacroix · **Depends on:** 006 · **Code:** `frontend/src/Landing.tsx`, `frontend/src/theme.tsx`, `frontend/src/index.css`
 
 ## Why
 
@@ -32,6 +32,13 @@ StallBreaker does and for whom, and within two minutes have used it.
 
 10. Both pages work from 375 px wide to a desktop screen with no sideways page scroll. Wide tables and the board scroll inside their own cards, as today.
 
+**The look** (added 28 Nov 2026, after review)
+
+11. The logo is a 12-hour dial with one hour lifted out and moved: the day, with one job re-planned. It is drawn in warm black, off-white and safety orange, and works at 16 px as the favicon.
+12. No gradients, glows, gradient text or blue and purple hues anywhere. Safety orange is the one signal colour: the main action and what needs attention. Green means fine, amber means short of a part, red means a missed promise.
+13. Clock times and numbers are set in a monospaced face, so columns of times line up.
+14. The landing page is laid out for this product, not as a centred template: the first screen shows the board with the stalled job moved, next to the words.
+
 ## Acceptance checks
 
 | # | Check | How |
@@ -39,7 +46,7 @@ StallBreaker does and for whom, and within two minutes have used it.
 | M1 | Rules 1, 2: `/` shows the landing page; its first screen has the four answers and the demo button; `/demo` opens the demo, also when loaded directly | manual, local and on the hosted copy |
 | M2 | Rule 3: the sections appear in order | manual |
 | M3 | Rules 6, 7: the switch changes theme on both pages, the choice survives a reload, and no flash on load | manual |
-| M4 | Rule 8: both themes checked on the landing page, the demo with a stall open, and the board | manual, screenshots |
+| M4 | Rules 8, 11 to 14: both themes checked on the landing page, the demo with a stall open, and the board; no blue or purple left in the styles | manual, screenshots, a grep of the styles |
 | M5 | Rule 9: the guide shows once, closes, stays closed after reload | manual |
 | M6 | Rule 10: no sideways scroll at 375 px on either page | manual |
 
