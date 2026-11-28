@@ -1,12 +1,12 @@
 {
  "rules": {
   "dev": {
-   "right": 17,
-   "of": 17
+   "right": 25,
+   "of": 25
   },
   "held_out": {
-   "right": 17,
-   "of": 17
+   "right": 23,
+   "of": 23
   },
   "outside": {
    "right": 32,

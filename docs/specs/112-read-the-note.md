@@ -66,3 +66,4 @@ The rules reader gets 34 of 34 of our own notes and 32 of 40 of the outside note
 
 A part the repair order does not list (common in real shops, and next on the list). Several
 parts in one note. Sound: dictation uses the browser's own speech-to-text into the same box.
+A source's reply about a part already ordered is read as in 114.

@@ -80,9 +80,7 @@ source when the first one fails.
 
 ## Out of scope
 
-Reading a source's reply from pasted text. The note box (112) already reads "the part will be
-late" for a part on its way, and that now leads here; teaching it "confirmed" and "cannot
-supply" is a later step. Remembering that a supplier said no when the same part is needed
+Reading a source's reply from pasted text is spec 114. Remembering that a supplier said no when the same part is needed
 again later in the day (a sister store is remembered, through its count). Rolling a waiting car
 out of its bay as part of a change of source. Counting "no way back" among the reasons a plan
 needs a person (111). Sending anything to a source.

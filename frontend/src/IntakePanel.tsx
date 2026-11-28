@@ -8,10 +8,31 @@ interface Props {
   onMissing: (roId: string, partId: string) => void
   /** The reading was confirmed: a part on its way will arrive at a new time. */
   onLate: (roId: string, partId: string, arrives: number) => void
+  /** The reading was confirmed: the source said yes, or the part is here. */
+  onAnswer: (roId: string, partId: string, answer: 'confirmed' | 'received') => void
+  /** The reading was confirmed: the source cannot supply the part. */
+  onCannotSupply: (roId: string, partId: string) => void
+}
+
+const YES: Record<NoteReading['kind'], string> = {
+  missing_part: 'Yes, show the options', late_part: 'Yes, check the plan', confirmed: 'Yes, record it',
+  received: 'Yes, record it', cannot_supply: 'Yes, see other sources', unclear: '',
+}
+
+/** One line on what the note was understood to say. */
+function understood(r: NoteReading): string {
+  const part = r.part_name!, from = r.source_name
+  switch (r.kind) {
+    case 'late_part': return `${part}${from ? ` from ${from}` : ''} will now arrive at ${clock(r.arrives_min!)}`
+    case 'confirmed': return `${from} confirmed the ${part.toLowerCase()}`
+    case 'received': return `The ${part.toLowerCase()} from ${from} is here`
+    case 'cannot_supply': return `${from} cannot supply the ${part.toLowerCase()}`
+    default: return `${part} is missing or wrong`
+  }
 }
 
 /** A technician's note goes in, a reading comes out, and a person confirms it before anything else happens. */
-export function IntakePanel({ busy, onMissing, onLate }: Props) {
+export function IntakePanel({ busy, onMissing, onLate, onAnswer, onCannotSupply }: Props) {
   const [text, setText] = useState('')
   const [reading, setReading] = useState<NoteReading | null>(null)
   const [info, setInfo] = useState<IntakeInfo | null>(null)
@@ -37,7 +58,7 @@ export function IntakePanel({ busy, onMissing, onLate }: Props) {
   return (
     <section className="intake" aria-label="Read a note">
       <div className="intake-in">
-        <label htmlFor="note">What did the technician say?</label>
+        <label htmlFor="note">What did the technician or the source say?</label>
         <textarea id="note" rows={2} maxLength={600} value={text} disabled={busy || working}
           placeholder="For example: 1013 wp off, gskt kit in bin is for the 2.0 not 2.5t"
           onChange={(e) => { setText(e.target.value); setReading(null) }} />
@@ -67,17 +88,19 @@ export function IntakePanel({ busy, onMissing, onLate }: Props) {
               <p className="eyebrow">Is this right?</p>
               <p className="understood">
                 <strong>{reading.ro_id}</strong> · {reading.description} · {reading.vehicle}<br />
-                <strong>{reading.part_name}</strong>{' '}
-                {reading.kind === 'late_part' ? `will now arrive at ${clock(reading.arrives_min!)}` : 'is missing or wrong'}
+                <strong>{understood(reading)}</strong>
               </p>
               <p className="muted small">From the words “{reading.quote}”. Read by {reading.read_by.replace('model: ', '')}.</p>
               <div className="actions">
                 <button type="button" className="ghost" disabled={busy} onClick={() => setReading(null)}>No, that is wrong</button>
                 <button type="button" className="primary" disabled={busy} onClick={() => {
-                  if (reading.kind === 'late_part') onLate(reading.ro_id!, reading.part_id!, reading.arrives_min!)
-                  else onMissing(reading.ro_id!, reading.part_id!)
+                  const ro = reading.ro_id!, part = reading.part_id!
+                  if (reading.kind === 'late_part') onLate(ro, part, reading.arrives_min!)
+                  else if (reading.kind === 'confirmed' || reading.kind === 'received') onAnswer(ro, part, reading.kind)
+                  else if (reading.kind === 'cannot_supply') onCannotSupply(ro, part)
+                  else onMissing(ro, part)
                   clear()
-                }}>{reading.kind === 'late_part' ? 'Yes, check the plan' : 'Yes, show the options'}</button>
+                }}>{YES[reading.kind]}</button>
               </div>
             </>
           )}

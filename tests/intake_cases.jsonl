@@ -75,7 +75,7 @@
 {"id": 75, "split": "dev", "text": "north confirmed the tensioner", "kind": "confirmed", "ro_id": "RO-1017", "part_id": "TMG-TNS", "arrives_min": null}
 {"id": 76, "split": "dev", "text": "1035 pads from east arrived", "kind": "received", "ro_id": "RO-1035", "part_id": "BRK-PAD-F", "arrives_min": null}
 {"id": 77, "split": "dev", "text": "east called, cant get the brake pads for 1040, sold out", "kind": "cannot_supply", "ro_id": "RO-1040", "part_id": "BRK-PAD-F", "arrives_min": null}
-{"id": 78, "split": "dev", "text": "north says tensioner for 1017 confirmed for 11:40", "kind": "late_part", "ro_id": "RO-1017", "part_id": "TMG-TNS", "arrives_min": 220}
+{"id": 78, "split": "dev", "text": "north says tensioner for 1017 confirmed for 12:10", "kind": "late_part", "ro_id": "RO-1017", "part_id": "TMG-TNS", "arrives_min": 250}
 {"id": 79, "split": "dev", "text": "east confirmed the pads", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
 {"id": 80, "split": "dev", "text": "north hasnt confirmed the tensioner yet", "kind": "unclear", "ro_id": null, "part_id": null, "arrives_min": null}
 {"id": 81, "split": "dev", "text": "tensioner for 1017 is here", "kind": "received", "ro_id": "RO-1017", "part_id": "TMG-TNS", "arrives_min": null}

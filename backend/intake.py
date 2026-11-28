@@ -1,4 +1,7 @@
-"""Read a technician's note into a structured report: which repair order, which part, what happened.
+"""Read a note into a structured report: which repair order, which part, what happened.
+
+A note is either a technician's report (a part is missing, or will be late) or a source's reply
+about a part already ordered (confirmed, here, cannot supply, or a later time; spec 114).
 
 Reading changes nothing. The result is shown to a person, who confirms it; only then does the
 stall flow or the late-part flow run. Two readers exist: plain rules (always available) and a
@@ -39,6 +42,14 @@ _SOMETHING_WRONG = re.compile(r"\b(no|none|not|missing|need|needs|out of|wrong|s
 _IT_IS_FINE = re.compile(r"^\W*(?:is|are|was|were)?\s*(?:ok|okay|fine|good|here|in stock|arrived|off)\b")
 _RUNNING_LATE = re.compile(r"\b(late|delayed|won'?t be here|not here (?:till|until)|now coming|coming at|eta|pushed|till|until)\b")
 _CLOCK = re.compile(r"\b(\d{1,2})[:.](\d{2})\s*(am|pm)?|\b(\d{1,2})\s*(am|pm)\b")
+# A source's reply about a part already ordered (spec 114). A later time wins, then cannot supply, here, confirmed.
+_CANNOT = re.compile(r"\b(?:can'?t|cannot|unable to|won'?t be able to)\s+(?:\w+\s+){0,2}?(?:get|supply|send|find|source|deliver|ship)\b"
+                     r"|\bnone left\b|\bno stock\b|\bout of stock\b|\bsold out\b|\b(?:don'?t|doesn'?t) have\b|\bnot coming\b|\bcancell?ed\b")
+_HERE = re.compile(r"\b(?:arrived|is here|are here|here now|came in|come in|dropped off|delivered|received|showed up|turned up|got (?:it|them))\b")
+_CONFIRMED = re.compile(r"\b(?:confirm(?:ed|s)?|ok'?d|okayed|on (?:the|its|their) way|shipped|dispatched|on the (?:\d{1,2}[:.]\d{2} )?shuttle|booked)\b")
+_DENIED = re.compile(r"\b(?:not|no|hasn'?t|haven'?t|didn'?t|isn'?t|wasn'?t|aren'?t|yet to|still waiting|waiting (?:on|for))\b")
+SOURCE_WORDS = {"north": ["sister store north", "north"], "east": ["sister store east", "east"],
+                "vendor": ["local vendor", "vendor"], "oem": ["oem depot", "oem", "depot"]}
 _CLAUSE_END = re.compile(r"[,;]|\.(?=\s|$)|\s-\s|:\s|\bbut\b")  # a dot inside "2.0" or "12.30" does not end a clause
 
 
@@ -130,6 +141,46 @@ def _clock_time(note, now):
     return (hour - 8) * 60 + minute
 
 
+def _named_source(note):
+    """The source a note names, if exactly one: its id, else None."""
+    named = {sid for sid, words in SOURCE_WORDS.items() if any(re.search(rf"\b{re.escape(w)}\b", note) for w in words)}
+    return named.pop() if len(named) == 1 else None
+
+
+def _read_reply(conn, note, text, orders, now):
+    """Read a note as a source's reply about an ordered part (spec 114). None when it is not one."""
+    says = "cannot_supply" if _CANNOT.search(note) else "received" if _HERE.search(note) else "confirmed" if _CONFIRMED.search(note) else None
+    if says is None or says != "cannot_supply" and _DENIED.search(note):
+        return None  # "not here yet", "hasn't confirmed": no reply to record
+    cands, why = _order_candidates(note, orders)
+    if not cands:
+        if why and why.startswith("There is no open"):
+            return _unclear(why)
+        cands = orders  # a reply often names only the part and the source
+    ordered = sorted({p["part_id"] for o in cands for p in o["parts"] if p["request"]})
+    mentions = _part_mentions(note, ordered)
+    named = {pid for _, _, pid in mentions}
+    matches = [(o, p) for o in cands for p in o["parts"] if p["request"] and p["part_id"] in named]
+    if not matches:
+        return None
+    matches = [m for m in matches if m[1]["request"]["state"] != "received"] or matches  # a part already here is not what a reply is about
+    source = _named_source(note)
+    if source:  # if none fits the source, keep them: check() then says where the part was really ordered from
+        matches = [m for m in matches if m[1]["request"]["source_id"] == source] or matches
+    if len(matches) > 1:
+        return _unclear("More than one ordered part fits this reply. Add the repair order number.")
+    order, need = matches[0]
+    start, end = next((s, e) for s, e, pid in mentions if pid == need["part_id"])
+    c0, c1 = _clause(note, start, end)
+    reading = {"kind": says, "ro_id": order["id"], "part_id": need["part_id"], "arrives_min": None,
+               "quote": text[c0:c1].strip(" ,;.-:"), "why_unclear": None, "source_id": source}
+    if says != "received":  # "can't get it till 14:00" and "confirmed for 12:40" both give a new time
+        at = _clock_time(note, now)
+        if at is not None and need["request"]["arrives_min"] is not None and at > need["request"]["arrives_min"]:
+            reading.update(kind="late_part", arrives_min=at)
+    return check(conn, reading, text)
+
+
 def _unclear(why):
     return {"kind": "unclear", "ro_id": None, "part_id": None, "arrives_min": None, "quote": None, "why_unclear": why}
 
@@ -139,6 +190,9 @@ def read_with_rules(conn, text):
     note = text.lower()
     now = db.get_meta(conn, "now_min", 0)
     orders = _open_orders(conn)
+    reply = _read_reply(conn, note, text, orders, now)
+    if reply is not None:
+        return reply
     cands, why = _order_candidates(note, orders)
     if not cands:
         return _unclear(why)
@@ -165,7 +219,7 @@ def read_with_rules(conn, text):
 
 def check(conn, reading, text):
     """The rules every reading must pass, whoever made it. A reading that fails comes back unclear, with the reason."""
-    if not isinstance(reading, dict) or reading.get("kind") not in ("missing_part", "late_part", "unclear"):
+    if not isinstance(reading, dict) or reading.get("kind") not in KINDS:
         return _unclear("The reading was not in the expected form.")
     if reading["kind"] == "unclear":
         return _unclear(reading.get("why_unclear") or "Could not tell what this note is about.")
@@ -179,33 +233,57 @@ def check(conn, reading, text):
     quote = reading.get("quote")
     if not quote or quote.lower() not in text.lower():
         return _unclear("The words quoted are not in the note.")
-    arrives = reading.get("arrives_min")
-    if reading["kind"] == "late_part":
-        if not need["sourced_from"]:
-            return _unclear(f"No {need['name'].lower()} is on its way for {order['id']}, so it cannot be late.")
-        if not isinstance(arrives, int) or arrives <= now or arrives > 900:
+    arrives, kind, req = reading.get("arrives_min"), reading["kind"], need.get("request")
+    name = need["name"].lower()
+    if kind == "missing_part":
+        if need["sourced_from"]:
+            return _unclear(f"{need['name']} is already on its way for {order['id']}.")
+    else:  # about a part already ordered: late, or a source's reply (spec 114)
+        if kind in ("confirmed", "received") and _DENIED.search(quote.lower()):
+            return _unclear("The note says the source has not answered, or the part has not come.")
+        if req is None:
+            return _unclear(f"No {name} is on its way for {order['id']}" + (", so it cannot be late." if kind == "late_part" else "."))
+        if req["state"] == "received":
+            return _unclear(f"The {name} for {order['id']} is already here.")
+        source = reading.get("source_id")
+        if source and source != req["source_id"]:
+            row = conn.execute("SELECT name FROM stores WHERE id = ? UNION SELECT name FROM suppliers WHERE id = ?", (source, source)).fetchone()
+            return _unclear(f"The {name} for {order['id']} was ordered from {req['source_name']}, not {row['name'] if row else source}.")
+        if kind == "confirmed" and req["state"] == "confirmed":
+            return _unclear(f"{req['source_name']} already confirmed the {name} for {order['id']}.")
+        if kind == "cannot_supply" and order["status"] == "in_progress":
+            return _unclear(f"{order['id']} is already under way without the {name}. If it is not here, report it missing from the job panel.")
+        if kind == "late_part" and (not isinstance(arrives, int) or arrives <= now or arrives > 900):
             return _unclear("Could not read a new arrival time later than now.")
-    elif need["sourced_from"]:
-        return _unclear(f"{need['name']} is already on its way for {order['id']}.")
     return {"kind": reading["kind"], "ro_id": order["id"], "part_id": need["part_id"],
             "arrives_min": arrives if reading["kind"] == "late_part" else None, "quote": quote, "why_unclear": None}
 
 
-SYSTEM = ("You read short notes from car service technicians. Decide whether the note reports a part that is missing or "
-          "wrong for a repair order (missing_part), a part already on its way that will arrive at a new time (late_part), "
-          "or neither (unclear). Choose the repair order and the part only from the lists given. Copy into 'quote' the exact "
+KINDS = ("missing_part", "late_part", "confirmed", "received", "cannot_supply", "unclear")
+SYSTEM = ("You read short notes from a car service shop. A note is either a technician reporting a part that is missing or "
+          "wrong for a repair order (missing_part), or news about a part already on its way: it will arrive at a later time "
+          "(late_part), the source confirmed it (confirmed), it is in the building (received), or the source cannot supply it "
+          "(cannot_supply). If it is none of these, answer unclear. Choose the repair order and the part only from the lists given. Copy into 'quote' the exact "
           "words from the note that your reading rests on. If you are not sure, answer unclear. Never guess.")
 SCHEMA = {"type": "object", "additionalProperties": False, "required": ["kind", "ro_id", "part_id", "arrives_clock", "quote"],
-          "properties": {"kind": {"type": "string", "enum": ["missing_part", "late_part", "unclear"]},
+          "properties": {"kind": {"type": "string", "enum": list(KINDS)},
                          "ro_id": {"type": ["string", "null"]}, "part_id": {"type": ["string", "null"]},
                          "arrives_clock": {"type": ["string", "null"], "description": "24-hour HH:MM, only for late_part"},
                          "quote": {"type": ["string", "null"]}}}
 
 
+def _ordered(part):
+    """What the model is told about a part that has been ordered: where from, when due, and what the source has said."""
+    req = part["request"]
+    if not req:
+        return {"on_its_way": False}
+    return {"on_its_way": req["state"] != "received", "ordered_from": req["source_name"], "due": repo.clock(req["arrives_min"]), "state": req["state"]}
+
+
 def _question(conn, text):
     """What the model is shown: the note with personal details removed, and the lists it must choose from."""
     jobs = [{"ro_id": o["id"], "vehicle": o["vehicle"], "job": o["description"], "bay": o["bay"], "technician": o["technician"],
-             "status": o["status"], "parts": [{"part_id": p["part_id"], "name": p["name"], "on_its_way": bool(p["sourced_from"])} for p in o["parts"]]}
+             "status": o["status"], "parts": [{"part_id": p["part_id"], "name": p["name"], **_ordered(p)} for p in o["parts"]]}
             for o in _open_orders(conn)]
     return json.dumps({"note": llm.redact(text), "time_now": repo.clock(db.get_meta(conn, "now_min", 0)), "open_repair_orders": jobs})
 
@@ -232,8 +310,9 @@ def _describe(conn, reading):
     """Add the words a person needs to confirm the reading."""
     order = next((o for o in repo.day(conn)["orders"] if o["id"] == reading["ro_id"]), None)
     part = next((p for p in order["parts"] if p["part_id"] == reading["part_id"]), None) if order else None
+    req = part["request"] if part and reading["kind"] not in ("missing_part", "unclear") else None
     return {**reading, "vehicle": order["vehicle"] if order else None, "description": order["description"] if order else None,
-            "part_name": part["name"] if part else None}
+            "part_name": part["name"] if part else None, "source_name": req["source_name"] if req else None}
 
 
 def read(conn, text):

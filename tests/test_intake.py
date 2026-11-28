@@ -137,7 +137,7 @@ def test_the_published_score_matches_the_rules_reader():
 # Spec 114: a source's reply about a part already ordered.
 
 def test_a_reply_is_read_to_the_right_request():
-    at_eleven(order_ahead=True)  # RO-1017 tensioner from North due 11:10; RO-1035 and RO-1040 pads from East due 12:20
+    at_eleven(order_ahead=True)  # RO-1017 tensioner from North due 11:40; RO-1035 and RO-1040 pads from East due 12:20
     got = read("north confirmed the tensioner")
     assert (got["kind"], got["ro_id"], got["part_id"]) == ("confirmed", "RO-1017", "TMG-TNS"), "no repair order named: found by part and source"
     assert got["source_name"] == "Sister store North" and got["quote"].lower() in "north confirmed the tensioner"
@@ -150,10 +150,12 @@ def test_a_reply_is_read_to_the_right_request():
 
 def test_a_confirm_with_a_later_time_is_late():
     at_eleven(order_ahead=True)
-    later = read("north says tensioner for 1017 confirmed for 11:40")
-    assert (later["kind"], later["ro_id"], later["arrives_min"]) == ("late_part", "RO-1017", 220)
+    later = read("north says tensioner for 1017 confirmed for 12:10")
+    assert (later["kind"], later["ro_id"], later["arrives_min"]) == ("late_part", "RO-1017", 250)
     same = read("east confirmed 1035 pads for 12:20")
     assert (same["kind"], same["ro_id"], same["arrives_min"]) == ("confirmed", "RO-1035", None), "the recorded time is not a delay"
+    till = read("east cant get the pads for 1040 till 14:00")
+    assert (till["kind"], till["ro_id"], till["arrives_min"]) == ("late_part", "RO-1040", 360), "a later time wins over cannot supply"
 
 
 def test_a_reply_that_cannot_be_read_says_why():
@@ -171,7 +173,10 @@ def test_a_reply_that_cannot_be_read_says_why():
     for note in ("tensioner for 1017 is here", "north says tensioner for 1017 wont be here till 12:30"):
         got = read(note)
         assert got["kind"] == "unclear" and "already" in got["why_unclear"], note
-    client.post("/api/clock", json={"now_min": 330})  # RO-1040 (13:30) is under way and its pads never came
+    client.post("/api/requests/answer", json={"ro_id": "RO-1035", "part_id": "BRK-PAD-F", "answer": "received"})
+    other = read("pads from east arrived")
+    assert (other["kind"], other["ro_id"]) == ("received", "RO-1040"), "the pads already here for RO-1035 do not count"
+    client.post("/api/clock", json={"now_min": 345})  # RO-1040 (13:30) is under way and its pads never came
     started = read("east cant get the brake pads for 1040")
     assert started["kind"] == "unclear" and "report it missing" in started["why_unclear"]
 

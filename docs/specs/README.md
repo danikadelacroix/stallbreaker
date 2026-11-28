@@ -29,7 +29,7 @@ then the code. See [CONTRIBUTING.md](../../CONTRIBUTING.md) for the full loop.
 | [111 Act alone, or ask](111-act-alone-or-ask.md) | Rule 3 built; acting alone not planned | `tests/test_api.py` |
 | [112 Read the note](112-read-the-note.md) | Built with the rules reader; no model scored yet | `tests/test_intake.py` |
 | [113 A source is a claim until the part is here](113-a-source-is-a-claim.md) | Built | `tests/test_claims.py` |
-| [114 Read a source's reply](114-read-a-source-reply.md) | Proposed | `tests/test_intake.py` |
+| [114 Read a source's reply](114-read-a-source-reply.md) | Built | `tests/test_intake.py` |
 
 Status moves Proposed → Agreed (both of us have read it) → In progress (owner named) → Built
 (every acceptance check has a passing test, or a manual check written down in the spec).

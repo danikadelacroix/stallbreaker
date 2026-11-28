@@ -107,11 +107,13 @@ export interface Precheck {
   fixable_without_replan: number; need_a_decision: number; fix_cost: number
 }
 
-/** What a technician's note was read as. Nothing is opened until a person confirms it. */
+/** What a note was read as: a technician's report, or a source's reply about an ordered part. Nothing happens until a person confirms it. */
 export interface NoteReading {
-  kind: 'missing_part' | 'late_part' | 'unclear'
+  kind: 'missing_part' | 'late_part' | 'confirmed' | 'received' | 'cannot_supply' | 'unclear'
   ro_id: string | null; part_id: string | null; arrives_min: number | null
   vehicle: string | null; description: string | null; part_name: string | null
+  /** Where the part was ordered from; null for a missing part. */
+  source_name: string | null
   /** The exact words of the note the reading rests on. */
   quote: string | null; why_unclear: string | null
   /** 'rules', or 'model: <name>'. */

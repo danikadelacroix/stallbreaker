@@ -20,7 +20,9 @@ stores, a vendor and an OEM depot) on a schedule board.
 
 - **Read a note.** Type or dictate what the technician said ("1013 wp off, gskt kit in bin is
   for the 2.0"). The app works out which repair order and which part, shows what it
-  understood with the exact words it relied on, and opens nothing until you confirm.
+  understood with the exact words it relied on, and opens nothing until you confirm. It also
+  reads a source's reply about a part already ordered ("north confirmed the tensioner",
+  "east can't get the pads for 1040") and leads to the same buttons as the job panel.
 - **Parts check.** The shelf stock is handed out to the open jobs in the order they start.
   Every job that will run short is listed, with whether a safe source can deliver before the
   job starts. One button orders those parts without touching the schedule.
@@ -114,7 +116,8 @@ or a time in the plan.
 - A reader turns a note into a repair order, a part, and what happened. It may only choose
   from the day's open repair orders and the parts each one needs.
 - Every reading passes the same checks in code: the order is open, the order needs that part,
-  a late part is really on its way, and the quoted words are in the note. A model's answer
+  a late part or a reply is about a part really on order, from the source the note names, and
+  the quoted words are in the note. A model's answer
   that fails is thrown away.
 - With no key, a timeout or a failed check, plain rules read the note and the screen says
   so. A person confirms every reading before anything is opened.
@@ -132,18 +135,18 @@ Customer messages still use a fixed template and are labelled as such.
 | `backend/` | FastAPI app and SQLite database: seed data, stock lookup, shortage risk, parts check, stall flow |
 | `frontend/` | React app (Vite, TypeScript): schedule board, parts check, stall card, decision log |
 | `experiments/` | Sample day, 200-stall benchmark, scale check, forecasting baseline, with outputs in `out/` |
-| `tests/` | 72 checks: 15 on the engine, 38 on the API, 8 on reading notes, 11 on ordered parts |
+| `tests/` | 77 checks: 15 on the engine, 38 on the API, 13 on reading notes, 11 on ordered parts |
 | `data/` | Monash Car Parts dataset (CC BY 4.0) |
 
 ## Tests and experiments
 
 ```bash
-.venv/bin/python -m pytest -q                      # 72 checks
+.venv/bin/python -m pytest -q                      # 77 checks
 .venv/bin/python experiments/toy.py                # 8 jobs, 3 bays, one missing part
 .venv/bin/python experiments/eval.py 200           # 200 seeded stalls, six methods
 .venv/bin/python experiments/scale.py 20           # re-plan time on 12 to 60-job days
 .venv/bin/python experiments/roll_out.py 200       # when rolling a stalled car out of its bay pays
-.venv/bin/python experiments/intake_eval.py        # how well notes are read, on 74 test notes
+.venv/bin/python experiments/intake_eval.py        # how well notes are read, on 88 test notes
 .venv/bin/python experiments/monash_baseline.py    # forecasting baseline on real data
 ```
 
@@ -201,18 +204,20 @@ part is safe, which is why the app uses a shortage-risk frequency instead.
 
 ### Reading notes
 
-74 test notes, read on the demo day at 11:00. A reading counts only if the repair order, the
+88 test notes, read on the demo day at 11:00. A reading counts only if the repair order, the
 part and any new arrival time all match, or if a note that cannot be read comes out as unclear.
 
 | Reader | Our notes, used for tuning | Our notes, held out | Notes written by someone else |
 |---|---|---|---|
-| Plain rules | 17 of 17 | 17 of 17 | **32 of 40** |
+| Plain rules | 25 of 25 | 23 of 23 | **32 of 40** |
 
 The first two columns flatter the rules: the same people wrote those notes and the rules. The
 last column is the one to quote. Those 40 notes were written by someone who saw only the day's
 jobs and parts, and nothing is tuned on them. Of the 8 misses, 4 came out as "unclear" (a person
 picks the job by hand) and 4 were wrong readings a person has to catch on the confirm card. A
 model reader is scored on the same notes and has to beat 32 of 40 to be worth switching on.
+Fourteen of our notes are replies from a source; the outside notes were written before replies
+could be read and were left as they were.
 
 ### When rolling the car out pays
 
@@ -274,7 +279,7 @@ dispatch rule. Times were measured on one laptop and will vary from run to run.
 
 ## Next
 
-A model reader scored against the plain rules, reading a source's reply from pasted text, a
+A model reader scored against the plain rules, a
 results page inside the app, deployment, and a stockout-risk model in place of the simple
 frequency rule. Each has a spec in [docs/specs](docs/specs/README.md).
 

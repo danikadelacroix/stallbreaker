@@ -168,7 +168,9 @@ export default function App() {
           <li className={s.requests_to_chase ? 'warn' : 'good'}><strong>{s.requests_to_chase}</strong><span>ordered parts to chase</span></li>
         </ul>
         {!proposal && <ChasePanel day={day} onOpen={setSelectedId} />}
-        {!proposal && <IntakePanel busy={busy} onMissing={(ro, part) => void openStall(ro, part)} onLate={(ro, part, t) => void lateFromNote(ro, part, t)} />}
+        {!proposal && <IntakePanel busy={busy} onMissing={(ro, part) => void openStall(ro, part)} onLate={(ro, part, t) => void lateFromNote(ro, part, t)}
+          onAnswer={(ro, part, what) => { setSelectedId(ro); void answer(ro, part, what) }}
+          onCannotSupply={(ro, part) => void otherSources(ro, part, { cannot_supply: true })} />}
         {!proposal && check && <PrecheckPanel check={check} busy={busy} onOrder={() => void orderAhead()} onDecide={(ro, part) => void openStall(ro, part)} />}
         {proposal && (
           <StallCard
